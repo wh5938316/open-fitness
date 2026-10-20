@@ -7,7 +7,6 @@ import {
   OAuthResourceServer,
   insufficientScope,
 } from '@cloudflare/workers-oauth-provider';
-import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
 import { OpenFoodFacts } from './adapters/open-food-facts';
 import { AuthService, FULL_SCOPE, cookies, requireOrigin, safeReturn } from './auth';
 import { FitnessService } from './domain/service';
@@ -15,20 +14,19 @@ import { AppError } from './errors';
 import { resolveLocale, t } from './i18n';
 import { cleanupMedia, MediaService } from './media';
 import { handleMcp } from './mcp';
+import { createCloudflarePlatform } from './platform';
 import type { Actor, AuthProps, Env } from './types';
 import { adminPage, consentPage, loginPage } from './web/pages';
 import { sha256 } from './crypto';
 
 function createServices(env: Env, actor: Actor, origin: string) {
+  const platform = createCloudflarePlatform(env);
   const service = new FitnessService(
-    new D1Repository(env.DB),
+    platform.repository,
     actor,
-    new OpenFoodFacts(
-      new KVCache(env.CACHE),
-      env.OFF_USER_AGENT ?? 'OpenFitness/0.1 (self-hosted)',
-    ),
+    new OpenFoodFacts(platform.cache, env.OFF_USER_AGENT ?? 'OpenFitness/0.1 (self-hosted)'),
   );
-  const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
+  const media = new MediaService(service, env, platform.objects, origin);
   media.register();
   return { service, media };
 }

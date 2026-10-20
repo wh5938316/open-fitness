@@ -18,7 +18,8 @@
     "test:e2e": "playwright test",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
-    "deploy": "pnpm build:client && wrangler deploy",
+    "cf:provision": "node scripts/ensure-cloudflare-resources.mjs",
+    "deploy": "pnpm build:client && node scripts/deploy.mjs",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "owner:recover": "node scripts/recover-owner.mjs"
   },

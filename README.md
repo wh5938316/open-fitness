@@ -33,7 +33,7 @@ Both transports use the same validated application operations. The service uses 
 
 D1 is the business source of truth. KV also persists the official OAuth provider's client registrations, grants, and tokens; it is not restricted to caching. R2 stores files, while D1 stores asset IDs and metadata. Versioned entities are typed JSON documents indexed by owner, kind, and ID. Revisions are append-only database snapshots, not a whole-account synchronization blob.
 
-Postgres, alternate object stores, Vercel, and self-hosted runtimes can implement these interfaces later. Only Cloudflare adapters and the Cloudflare runtime entry point are included today; changing providers is not yet a configuration-only switch.
+Postgres, alternate object stores, Vercel, and self-hosted runtimes can implement these interfaces later. Only Cloudflare adapters and the Cloudflare runtime entry point are included today; changing providers is not yet a configuration-only switch. See [docs/DEPLOY.md](docs/DEPLOY.md#swap-to-vercel-later).
 
 ## Quick start
 
@@ -211,27 +211,17 @@ API field names, enums, tool names, IDs, and error codes remain English in every
 
 ## Deploy to Cloudflare
 
-Create resources in your own account:
+The server deploys as one Cloudflare Worker (`apps/server`), not Pages. Pushes to `main` run `.github/workflows/deploy.yml` when `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are set. See [docs/DEPLOY.md](docs/DEPLOY.md) for resources, secrets, first-time setup, iOS API base URL, and how a later Vercel port should reuse the adapter ports.
 
 ```sh
-pnpm cf login
-pnpm cf d1 create open-fitness
-pnpm cf r2 bucket create open-fitness-media
-pnpm cf kv namespace create OAUTH_KV
-pnpm cf kv namespace create CACHE
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ACCOUNT_ID=...
+export PUBLIC_BASE_URL=https://open-fitness.hotee.workers.dev
+export SETUP_TOKEN=...   # at least 32 characters
+pnpm run deploy
 ```
 
-Replace the corresponding IDs in `apps/server/wrangler.jsonc`. Set `PUBLIC_BASE_URL` in its `vars` to the final HTTPS origin, and configure a custom domain if desired. The hostname is also the passkey RP ID; keep it stable when moving hosting providers or re-enroll passkeys after a hostname change.
-
-Store a fresh setup token interactively, migrate, and deploy:
-
-```sh
-pnpm cf secret put SETUP_TOKEN
-pnpm db:migrate:remote
-pnpm deploy
-```
-
-Keep R2 private. The hourly scheduled handler cleans expired authentication artifacts, OAuth state, and unused media. No model-provider API key is required by this server. Never commit `.dev.vars`, credentials, local databases, or test traces.
+`pnpm run deploy` creates or reuses D1, R2, and KV, applies migrations, and uploads the Worker. Do not run `pnpm deploy`; that is pnpm's built-in package-publish command. The hostname is the passkey RP ID; keep it stable or re-enroll passkeys after a change. Keep R2 private. The hourly scheduled handler cleans expired authentication artifacts, OAuth state, and unused media. No model-provider API key is required. Never commit `.dev.vars`, credentials, local databases, or test traces.
 
 ### Owner recovery
 
