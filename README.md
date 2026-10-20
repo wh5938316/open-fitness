@@ -216,12 +216,12 @@ The server deploys as one Cloudflare Worker (`apps/server`), not Pages. Pushes t
 ```sh
 export CLOUDFLARE_API_TOKEN=...
 export CLOUDFLARE_ACCOUNT_ID=...
-export PUBLIC_BASE_URL=https://open-fitness.<subdomain>.workers.dev
+export PUBLIC_BASE_URL=https://open-fitness.hotee.workers.dev
 export SETUP_TOKEN=...   # at least 32 characters
-pnpm deploy
+pnpm run deploy
 ```
 
-`pnpm deploy` creates or reuses D1, R2, and KV, applies migrations, and uploads the Worker. The hostname is the passkey RP ID; keep it stable or re-enroll passkeys after a change. Keep R2 private. The hourly scheduled handler cleans expired authentication artifacts, OAuth state, and unused media. No model-provider API key is required. Never commit `.dev.vars`, credentials, local databases, or test traces.
+`pnpm run deploy` creates or reuses D1, R2, and KV, applies migrations, and uploads the Worker. Do not run `pnpm deploy`; that is pnpm's built-in package-publish command. The hostname is the passkey RP ID; keep it stable or re-enroll passkeys after a change. Keep R2 private. The hourly scheduled handler cleans expired authentication artifacts, OAuth state, and unused media. No model-provider API key is required. Never commit `.dev.vars`, credentials, local databases, or test traces.
 
 ### Owner recovery
 

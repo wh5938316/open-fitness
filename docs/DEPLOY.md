@@ -6,7 +6,7 @@ Cloudflare is the first runtime. Domain services talk to `Repository`, `ObjectSt
 
 ## Required Cloudflare resources
 
-Create these in the target account, or let `pnpm deploy` create them by name:
+Create these in the target account, or let `pnpm run deploy` create them by name:
 
 | Resource     | Name                                    | Worker binding | Purpose                                                 |
 | ------------ | --------------------------------------- | -------------- | ------------------------------------------------------- |
@@ -16,7 +16,7 @@ Create these in the target account, or let `pnpm deploy` create them by name:
 | KV namespace | `open-fitness-OAUTH_KV` (or `OAUTH_KV`) | `OAUTH_KV`     | OAuth clients, grants, and tokens                       |
 | KV namespace | `open-fitness-CACHE` (or `CACHE`)       | `CACHE`        | Open Food Facts cache, rate limits, maintenance cursors |
 
-Schema lives in numbered files under `apps/server/migrations/`. Remote apply is part of `pnpm deploy`.
+Schema lives in numbered files under `apps/server/migrations/`. Remote apply is part of `pnpm run deploy`.
 
 Placeholder D1 and KV IDs in `apps/server/wrangler.jsonc` are for local Miniflare only. The deploy script looks up or creates the named resources and writes real IDs into the working copy. Resource IDs are not secrets; you may commit them after the first provision.
 
@@ -24,12 +24,12 @@ Placeholder D1 and KV IDs in `apps/server/wrangler.jsonc` are for local Miniflar
 
 ### GitHub Actions (repository)
 
-| Name                    | Kind     | Required                  | Notes                                                                                                                                                                          |
-| ----------------------- | -------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`  | secret   | yes                       | Use a token with the **Edit Cloudflare Workers** template, including D1, KV, and R2 edit. Scope it to this account.                                                            |
-| `CLOUDFLARE_ACCOUNT_ID` | secret   | yes                       | Account ID from the Cloudflare dashboard.                                                                                                                                      |
-| `SETUP_TOKEN`           | secret   | yes for first owner setup | Random secret, at least 32 characters. Rotating it does not wipe fitness data.                                                                                                 |
-| `PUBLIC_BASE_URL`       | variable | yes before passkeys/OAuth | Canonical HTTPS origin with no path, query, or trailing slash, for example `https://open-fitness.<subdomain>.workers.dev`. This hostname is the passkey RP ID. Keep it stable. |
+| Name                    | Kind     | Required                  | Notes                                                                                                                                                                                          |
+| ----------------------- | -------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | secret   | yes                       | Start from the **Edit Cloudflare Workers** template, then add **Account → D1 → Edit**. The Workers template does not include D1. Also include KV and R2 edit. Scope the token to this account. |
+| `CLOUDFLARE_ACCOUNT_ID` | secret   | yes                       | Account ID from the Cloudflare dashboard.                                                                                                                                                      |
+| `SETUP_TOKEN`           | secret   | yes for first owner setup | Random secret, at least 32 characters. Rotating it does not wipe fitness data.                                                                                                                 |
+| `PUBLIC_BASE_URL`       | variable | yes before passkeys/OAuth | Canonical HTTPS origin with no path, query, or trailing slash. This account's workers.dev host is `https://open-fitness.hotee.workers.dev`. The hostname is the passkey RP ID. Keep it stable. |
 
 Wrangler also reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the environment for CLI deploys.
 
@@ -53,8 +53,8 @@ node --input-type=module -e 'import { randomBytes } from "node:crypto"; console.
 ## One-time setup
 
 1. Create a Cloudflare account and API token as above.
-2. Add the GitHub secrets and the `PUBLIC_BASE_URL` variable. If the `*.workers.dev` subdomain is not known yet, deploy once, copy the printed Worker URL, set `PUBLIC_BASE_URL`, and deploy again.
-3. Push to `main` or run **Deploy** from Actions (`workflow_dispatch`). The workflow runs `pnpm deploy`, which:
+2. Add the GitHub secrets and set `PUBLIC_BASE_URL` to `https://open-fitness.hotee.workers.dev` (or a custom domain, if you attach one).
+3. Push to `main` or run **Deploy** from Actions (`workflow_dispatch`). The workflow runs `pnpm run deploy`, which:
    - builds owner-page JavaScript
    - creates or reuses D1, R2, and KV
    - applies D1 migrations remotely
@@ -67,11 +67,13 @@ Manual equivalent from a trusted machine:
 ```sh
 export CLOUDFLARE_API_TOKEN=...
 export CLOUDFLARE_ACCOUNT_ID=...
-export PUBLIC_BASE_URL=https://open-fitness.<subdomain>.workers.dev
+export PUBLIC_BASE_URL=https://open-fitness.hotee.workers.dev
 export SETUP_TOKEN=...   # at least 32 characters
 pnpm install --frozen-lockfile
-pnpm deploy
+pnpm run deploy
 ```
+
+Use `pnpm run deploy`, not `pnpm deploy`. The latter is pnpm's built-in package-publish command and does not run this repository's Worker deploy script.
 
 To create resources without deploying:
 

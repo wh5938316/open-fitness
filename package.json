@@ -20,7 +20,7 @@
     "db:migrate": "pnpm --filter @openfitness/server db:migrate",
     "db:migrate:remote": "pnpm --filter @openfitness/server db:migrate:remote",
     "cf:provision": "pnpm --filter @openfitness/server cf:provision",
-    "deploy": "pnpm --filter @openfitness/server deploy",
+    "deploy": "pnpm --filter @openfitness/server run deploy",
     "owner:recover": "pnpm --filter @openfitness/server owner:recover",
     "browser:install": "pnpm --filter @openfitness/server exec playwright install chromium",
     "cf": "pnpm --filter @openfitness/server exec wrangler"

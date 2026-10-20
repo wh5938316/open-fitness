@@ -51,4 +51,4 @@ jobs:
             echo 'Set repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.'
             exit 1
           fi
-      - run: pnpm deploy
+      - run: pnpm run deploy
