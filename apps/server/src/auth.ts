@@ -34,6 +34,7 @@ function parseAuthInput<S extends z.ZodType>(schema: S, value: unknown): z.outpu
 }
 
 export const FULL_SCOPE = 'fitness:full';
+export const HEALTH_SCOPE = 'health:sync';
 export function baseUrl(env: Env): string {
   if (!env.PUBLIC_BASE_URL) throw new AppError(503, 'PUBLIC_BASE_URL_REQUIRED', 'internalError');
   const url = new URL(env.PUBLIC_BASE_URL);
@@ -84,7 +85,7 @@ export class AuthService implements IdentityProvider {
       authorizeEndpoint: '/authorize',
       tokenEndpoint: '/oauth/token',
       clientRegistrationEndpoint: '/oauth/register',
-      scopesSupported: [FULL_SCOPE, 'offline_access'],
+      scopesSupported: [FULL_SCOPE, HEALTH_SCOPE, 'offline_access'],
       clientIdMetadataDocumentEnabled: true,
       accessTokenTTL: 3600,
       refreshTokenTTL: 2592000,
@@ -123,9 +124,14 @@ export class AuthService implements IdentityProvider {
         request.headers.get('Accept-Language') ?? '',
       ),
       timeZone: owner.time_zone,
+      scopes: [FULL_SCOPE, HEALTH_SCOPE],
     };
   }
-  async botActor(props: AuthProps, request: Request): Promise<Actor> {
+  async botActor(
+    props: AuthProps,
+    request: Request,
+    scopes: readonly string[] = [FULL_SCOPE],
+  ): Promise<Actor> {
     if (!props || props.ownerId !== 'owner' || typeof props.botId !== 'string')
       throw new AppError(401, 'INVALID_BOT_IDENTITY', 'unauthorized');
     const [owner, bot] = await Promise.all([
@@ -141,7 +147,7 @@ export class AuthService implements IdentityProvider {
       props.epoch !== owner.session_epoch
     )
       throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
-    return { ...this.ownerActor(owner, request), id: props.botId, kind: 'bot' };
+    return { ...this.ownerActor(owner, request), id: props.botId, kind: 'bot', scopes };
   }
   cookie(name: string, value: string, seconds: number): string {
     return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${seconds}${this.origin.startsWith('https:') ? '; Secure' : ''}`;
@@ -361,6 +367,7 @@ export class AuthService implements IdentityProvider {
         metadata: { botId },
         scope: [
           FULL_SCOPE,
+          ...(request.scope.includes(HEALTH_SCOPE) ? [HEALTH_SCOPE] : []),
           ...(request.scope.includes('offline_access') ? ['offline_access'] : []),
         ],
         props: { ownerId: owner.id, botId, epoch: owner.session_epoch } satisfies AuthProps,

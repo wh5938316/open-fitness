@@ -2,7 +2,9 @@
 
 Use English for source identifiers, comments, documentation, diagnostics, and commit messages. Add user-facing text to both typed locale catalogs. Preserve user-authored Unicode data verbatim.
 
-Use Node.js 24 LTS or newer and the pinned pnpm release. Run `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm test:e2e` from the repository root before submitting changes. Browser tests require `pnpm browser:install` and use isolated local state. The server lives in `apps/server`; native applications will be independent projects under `apps/`.
+Use Node.js 24 LTS or newer and the pinned pnpm release. Run `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm test:e2e` from the repository root before submitting changes. Browser tests require `pnpm browser:install` and use isolated local state. The server lives in `apps/server`; the native iOS/watchOS project is in `apps/ios` and shares `packages/OpenFitnessKit`.
+
+Native changes require macOS and Xcode 26 or newer. Run `pnpm apple:generate`, `pnpm apple:test`, `pnpm apple:lint`, and `pnpm apple:build`; run the XCUITest scheme when changing native UI. Use `pnpm apple:format` for Swift formatting. Keep signing teams in ignored `Local.xcconfig` and generate icon PNGs locally. See the [native guide](apps/ios/README.md) for simulator and device instructions.
 
 Keep business rules in shared application operations so MCP and REST cannot drift. Add meaningful integration coverage for transactions, idempotency, authorization, snapshots, and storage changes. Run new schema changes through numbered D1 migrations; never rewrite an applied migration.
 

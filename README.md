@@ -4,20 +4,23 @@ An open-source, headless fitness service for AI assistants and native clients.
 
 OpenFitness owns your training plans, workout history, reusable recipes, and meal records. Existing assistants such as a Grok bot, Dot, or Muse connect through **MCP**. They handle conversation, planning, exercise guidance, food recognition, and image processing; OpenFitness validates and stores their structured operations.
 
-**Status:** phase-one server implementation. Single owner, English and Simplified Chinese, MIT license. Native applications and actual Apple Health synchronization are planned, not implemented.
+**Status:** server plus native iPhone and Apple Watch clients. Single owner, English and Simplified Chinese, MIT license. The iOS/watchOS 26 applications, HealthKit bridge and device delivery protocol are implemented locally; physical device signing, production authorization and actual sensor/HealthKit delivery require device acceptance. See the [native app guide](apps/ios/README.md).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   Bots[Existing AI assistants] -->|Streamable HTTP MCP| Worker[Hono / Cloudflare Worker]
-  Native[Future iOS application] -->|REST| Worker
+  Native[Native iOS 26 application] -->|REST / OAuth| Worker
+  Watch[Native watchOS 26 companion] -->|WatchConnectivity| Native
   Worker --> D1[(D1: business records and revisions)]
   Worker --> R2[(Private R2: processed images)]
   Worker --> KV[(KV: OAuth state and product cache)]
   Worker --> OFF[Open Food Facts]
-  D1 --> Outbox[Pending Apple Health export events]
-  Native -. Future device bridge .-> Health[Apple Health / HealthKit]
+  D1 --> Outbox[Versioned Apple Health export events]
+  Native -->|Claim / apply / receipt| Outbox
+  Native -->|Dietary samples| Health[Apple Health / HealthKit]
+  Watch -->|Live workout| Health
 ```
 
 Both transports use the same validated application operations. The service uses Hono 4, the official MCP TypeScript SDK 2, Cloudflare's OAuth Provider 1, SimpleWebAuthn 14, and Zod 4. MCP serves modern requests and stateless legacy Streamable HTTP requests through the SDK's compatibility handler.
@@ -42,11 +45,14 @@ This repository is a lightweight monorepo:
 ```text
 open-fitness/
   apps/server/       Hono, MCP, authentication, D1/R2/KV adapters, and server tests
+  apps/ios/          Native iOS/watchOS 26 apps, Xcode project, and UI tests
+  packages/OpenFitnessKit/ Shared Swift models, OAuth client, localization, and retry contracts
+  scripts/           Deterministic Xcode project and local icon generators
   docs/             Project-wide contribution and architecture documentation
   .github/          Shared continuous integration
 ```
 
-Future native projects belong under `apps/ios` and `apps/android`. Swift and Kotlin clients consume the versioned OpenAPI/MCP contracts; they do not import TypeScript business code. Shared TypeScript packages will be extracted under `packages/` when a second consumer needs them. Root pnpm commands delegate to `@openfitness/server`.
+Future Android projects belong under `apps/android`. Native clients consume the versioned REST contracts; they do not import TypeScript business code. The shared Swift package has two concrete consumers: iPhone and Apple Watch. Root server commands delegate to `@openfitness/server`; `apple:*` commands build and validate the native clients on macOS.
 
 Requirements: Node.js 24 LTS or newer and pnpm 11. A Cloudflare account is not required for local development or automated acceptance tests.
 
@@ -95,22 +101,25 @@ Client display names are supplied by clients; a name such as “Grok” is not p
 - Treat a one-time portion change as a meal correction. Change the recipe only when the standard future serving changes.
 - Use the assistant's image tools for background removal, centering, and visual cleanup before saving a recipe cover.
 - Report `awaiting_device` honestly. The server does not currently write into HealthKit.
+- A native iPhone may additionally request `health:sync` with explicit owner approval. Assistants should inspect delivery status and never fabricate a device receipt.
 
 ## Operations and REST API
 
 The complete English OpenAPI document is served at `/openapi.json`. MCP tools are generated from the same operation registry and schemas.
 
-| Capability                | Representative tools                                                                         | REST resources                                                         |
-| ------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Identity and preferences  | `get_agent_context`, `set_preferences`                                                       | `/api/v1/agent-context`, `/api/v1/preferences`                         |
-| Exercises                 | `search_exercises`, `save_exercise`, `get_exercise_history`                                  | `/api/v1/exercises`                                                    |
-| Plans                     | `save_training_plan`, `list_training_plans`                                                  | `/api/v1/training-plans`                                               |
-| Training                  | `start_workout`, `log_workout_set`, `revise_workout_set`, `finish_workout`, `cancel_workout` | `/api/v1/workouts`                                                     |
-| Food and calculation      | `lookup_food`, `search_food_catalog`, `save_food`, `calculate_nutrition`                     | `/api/v1/foods`, `/api/v1/food-catalog`, `/api/v1/nutrition/calculate` |
-| Recipes                   | `search_recipes`, `save_recipe`                                                              | `/api/v1/recipes`                                                      |
-| Meals                     | `log_meal`, `log_meal_from_recipe`, `revise_meal`, `get_daily_nutrition`                     | `/api/v1/meals`, `/api/v1/nutrition/daily/{day}`                       |
-| Media                     | `create_media_upload`, `complete_media_upload`, `import_recipe_image`, `attach_recipe_image` | `/api/v1/media`                                                        |
-| Export status and history | `list_health_exports`, `get_record_revisions`                                                | `/api/v1/health/exports`, `/api/v1/history/{kind}/{id}`                |
+| Capability                | Representative tools                                                                                                          | REST resources                                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Identity and preferences  | `get_agent_context`, `set_preferences`                                                                                        | `/api/v1/agent-context`, `/api/v1/preferences`                                                             |
+| Exercises                 | `search_exercises`, `save_exercise`, `get_exercise_history`                                                                   | `/api/v1/exercises`                                                                                        |
+| Plans                     | `save_training_plan`, `list_training_plans`                                                                                   | `/api/v1/training-plans`                                                                                   |
+| Training                  | `start_workout`, `log_workout_set`, `revise_workout_set`, `finish_workout`, `cancel_workout`                                  | `/api/v1/workouts`                                                                                         |
+| Food and calculation      | `lookup_food`, `search_food_catalog`, `save_food`, `calculate_nutrition`                                                      | `/api/v1/foods`, `/api/v1/food-catalog`, `/api/v1/nutrition/calculate`                                     |
+| Recipes                   | `search_recipes`, `save_recipe`                                                                                               | `/api/v1/recipes`                                                                                          |
+| Meals                     | `log_meal`, `log_meal_from_recipe`, `revise_meal`, `get_daily_nutrition`                                                      | `/api/v1/meals`, `/api/v1/nutrition/daily/{day}`                                                           |
+| Media                     | `create_media_upload`, `complete_media_upload`, `import_recipe_image`, `attach_recipe_image`                                  | `/api/v1/media`                                                                                            |
+| Export status and history | `list_health_exports`, `get_record_revisions`                                                                                 | `/api/v1/health/exports`, `/api/v1/history/{kind}/{id}`                                                    |
+| Native health delivery    | `enroll_health_device`, `select_health_writer`, `claim_health_exports`, `acknowledge_health_export`, `get_health_sync_status` | `/api/v1/health/devices`, `/api/v1/health/writer`, `/api/v1/health/exports/claim`, `/api/v1/health/status` |
+| Consented health cache    | `get_health_snapshot`, `upload_health_snapshot`                                                                               | `/api/v1/health/snapshot`                                                                                  |
 
 Save operations use POST for both creation and explicit versioned updates; include `id` and `expectedVersion` to update. Meals and sets have dedicated PUT correction endpoints. List endpoints accept `query`, `limit` (1–100), and `cursor`. Store and replay the cursor as an opaque value. HTTP results use `{ "data": ... }`; business failures use `{ "error": { "code": "...", "message": "...", "details": ... } }`. MCP tool results expose the same envelope as structured content and text.
 
@@ -181,6 +190,8 @@ Open Food Facts is primarily a product catalog. Missing restaurant and ingredien
 
 Plans contain ordered exercises, target sets, rest periods, and optional group identifiers. Actual sets support reps, kilograms, seconds, meters, RPE/RIR, working/warmup/drop/rest-pause/failure types, and notes. A workout saves its plan and exercise snapshots; editing a plan does not rewrite an existing workout. Completed workouts permit explicit set corrections with version history. Plan generation, progression decisions, and movement analysis belong to the connected assistant.
 
+Native clients pin `planVersion` when starting cached training and `recipeVersion` when logging a displayed recipe. The server resolves the owner's immutable revision, so a later template edit cannot silently change an offline session or the portion the user chose. Omitting these optional selectors uses the current template.
+
 ### Private images
 
 The server accepts JPEG, PNG, and WebP up to 10 MiB by default. It checks file signatures, dimensions, declared upload type, and byte limits. It stores agent-prepared images; it does not run background removal or image generation itself.
@@ -193,14 +204,18 @@ The server accepts JPEG, PNG, and WebP up to 10 MiB by default. It checks file s
 
 ## Apple Health boundary and roadmap
 
-Meals create versioned `upsert` or `delete` events in the same D1 transaction as the business record. Their identifiers and versions are suitable for idempotent HealthKit writes. All events currently remain `awaiting_device`.
+Meals create versioned `upsert` or `delete` events in the same D1 transaction as the business record. An enrolled iPhone claims a two-minute lease, writes stable HealthKit sync identifiers and versions, and reports actual success or failure. Statuses include `awaiting_device`, `syncing`, `synced`, `failed`, and `superseded`. Without an enabled device, events remain awaiting delivery.
+
+The separately approved `health:sync` permission and an actor-bound device secret protect device operations. One iPhone is selected as the nutrition writer; active leases block a writer switch. Owner recovery invalidates device credentials. Nutrition corrections supersede older pending events atomically. The native implementation handles missing values, deletions and retry recovery; the server never runs HealthKit itself.
+
+Optional native daily summaries are stored in KV for one hour after explicit consent, without raw health measurements in D1. Training on the Watch uses a native live workout session and transfers actual sets to the phone. See [native setup, capabilities and validation boundaries](apps/ios/README.md) for device signing and deployment upgrade instructions.
 
 Next phases:
 
-1. iOS training UI and a HealthKit bridge, including device enrollment, export claims, and actual synchronization receipts.
-2. Mutually exclusive nutrition modes: OpenFitness → Apple Health or Apple Health → app. Phase one implements the outbound event model only.
-3. Short-lived caches of imported health measurements and optionally long-lived daily aggregates. OpenFitness only connects to HealthKit; upstream Xiaomi devices and apps are outside its responsibility.
-4. Watch support, then Android using Health Connect.
+1. Physical device acceptance, distribution signing, and expanded native UI coverage.
+2. Mutually exclusive nutrition modes: OpenFitness → Apple Health or Apple Health → app. The current native bridge implements outbound nutrition only.
+3. Optional long-lived daily aggregates of imported health measurements. OpenFitness only connects to HealthKit; upstream Xiaomi devices and apps are outside its responsibility.
+4. Android using Health Connect, plus standalone Watch connectivity and workout mirroring.
 5. Additional database, storage, and deployment adapters.
 
 ## Localization
@@ -258,6 +273,8 @@ pnpm test:e2e
 Workers tests exercise local D1, KV, and R2; nutrition math and null handling; transactional rollback and concurrent edits; snapshot history; private media; OAuth discovery, PKCE, grants, refresh, denial and revocation; and the official MCP client. Browser acceptance uses isolated local storage and virtual WebAuthn authenticators for initial setup, backup enrollment, login, localization, authorization, media, and revocation. It does not access production resources.
 
 `pnpm build` is a dry-run Worker bundle and does not deploy. `pnpm check` also checks formatting; use `pnpm format` to format source files. CI runs formatting, type checking, Workers tests, browser acceptance, and the dry-run build. See [contribution guidelines](CONTRIBUTING.md) and [commit message conventions](docs/contributing/commit-messages.md).
+
+On macOS with Xcode 26+, use `pnpm apple:generate`, `pnpm apple:test`, `pnpm apple:lint`, and `pnpm apple:build`. A separate macOS CI job checks Swift tests, formatting, deterministic project generation, and compilation of both Apple targets. Native XCUITest instructions are in the app guide.
 
 ## License and references
 

@@ -1,0 +1,9 @@
+PRODUCT_NAME = $(TARGET_NAME)
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete
+CLANG_ENABLE_MODULES = YES
+CODE_SIGN_STYLE = Automatic
+CURRENT_PROJECT_VERSION = 1
+MARKETING_VERSION = 0.2.0
+// Copy Local.xcconfig.example to Local.xcconfig for device signing.
+#include? "Local.xcconfig"

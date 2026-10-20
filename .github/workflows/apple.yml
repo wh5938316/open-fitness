@@ -1,0 +1,21 @@
+name: Apple clients
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26'
+      - run: python3 scripts/generate-apple-project.py
+      - run: git diff --exit-code -- apps/ios/OpenFitness.xcodeproj
+      - run: xcrun --sdk macosx swift scripts/generate-app-icons.swift
+      - run: swift test --package-path packages/OpenFitnessKit
+      - run: swift format lint --strict --recursive apps/ios/OpenFitness apps/ios/OpenFitnessWatch apps/ios/OpenFitnessUITests packages/OpenFitnessKit/Sources packages/OpenFitnessKit/Tests packages/OpenFitnessKit/Package.swift
+      - run: xcodebuild -quiet -project apps/ios/OpenFitness.xcodeproj -scheme OpenFitness -destination 'generic/platform=iOS Simulator' -derivedDataPath apps/ios/DerivedData CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build

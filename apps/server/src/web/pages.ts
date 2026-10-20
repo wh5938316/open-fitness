@@ -54,7 +54,7 @@ export function consentPage(
   const provenance = input.clientDomain
     ? `<p>${t(locale, 'clientDomainLabel')}: <strong>${escapeHtml(input.clientDomain)}</strong></p>`
     : `<p>${t(locale, 'selfRegisteredClient')}</p>`;
-  const scope = `<li>${t(locale, 'fullAccess')}</li>${input.scope.includes('offline_access') ? `<li>${t(locale, 'offlineAccess')}</li>` : ''}`;
+  const scope = `<li>${t(locale, 'fullAccess')}</li>${input.scope.includes('health:sync') ? `<li>${t(locale, 'healthAccess')}</li>` : ''}${input.scope.includes('offline_access') ? `<li>${t(locale, 'offlineAccess')}</li>` : ''}`;
   return page(
     locale,
     'consent',

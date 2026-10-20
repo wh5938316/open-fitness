@@ -134,6 +134,15 @@ describe('recipe and meal transactions', () => {
     expect(original.data.recipe.snapshot.ingredients[0].quantity).toBe(200);
     expect(original.data.recipe.version).toBe(1);
     expect(original.data.nutrients.fiberG).toBeNull();
+    const fromCachedRecipe = (await s.execute('log_meal_from_recipe', {
+      operationId: op(),
+      recipeId: saved.id,
+      recipeVersion: saved.version,
+      servings: 1,
+      occurredAt: '2026-10-20T20:00:00Z',
+    })) as Entity<any>;
+    expect(fromCachedRecipe.data.recipe.version).toBe(saved.version);
+    expect(fromCachedRecipe.data.nutrients.energyKcal).toBe(540);
   });
   it('does not duplicate a meal or export event when a request is retried', async () => {
     const s = service();
@@ -181,7 +190,11 @@ describe('recipe and meal transactions', () => {
       .bind(meal.id)
       .all();
     expect(events.results.map((e) => e.action)).toEqual(['upsert', 'upsert', 'delete']);
-    expect(events.results.every((e) => e.status === 'awaiting_device')).toBe(true);
+    expect(events.results.map((e) => e.status)).toEqual([
+      'superseded',
+      'superseded',
+      'awaiting_device',
+    ]);
   });
   it('detects concurrent edits and rolls back an entire batch on an outbox constraint failure', async () => {
     const s = service();
@@ -271,6 +284,16 @@ describe('training snapshots', () => {
     })) as Entity<any>;
     expect(workout.data.plan.snapshot.exercises[0].sets[0].reps).toBe(5);
     expect(workout.data.plan.snapshot.name).toBe('Session A');
+    const offlineWorkout = (await s.execute('start_workout', {
+      operationId: op(),
+      planId: plan.id,
+      planVersion: plan.version,
+      source: 'watch',
+      startedAt: '2026-10-20T18:00:00Z',
+    })) as Entity<any>;
+    expect(offlineWorkout.data.source).toBe('watch');
+    expect(offlineWorkout.data.plan.version).toBe(plan.version);
+    expect(offlineWorkout.data.plan.snapshot.exercises[0].sets[0].reps).toBe(5);
     const history = (await s.execute('get_exercise_history', { exerciseId: exercise.id })) as any;
     expect(
       history.items.some((item: any) => item.workoutId === workout.id && item.sets[0].reps === 5),

@@ -57,6 +57,7 @@ export interface Prepared {
   mediaReferences?: MediaReference[];
   ownerUpdate?: Commit['ownerUpdate'];
   uploadTicket?: Commit['uploadTicket'];
+  healthMutation?: Commit['healthMutation'];
 }
 export interface Operation {
   name: string;
@@ -118,6 +119,23 @@ export class FitnessService {
     const doc = await this.repository.get<T>(this.actor.ownerId, kind, entityId);
     if (!doc) throw notFound();
     return doc;
+  }
+  private async requireVersion<T>(
+    kind: EntityKind,
+    entityId: string,
+    version?: number,
+  ): Promise<Entity<T>> {
+    const current = await this.require<T>(kind, entityId);
+    if (version === undefined || version === current.version) return current;
+    const revisions = (await this.repository.revisions(this.actor.ownerId, kind, entityId)) as {
+      version: number;
+      data: T;
+      deleted: boolean;
+      createdAt: string;
+    }[];
+    const revision = revisions.find((item) => item.version === version && !item.deleted);
+    if (!revision) throw notFound();
+    return { ...current, version, data: revision.data, updatedAt: revision.createdAt };
   }
   async save<T>(
     kind: EntityKind,
@@ -250,6 +268,7 @@ export class FitnessService {
         instructionsVersion: '1',
         instructions: t(this.actor.locale, 'botInstructions'),
         capabilities: {
+          healthSyncProtocol: 1,
           training: true,
           recipes: true,
           meals: true,
@@ -294,7 +313,7 @@ export class FitnessService {
     this.add({
       name: 'list_health_exports',
       description:
-        'Inspect pending Apple Health export events. No device bridge is implemented yet; these events remain awaiting_device.',
+        'Inspect Apple Health export events and their device delivery states. Awaiting events require an enrolled native iPhone.',
       schema: z.object({
         limit: z.number().int().min(1).max(100).default(30),
         cursor: z.string().optional(),
@@ -521,6 +540,7 @@ export class FitnessService {
       schema: z.object({
         operationId,
         recipeId: id,
+        recipeVersion: z.number().int().positive().optional(),
         servings: positive.optional(),
         grams: positive.optional(),
         overrides: z.array(overrideSchema).default([]),
@@ -533,7 +553,11 @@ export class FitnessService {
       method: 'POST',
       path: '/meals/from-recipe',
       run: async (args) => {
-        const recipe = await this.require<Recipe>('recipe', args.recipeId);
+        const recipe = await this.requireVersion<Recipe>(
+          'recipe',
+          args.recipeId,
+          args.recipeVersion,
+        );
         await this.readyAsset(args.imageAssetId);
         assert(!(args.grams !== undefined && args.servings !== undefined), 'AMBIGUOUS_PORTION');
         if (args.grams !== undefined && !recipe.data.yield.cookedWeightGrams)
@@ -643,16 +667,21 @@ export class FitnessService {
       schema: z.object({
         operationId,
         planId: id.optional(),
+        planVersion: z.number().int().positive().optional(),
         name: z.string().max(200).optional(),
         startedAt: isoDateTime.optional(),
+        source: z.enum(['ios', 'watch', 'bot']).default('bot'),
         notes,
       }),
       readOnly: false,
       method: 'POST',
       path: '/workouts',
       run: async (args) => {
-        const plan = args.planId ? await this.require<Plan>('plan', args.planId) : null;
+        const plan = args.planId
+          ? await this.requireVersion<Plan>('plan', args.planId, args.planVersion)
+          : null;
         const data: Workout = {
+          source: args.source,
           name: args.name ?? plan?.data.name ?? 'Freestyle workout',
           state: 'active',
           startedAt: args.startedAt

@@ -6,3 +6,9 @@ pnpm-lock.yaml
 **/test-results/
 **/playwright-report/
 **/coverage/
+**/.build/
+**/.swiftpm/
+**/DerivedData/
+**/*.xcresult/
+**/xcuserdata/
+**/*.xcodeproj/

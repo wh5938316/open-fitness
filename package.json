@@ -22,7 +22,12 @@
     "deploy": "pnpm --filter @openfitness/server deploy",
     "owner:recover": "pnpm --filter @openfitness/server owner:recover",
     "browser:install": "pnpm --filter @openfitness/server exec playwright install chromium",
-    "cf": "pnpm --filter @openfitness/server exec wrangler"
+    "cf": "pnpm --filter @openfitness/server exec wrangler",
+    "apple:generate": "python3 scripts/generate-apple-project.py && xcrun --sdk macosx swift scripts/generate-app-icons.swift",
+    "apple:test": "swift test --package-path packages/OpenFitnessKit",
+    "apple:format": "swift format format --in-place --recursive apps/ios/OpenFitness apps/ios/OpenFitnessWatch apps/ios/OpenFitnessUITests packages/OpenFitnessKit",
+    "apple:lint": "swift format lint --strict --recursive apps/ios/OpenFitness apps/ios/OpenFitnessWatch apps/ios/OpenFitnessUITests packages/OpenFitnessKit/Sources packages/OpenFitnessKit/Tests packages/OpenFitnessKit/Package.swift",
+    "apple:build": "xcodebuild -quiet -project apps/ios/OpenFitness.xcodeproj -scheme OpenFitness -destination 'generic/platform=iOS Simulator' -derivedDataPath apps/ios/DerivedData CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build"
   },
   "devDependencies": {
     "prettier": "3.9.10"

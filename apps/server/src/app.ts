@@ -9,6 +9,8 @@ import {
 } from '@cloudflare/workers-oauth-provider';
 import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
 import { OpenFoodFacts } from './adapters/open-food-facts';
+import { D1HealthSyncStore } from './adapters/cloudflare-health';
+import { registerHealthOperations } from './domain/health';
 import { AuthService, FULL_SCOPE, cookies, requireOrigin, safeReturn } from './auth';
 import { FitnessService } from './domain/service';
 import { AppError } from './errors';
@@ -30,6 +32,7 @@ function createServices(env: Env, actor: Actor, origin: string) {
   );
   const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
   media.register();
+  registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
   return { service, media };
 }
 export function openApi(service: FitnessService, origin: string): object {
@@ -173,7 +176,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     handler: {
       async fetch(request, _env, ctx) {
         if (!ctx.auth.scope.includes(FULL_SCOPE)) return insufficientScope(ctx.auth, [FULL_SCOPE]);
-        const actor = await auth.botActor(ctx.props, request);
+        const actor = await auth.botActor(ctx.props, request, ctx.auth.scope);
         const { service, media } = createServices(env, actor, auth.origin);
         return businessApp(service, media).fetch(request);
       },

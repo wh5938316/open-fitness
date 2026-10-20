@@ -156,6 +156,7 @@ export interface Workout {
   startedAt: string;
   finishedAt?: string;
   notes: string;
+  source?: 'ios' | 'watch' | 'bot';
   plan?: { id: string; version: number; snapshot: Plan };
   sets: (z.infer<typeof setSchema> & {
     id: string;

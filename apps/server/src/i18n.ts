@@ -25,6 +25,14 @@ export const en = {
   scopesLabel: 'Permissions',
   fullAccess: 'Full access to fitness records (fitness:full)',
   offlineAccess: 'Stay connected using refresh tokens (offline_access)',
+  healthAccess: 'Enroll this iPhone and deliver Apple Health exports (health:sync)',
+  healthPermissionRequired:
+    'Authorize the separate Apple Health sync permission to enroll this iPhone.',
+  healthDeviceRevoked: 'This health device is no longer authorized. Connect it again.',
+  healthWriterConflict:
+    'Another iPhone is the selected nutrition writer or has an active synchronization lease.',
+  healthLeaseExpired:
+    'This export lease expired or the meal changed. Fetch the latest export before syncing.',
   loopbackWarning:
     'This returns access to an application on your computer. Continue only if you just started connecting it.',
   clientUnverified: 'The client metadata could not be verified. Start the connection again later.',
@@ -81,6 +89,11 @@ export const zhCN: Messages = {
   scopesLabel: '权限',
   fullAccess: '全部健身业务权限（fitness:full）',
   offlineAccess: '使用刷新令牌保持连接（offline_access）',
+  healthAccess: '注册此 iPhone 并提交 Apple 健康同步回执（health:sync）',
+  healthPermissionRequired: '请单独授权 Apple 健康同步权限，以注册此 iPhone。',
+  healthDeviceRevoked: '此健康设备已被撤销授权，请重新连接。',
+  healthWriterConflict: '另一部 iPhone 是当前饮食写入设备，或仍在同步中。',
+  healthLeaseExpired: '同步租约已过期或饮食已更新，请重新获取最新事件。',
   loopbackWarning: '授权将返回你电脑上的应用。仅在你刚刚主动发起连接时继续。',
   clientUnverified: '无法验证客户端元数据，请稍后重新发起连接。',
   redirectLabel: '返回地址',

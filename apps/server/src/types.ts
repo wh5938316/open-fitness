@@ -26,6 +26,7 @@ export interface Actor {
   kind: 'owner' | 'bot';
   locale: Locale;
   timeZone: string;
+  scopes?: readonly string[];
 }
 export interface AuthProps {
   ownerId: 'owner';
@@ -41,7 +42,7 @@ export interface IdentityProvider {
   owner(): Promise<Owner>;
   session(request: Request): Promise<OwnerSession | null>;
   ownerActor(owner: Owner, request: Request): Actor;
-  botActor(identity: AuthProps, request: Request): Promise<Actor>;
+  botActor(identity: AuthProps, request: Request, scopes?: readonly string[]): Promise<Actor>;
   revokeBot(botId: string): Promise<void>;
 }
 export type EntityKind = 'exercise' | 'plan' | 'workout' | 'food' | 'recipe' | 'meal' | 'asset';
@@ -94,6 +95,7 @@ export interface Commit {
   mediaReferences?: MediaReference[];
   ownerUpdate?: { locale?: Locale; timeZone?: string };
   uploadTicket?: { tokenHash: string; assetId: string; contentType: string; expiresAt: number };
+  healthMutation?: import('./domain/health').HealthMutation;
 }
 export interface Repository {
   get<T = Record<string, unknown>>(

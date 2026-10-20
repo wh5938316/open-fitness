@@ -1,4 +1,5 @@
 import { AppError, conflict } from '../errors';
+import { healthStatements } from './cloudflare-health';
 import type {
   CacheStore,
   Commit,
@@ -194,7 +195,14 @@ export class D1Repository implements Repository {
         );
       }
     }
-    for (const event of input.exports ?? [])
+    for (const event of input.exports ?? []) {
+      statements.push(
+        this.db
+          .prepare(
+            "UPDATE health_exports SET generation=generation+1,status='superseded',lease_token_hash=NULL,lease_expires_at=NULL WHERE owner_id=? AND meal_id=? AND meal_version<? AND status NOT IN ('synced','superseded')",
+          )
+          .bind(input.actor.ownerId, event.mealId, event.version),
+      );
       statements.push(
         this.db
           .prepare(
@@ -210,6 +218,9 @@ export class D1Repository implements Repository {
             now,
           ),
       );
+    }
+    if (input.healthMutation)
+      statements.push(...healthStatements(this.db, input.actor.ownerId, input.healthMutation));
     if (input.uploadTicket) {
       const ticket = input.uploadTicket;
       statements.push(
@@ -265,6 +276,10 @@ export class D1Repository implements Repository {
       );
       if (completed) return completed.response;
       const text = String(error);
+      if (text.includes('HEALTH_EXPORT_CONFLICT'))
+        throw new AppError(409, 'HEALTH_EXPORT_CONFLICT', 'healthLeaseExpired');
+      if (text.includes('HEALTH_WRITER_BUSY'))
+        throw new AppError(409, 'HEALTH_WRITER_BUSY', 'healthWriterConflict');
       if (text.includes('VERSION_CONFLICT') || text.includes('UNIQUE constraint')) throw conflict();
       throw error;
     }

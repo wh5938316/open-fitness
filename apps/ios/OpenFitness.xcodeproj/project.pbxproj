@@ -1,0 +1,836 @@
+// !$*UTF8*$!
+{
+	"archiveVersion" = 1;
+	"classes" = {
+	};
+	"objectVersion" = 56;
+	"objects" = {
+		"8851142DA56FD885CE668A16" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.xcconfig";
+			"path" = "Config.xcconfig";
+			"sourceTree" = "<group>";
+		};
+		"7431E3DF243C5BE33CFFA0B2" = {
+			"isa" = "XCLocalSwiftPackageReference";
+			"relativePath" = "../../packages/OpenFitnessKit";
+		};
+		"5C17CFBBC182965C7C01B76E" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "AppModel.swift";
+			"sourceTree" = "<group>";
+		};
+		"43981CB1F29D81EBD6D65E5E" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "5C17CFBBC182965C7C01B76E";
+		};
+		"1FF5BE5F0365090847988773" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "folder.assetcatalog";
+			"path" = "Assets.xcassets";
+			"sourceTree" = "<group>";
+		};
+		"314310C384C534CC76418E25" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "1FF5BE5F0365090847988773";
+		};
+		"817405764C65AF7179C020AD" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "Authentication.swift";
+			"sourceTree" = "<group>";
+		};
+		"C54243C5B1683FF750FBF589" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "817405764C65AF7179C020AD";
+		};
+		"B415396C3DAD4E3A53532B2D" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "Components.swift";
+			"sourceTree" = "<group>";
+		};
+		"2E1E32F9F2FDE2B9E9D92C6B" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "B415396C3DAD4E3A53532B2D";
+		};
+		"666667FB27584D58EA627C18" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "FoodEditors.swift";
+			"sourceTree" = "<group>";
+		};
+		"6A27DDDFB459AE08DE8799E4" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "666667FB27584D58EA627C18";
+		};
+		"C9C7403B20D73BF640E9BE72" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "FoodViews.swift";
+			"sourceTree" = "<group>";
+		};
+		"4733B24B2C690941F0547F78" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "C9C7403B20D73BF640E9BE72";
+		};
+		"8FEFAD8726862055968F9631" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "HealthBridge.swift";
+			"sourceTree" = "<group>";
+		};
+		"4C77B8BA348705F72500FB5C" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "8FEFAD8726862055968F9631";
+		};
+		"DF8854B3CFB5C3849BD375E6" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "HealthSettingsViews.swift";
+			"sourceTree" = "<group>";
+		};
+		"79513B5ABFBB73D347504B6F" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "DF8854B3CFB5C3849BD375E6";
+		};
+		"6B8A1AB13D230F495A3919A0" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.xml";
+			"path" = "Info.plist";
+			"sourceTree" = "<group>";
+		};
+		"A02FA6C7F176470A1A018086" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.entitlements";
+			"path" = "OpenFitness.entitlements";
+			"sourceTree" = "<group>";
+		};
+		"D65D0C1604BE95A7427397D7" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "OpenFitnessApp.swift";
+			"sourceTree" = "<group>";
+		};
+		"06425E39EB83E83C2073CC4E" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "D65D0C1604BE95A7427397D7";
+		};
+		"545C593E8CEA37C85DAA77E1" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "PhoneCompanion.swift";
+			"sourceTree" = "<group>";
+		};
+		"ABFA7320D309A516257B8292" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "545C593E8CEA37C85DAA77E1";
+		};
+		"23195780B4B7143468E78296" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "PlanEditor.swift";
+			"sourceTree" = "<group>";
+		};
+		"E0DAC355DB05178B480CAC03" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "23195780B4B7143468E78296";
+		};
+		"2ADBC76D758609394BB24810" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.xml";
+			"path" = "PrivacyInfo.xcprivacy";
+			"sourceTree" = "<group>";
+		};
+		"C5541F8BCB8F53180B88913A" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "2ADBC76D758609394BB24810";
+		};
+		"8EAD3B017759AD2B24898416" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "RootView.swift";
+			"sourceTree" = "<group>";
+		};
+		"6C1A9D6D84797F77959A4CC7" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "8EAD3B017759AD2B24898416";
+		};
+		"7B8B255F1E6F9F0DF18B9EB9" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "TrainingViews.swift";
+			"sourceTree" = "<group>";
+		};
+		"366167408D93ACD926D4FB58" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "7B8B255F1E6F9F0DF18B9EB9";
+		};
+		"BC83F7FBC71933390EDA1DD2" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.strings";
+			"name" = "en";
+			"path" = "en.lproj/InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"155748D100C692F6372D47FC" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.strings";
+			"name" = "zh-Hans";
+			"path" = "zh-Hans.lproj/InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"7813A42C9FCA6D29968525C9" = {
+			"isa" = "PBXVariantGroup";
+			"children" = (
+				"BC83F7FBC71933390EDA1DD2",
+				"155748D100C692F6372D47FC",
+			);
+			"name" = "InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"AEDCD1C2F2AA8EAA87D3E872" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "7813A42C9FCA6D29968525C9";
+		};
+		"2CBAC1A3698F87BFBEE6C946" = {
+			"isa" = "PBXGroup";
+			"children" = (
+				"5C17CFBBC182965C7C01B76E",
+				"1FF5BE5F0365090847988773",
+				"817405764C65AF7179C020AD",
+				"B415396C3DAD4E3A53532B2D",
+				"666667FB27584D58EA627C18",
+				"C9C7403B20D73BF640E9BE72",
+				"8FEFAD8726862055968F9631",
+				"DF8854B3CFB5C3849BD375E6",
+				"6B8A1AB13D230F495A3919A0",
+				"A02FA6C7F176470A1A018086",
+				"D65D0C1604BE95A7427397D7",
+				"545C593E8CEA37C85DAA77E1",
+				"23195780B4B7143468E78296",
+				"2ADBC76D758609394BB24810",
+				"8EAD3B017759AD2B24898416",
+				"7B8B255F1E6F9F0DF18B9EB9",
+				"7813A42C9FCA6D29968525C9",
+			);
+			"path" = "OpenFitness";
+			"sourceTree" = "<group>";
+		};
+		"D5E6564FB1241657A422FC3D" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = 0;
+			"path" = "OpenFitness.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"83A3E735357ABC25D39E9EF4" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"43981CB1F29D81EBD6D65E5E",
+				"C54243C5B1683FF750FBF589",
+				"2E1E32F9F2FDE2B9E9D92C6B",
+				"6A27DDDFB459AE08DE8799E4",
+				"4733B24B2C690941F0547F78",
+				"4C77B8BA348705F72500FB5C",
+				"79513B5ABFBB73D347504B6F",
+				"06425E39EB83E83C2073CC4E",
+				"ABFA7320D309A516257B8292",
+				"E0DAC355DB05178B480CAC03",
+				"6C1A9D6D84797F77959A4CC7",
+				"366167408D93ACD926D4FB58",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"7FF4D740D50CE2C1C124FD38" = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"314310C384C534CC76418E25",
+				"C5541F8BCB8F53180B88913A",
+				"AEDCD1C2F2AA8EAA87D3E872",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"F9A68B4A5928AB8DAC758C2A" = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"package" = "7431E3DF243C5BE33CFFA0B2";
+			"productName" = "OpenFitnessKit";
+		};
+		"A940ED88899A30E7E9853AF3" = {
+			"isa" = "PBXBuildFile";
+			"productRef" = "F9A68B4A5928AB8DAC758C2A";
+		};
+		"400EBF2DCEA81A0B7285D41C" = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"A940ED88899A30E7E9853AF3",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"B01903E57381616E01CB0E78" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"INFOPLIST_FILE" = "OpenFitness/Info.plist";
+				"CODE_SIGN_ENTITLEMENTS" = "OpenFitness/OpenFitness.entitlements";
+				"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
+				"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = "AccentColor";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited) DEBUG";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+			};
+			"name" = "Debug";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"2C1167690BC87A32BC02690B" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"INFOPLIST_FILE" = "OpenFitness/Info.plist";
+				"CODE_SIGN_ENTITLEMENTS" = "OpenFitness/OpenFitness.entitlements";
+				"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
+				"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = "AccentColor";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited)";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+			};
+			"name" = "Release";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"2850CD2F8CA602D14C9F3E02" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				"B01903E57381616E01CB0E78",
+				"2C1167690BC87A32BC02690B",
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		"FE0508ACDFC454F5801149E7" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "2850CD2F8CA602D14C9F3E02";
+			"buildPhases" = (
+				"83A3E735357ABC25D39E9EF4",
+				"400EBF2DCEA81A0B7285D41C",
+				"7FF4D740D50CE2C1C124FD38",
+				"F80EA4B07F3180A9884E154F",
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+				"E07E8EDF021A77E2EC342A27",
+			);
+			"name" = "OpenFitness";
+			"productName" = "OpenFitness";
+			"productReference" = "D5E6564FB1241657A422FC3D";
+			"productType" = "com.apple.product-type.application";
+			"packageProductDependencies" = (
+				"F9A68B4A5928AB8DAC758C2A",
+			);
+		};
+		"E45406387C3FE2B6FE0BF1B4" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "folder.assetcatalog";
+			"path" = "Assets.xcassets";
+			"sourceTree" = "<group>";
+		};
+		"765F27E931A25A5A8318D9CB" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "E45406387C3FE2B6FE0BF1B4";
+		};
+		"D10A9AE4D9B050D06DED9694" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.xml";
+			"path" = "Info.plist";
+			"sourceTree" = "<group>";
+		};
+		"F56D41A7AF97C4E6EA6B64A0" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.entitlements";
+			"path" = "OpenFitnessWatch.entitlements";
+			"sourceTree" = "<group>";
+		};
+		"20C3462A73A816FB5024FAF0" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "OpenFitnessWatchApp.swift";
+			"sourceTree" = "<group>";
+		};
+		"2EA4B3A7FFAD4ADFE422CAC7" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "20C3462A73A816FB5024FAF0";
+		};
+		"0DF8C6C5D1D1036EABE61A50" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.xml";
+			"path" = "PrivacyInfo.xcprivacy";
+			"sourceTree" = "<group>";
+		};
+		"522518A38D9BB379C8E709B8" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "0DF8C6C5D1D1036EABE61A50";
+		};
+		"5AD442CEC1B74F58E4DF32E1" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "WatchModel.swift";
+			"sourceTree" = "<group>";
+		};
+		"2E13995F17703D890754B793" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "5AD442CEC1B74F58E4DF32E1";
+		};
+		"0B56610450AE7E1FCA524E5F" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "WatchWorkoutManager.swift";
+			"sourceTree" = "<group>";
+		};
+		"1EA84D260216FB5818B81FBA" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "0B56610450AE7E1FCA524E5F";
+		};
+		"6E47B3CF1763E59911F3F284" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.strings";
+			"name" = "en";
+			"path" = "en.lproj/InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"4457A959F977B49C4F748721" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "text.plist.strings";
+			"name" = "zh-Hans";
+			"path" = "zh-Hans.lproj/InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"CD1154F015D65F29B0A66BFA" = {
+			"isa" = "PBXVariantGroup";
+			"children" = (
+				"6E47B3CF1763E59911F3F284",
+				"4457A959F977B49C4F748721",
+			);
+			"name" = "InfoPlist.strings";
+			"sourceTree" = "<group>";
+		};
+		"BCAC9A92F76E9F33F36B9CAA" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "CD1154F015D65F29B0A66BFA";
+		};
+		"C0D6ACD40CF9FE8545EB9615" = {
+			"isa" = "PBXGroup";
+			"children" = (
+				"E45406387C3FE2B6FE0BF1B4",
+				"D10A9AE4D9B050D06DED9694",
+				"F56D41A7AF97C4E6EA6B64A0",
+				"20C3462A73A816FB5024FAF0",
+				"0DF8C6C5D1D1036EABE61A50",
+				"5AD442CEC1B74F58E4DF32E1",
+				"0B56610450AE7E1FCA524E5F",
+				"CD1154F015D65F29B0A66BFA",
+			);
+			"path" = "OpenFitnessWatch";
+			"sourceTree" = "<group>";
+		};
+		"8562ECF68A0F90BA43624CC5" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = 0;
+			"path" = "OpenFitnessWatch.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"8BB9B7F6DECC9016EBF1ACE3" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"2EA4B3A7FFAD4ADFE422CAC7",
+				"2E13995F17703D890754B793",
+				"1EA84D260216FB5818B81FBA",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"9D4D673F1BF606001C654767" = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"765F27E931A25A5A8318D9CB",
+				"522518A38D9BB379C8E709B8",
+				"BCAC9A92F76E9F33F36B9CAA",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"4FE1CBC6B08DB2A5E1DF67FD" = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"package" = "7431E3DF243C5BE33CFFA0B2";
+			"productName" = "OpenFitnessKit";
+		};
+		"A1DA6BCC5CECD71FAAF1A37E" = {
+			"isa" = "PBXBuildFile";
+			"productRef" = "4FE1CBC6B08DB2A5E1DF67FD";
+		};
+		"B221C3ABE07BD9B4A846DA4A" = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"A1DA6BCC5CECD71FAAF1A37E",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"760390EBF5691C394EB461CC" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app.watchkitapp";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "watchos";
+				"SUPPORTED_PLATFORMS" = "watchos watchsimulator";
+				"TARGETED_DEVICE_FAMILY" = "4";
+				"WATCHOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"INFOPLIST_FILE" = "OpenFitnessWatch/Info.plist";
+				"CODE_SIGN_ENTITLEMENTS" = "OpenFitnessWatch/OpenFitnessWatch.entitlements";
+				"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
+				"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = "AccentColor";
+				"SKIP_INSTALL" = "YES";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited) DEBUG";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+			};
+			"name" = "Debug";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"F8A6F1DA9AFCB44BDA5CF7F6" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app.watchkitapp";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "watchos";
+				"SUPPORTED_PLATFORMS" = "watchos watchsimulator";
+				"TARGETED_DEVICE_FAMILY" = "4";
+				"WATCHOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"INFOPLIST_FILE" = "OpenFitnessWatch/Info.plist";
+				"CODE_SIGN_ENTITLEMENTS" = "OpenFitnessWatch/OpenFitnessWatch.entitlements";
+				"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
+				"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = "AccentColor";
+				"SKIP_INSTALL" = "YES";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited)";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+			};
+			"name" = "Release";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"1C9F1988914A5885DD64F54E" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				"760390EBF5691C394EB461CC",
+				"F8A6F1DA9AFCB44BDA5CF7F6",
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		"17F6A84DF82D28B709AB825D" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "1C9F1988914A5885DD64F54E";
+			"buildPhases" = (
+				"8BB9B7F6DECC9016EBF1ACE3",
+				"B221C3ABE07BD9B4A846DA4A",
+				"9D4D673F1BF606001C654767",
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "OpenFitnessWatch";
+			"productName" = "OpenFitnessWatch";
+			"productReference" = "8562ECF68A0F90BA43624CC5";
+			"productType" = "com.apple.product-type.application";
+			"packageProductDependencies" = (
+				"4FE1CBC6B08DB2A5E1DF67FD",
+			);
+		};
+		"E693EC0F86BC06DC21B9D036" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "OpenFitnessUITests.swift";
+			"sourceTree" = "<group>";
+		};
+		"63798729262E3FA4702FFFB1" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "E693EC0F86BC06DC21B9D036";
+		};
+		"29F867643AF8DC3C54173CD6" = {
+			"isa" = "PBXGroup";
+			"children" = (
+				"E693EC0F86BC06DC21B9D036",
+			);
+			"path" = "OpenFitnessUITests";
+			"sourceTree" = "<group>";
+		};
+		"55997F56085B001C0E23A813" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = 0;
+			"path" = "OpenFitnessUITests.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"4D3F72F37B7374A915CCCD4A" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				"63798729262E3FA4702FFFB1",
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"ADB2B073F0E507FC591F2767" = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"5D42C3B2A94BBE4F7D807D1E" = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"package" = "7431E3DF243C5BE33CFFA0B2";
+			"productName" = "OpenFitnessKit";
+		};
+		"B33A4E9BA883ABE604742A41" = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"8C7F37192B881DA01D8AECAF" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app.uitests";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"TEST_TARGET_NAME" = "OpenFitness";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited) DEBUG";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+			};
+			"name" = "Debug";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"0E722CF3D3183AE034BC8B73" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"PRODUCT_BUNDLE_IDENTIFIER" = "org.openfitness.app.uitests";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "26.0";
+				"SWIFT_EMIT_LOC_STRINGS" = "YES";
+				"ENABLE_USER_SCRIPT_SANDBOXING" = "YES";
+				"LD_RUNPATH_SEARCH_PATHS" = "$(inherited) @executable_path/Frameworks";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"TEST_TARGET_NAME" = "OpenFitness";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited)";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+			};
+			"name" = "Release";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"5BF2D619C4D0E92742B43151" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				"8C7F37192B881DA01D8AECAF",
+				"0E722CF3D3183AE034BC8B73",
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		"55A3FB8E03FA1A06B7692869" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "5BF2D619C4D0E92742B43151";
+			"buildPhases" = (
+				"4D3F72F37B7374A915CCCD4A",
+				"B33A4E9BA883ABE604742A41",
+				"ADB2B073F0E507FC591F2767",
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+				"90088742FAC7D467E6645222",
+			);
+			"name" = "OpenFitnessUITests";
+			"productName" = "OpenFitnessUITests";
+			"productReference" = "55997F56085B001C0E23A813";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
+			"packageProductDependencies" = (
+			);
+		};
+		"415C81DA3D3BF5989599EC68" = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = "F6F4DA8D93E88A08220E03B7";
+			"proxyType" = 1;
+			"remoteGlobalIDString" = "17F6A84DF82D28B709AB825D";
+			"remoteInfo" = "OpenFitnessWatch";
+		};
+		"E07E8EDF021A77E2EC342A27" = {
+			"isa" = "PBXTargetDependency";
+			"target" = "17F6A84DF82D28B709AB825D";
+			"targetProxy" = "415C81DA3D3BF5989599EC68";
+		};
+		"CDF97B7C2DAEFD4648FCC379" = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = "F6F4DA8D93E88A08220E03B7";
+			"proxyType" = 1;
+			"remoteGlobalIDString" = "FE0508ACDFC454F5801149E7";
+			"remoteInfo" = "OpenFitness";
+		};
+		"90088742FAC7D467E6645222" = {
+			"isa" = "PBXTargetDependency";
+			"target" = "FE0508ACDFC454F5801149E7";
+			"targetProxy" = "CDF97B7C2DAEFD4648FCC379";
+		};
+		"C902AC02F5330F88F5C85BDA" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "8562ECF68A0F90BA43624CC5";
+			"settings" = {
+				"ATTRIBUTES" = (
+					"RemoveHeadersOnCopy",
+				);
+			};
+		};
+		"F80EA4B07F3180A9884E154F" = {
+			"isa" = "PBXCopyFilesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"dstPath" = "$(CONTENTS_FOLDER_PATH)/Watch";
+			"dstSubfolderSpec" = 16;
+			"files" = (
+				"C902AC02F5330F88F5C85BDA",
+			);
+			"name" = "Embed Watch Content";
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		"FE0A091FDBFB3E9C31B7A1BD" = {
+			"isa" = "PBXGroup";
+			"children" = (
+				"D5E6564FB1241657A422FC3D",
+				"8562ECF68A0F90BA43624CC5",
+				"55997F56085B001C0E23A813",
+			);
+			"name" = "Products";
+			"sourceTree" = "<group>";
+		};
+		"06D559F86B0C916F2602BF53" = {
+			"isa" = "PBXGroup";
+			"children" = (
+				"2CBAC1A3698F87BFBEE6C946",
+				"C0D6ACD40CF9FE8545EB9615",
+				"29F867643AF8DC3C54173CD6",
+				"8851142DA56FD885CE668A16",
+				"FE0A091FDBFB3E9C31B7A1BD",
+			);
+			"sourceTree" = "<group>";
+		};
+		"BFD315016DE16320F7E2120C" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"CLANG_ENABLE_MODULES" = "YES";
+				"SWIFT_VERSION" = "6.0";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited) DEBUG";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+			};
+			"name" = "Debug";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"1D8C0C6B1D22EA8C7669B263" = {
+			"isa" = "XCBuildConfiguration";
+			"buildSettings" = {
+				"CLANG_ENABLE_MODULES" = "YES";
+				"SWIFT_VERSION" = "6.0";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS" = "$(inherited)";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+			};
+			"name" = "Release";
+			"baseConfigurationReference" = "8851142DA56FD885CE668A16";
+		};
+		"8A7B7B41EC8EE64FC61CAC5C" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				"BFD315016DE16320F7E2120C",
+				"1D8C0C6B1D22EA8C7669B263",
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		"F6F4DA8D93E88A08220E03B7" = {
+			"isa" = "PBXProject";
+			"attributes" = {
+				"BuildIndependentTargetsInParallel" = "YES";
+				"LastUpgradeCheck" = "2650";
+				"TargetAttributes" = {
+					"55A3FB8E03FA1A06B7692869" = {
+						"TestTargetID" = "FE0508ACDFC454F5801149E7";
+					};
+				};
+			};
+			"buildConfigurationList" = "8A7B7B41EC8EE64FC61CAC5C";
+			"compatibilityVersion" = "Xcode 14.0";
+			"developmentRegion" = "en";
+			"hasScannedForEncodings" = 0;
+			"knownRegions" = (
+				"en",
+				"zh-Hans",
+				"Base",
+			);
+			"mainGroup" = "06D559F86B0C916F2602BF53";
+			"productRefGroup" = "FE0A091FDBFB3E9C31B7A1BD";
+			"projectDirPath" = "";
+			"projectRoot" = "";
+			"targets" = (
+				"FE0508ACDFC454F5801149E7",
+				"17F6A84DF82D28B709AB825D",
+				"55A3FB8E03FA1A06B7692869",
+			);
+			"packageReferences" = (
+				"7431E3DF243C5BE33CFFA0B2",
+			);
+		};
+	};
+	"rootObject" = "F6F4DA8D93E88A08220E03B7";
+}

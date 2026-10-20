@@ -1,0 +1,2 @@
+// Keep Local.xcconfig private. A team is not required for simulator builds.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID

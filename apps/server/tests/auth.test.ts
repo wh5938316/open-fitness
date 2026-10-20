@@ -32,13 +32,18 @@ async function ownerSession(): Promise<string> {
   ]);
   return 'of_session=' + token;
 }
-async function grant(decision: 'allow' | 'deny' = 'allow', metadataClientId?: string) {
+async function grant(
+  decision: 'allow' | 'deny' = 'allow',
+  metadataClientId?: string,
+  scope = 'fitness:full offline_access',
+  redirectUri = 'https://client.example/callback',
+) {
   const auth = new AuthService(env);
   const client = metadataClientId
     ? { clientId: metadataClientId }
     : await auth.helpers().createClient({
         clientName: 'Acceptance client',
-        redirectUris: ['https://client.example/callback'],
+        redirectUris: [redirectUri],
         tokenEndpointAuthMethod: 'none',
         grantTypes: ['authorization_code', 'refresh_token'],
         responseTypes: ['code'],
@@ -50,10 +55,10 @@ async function grant(decision: 'allow' | 'deny' = 'allow', metadataClientId?: st
   const query = new URLSearchParams({
     response_type: 'code',
     client_id: client.clientId,
-    redirect_uri: 'https://client.example/callback',
+    redirect_uri: redirectUri,
     code_challenge: challenge,
     code_challenge_method: 'S256',
-    scope: 'fitness:full offline_access',
+    scope,
     resource: origin,
     state: 'test-state',
   });
@@ -77,7 +82,12 @@ async function grant(decision: 'allow' | 'deny' = 'allow', metadataClientId?: st
   const location = new URL(approval.headers.get('Location')!);
   return { auth, client, verifier, location, handle, cookies: consentCookies, html };
 }
-async function exchange(clientId: string, code: string, verifier: string) {
+async function exchange(
+  clientId: string,
+  code: string,
+  verifier: string,
+  redirectUri = 'https://client.example/callback',
+) {
   return request('/oauth/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -85,7 +95,7 @@ async function exchange(clientId: string, code: string, verifier: string) {
       grant_type: 'authorization_code',
       client_id: clientId,
       code,
-      redirect_uri: 'https://client.example/callback',
+      redirect_uri: redirectUri,
       code_verifier: verifier,
       resource: origin,
     }),
@@ -93,6 +103,62 @@ async function exchange(clientId: string, code: string, verifier: string) {
 }
 
 describe('passkey boundaries', () => {
+  it('registers a native redirect and preserves separately approved HealthKit permission', async () => {
+    const owner = await new AuthService(env).owner();
+    try {
+      const redirect = 'org.openfitness.app:/oauth/callback';
+      const registration = await request('/oauth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_name: 'OpenFitness iOS',
+          redirect_uris: [redirect],
+          grant_types: ['authorization_code', 'refresh_token'],
+          response_types: ['code'],
+          token_endpoint_auth_method: 'none',
+        }),
+      });
+      expect(registration.status).toBe(201);
+      const client = (await registration.json()) as { client_id: string };
+      const approved = await grant(
+        'allow',
+        client.client_id,
+        'fitness:full offline_access health:sync',
+        redirect,
+      );
+      expect(approved.html).toContain('Apple Health');
+      expect(approved.location.protocol).toBe('org.openfitness.app:');
+      expect(approved.location.searchParams.get('iss')).toBe(origin);
+      const response = await exchange(
+        client.client_id,
+        approved.location.searchParams.get('code')!,
+        approved.verifier,
+        redirect,
+      );
+      expect(response.status).toBe(200);
+      const tokens = (await response.json()) as { access_token: string; scope: string };
+      expect(tokens.scope.split(' ')).toContain('health:sync');
+      const enrolled = await request('/api/v1/health/devices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + tokens.access_token,
+        },
+        body: JSON.stringify({
+          operationId: crypto.randomUUID(),
+          name: 'Native acceptance iPhone',
+        }),
+      });
+      expect(enrolled.status).toBe(200);
+      expect(await enrolled.json()).toMatchObject({
+        data: { deviceId: expect.any(String), deviceSecret: expect.any(String) },
+      });
+    } finally {
+      await env.DB.prepare('UPDATE owners SET setup_completed=? WHERE id=?')
+        .bind(owner.setup_completed, owner.id)
+        .run();
+    }
+  });
   it('keeps post-login redirects on this service, including browser-normalized control characters', () => {
     for (const value of [
       'https://attacker.example',
