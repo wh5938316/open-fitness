@@ -222,9 +222,11 @@ public struct ActualSet: Codable, Sendable, Identifiable {
   public var groupId: String?
   public var notes: String?
   public var metrics: SetMetrics {
-    .init(
+    var value = SetMetrics(
       reps: reps, weightKg: weightKg, durationSeconds: durationSeconds,
       distanceMeters: distanceMeters, rpe: rpe, rir: rir, type: type, notes: notes ?? "")
+    value.groupId = groupId
+    return value
   }
   public init(
     id: String = UUID().uuidString, exerciseId: String, exercise: Exercise, metrics: SetMetrics,

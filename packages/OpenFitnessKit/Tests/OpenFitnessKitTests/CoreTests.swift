@@ -45,6 +45,11 @@ import Testing
   #expect(HealthExportPlanner.changes(for: event).allSatisfy { $0.value == nil })
 }
 @Test func offlineJournalRetainsPreparedWritesAndRejectsCrossAccountCommands() throws {
+  var grouped = SetMetrics(reps: 5, weightKg: 60)
+  grouped.groupId = "superset-A"
+  let set = ActualSet(exerciseId: "squat", exercise: .init(name: "Squat"), metrics: grouped)
+  let decoded = try JSONDecoder().decode(ActualSet.self, from: JSONEncoder().encode(set))
+  #expect(decoded.metrics.groupId == "superset-A")
   var journal = CommandJournal()
   var command = OfflineCommand(
     accountKey: "account", kind: .logSet, workoutReference: "local-session", exerciseId: "squat",
