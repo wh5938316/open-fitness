@@ -4,16 +4,22 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-20",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  // Keep dashboard-only vars such as PUBLIC_BASE_URL across CI deploys.
+  "keep_vars": true,
   "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
   "vars": {
     "DEFAULT_TIME_ZONE": "America/New_York",
     "OFF_USER_AGENT": "OpenFitness/0.1 (self-hosted)",
     "MAX_IMAGE_BYTES": "10485760",
   },
+  "secrets": { "required": ["SETUP_TOKEN"] },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "open-fitness",
+      // Placeholder for local Miniflare. Production IDs are injected by
+      // scripts/ensure-cloudflare-resources.mjs during deploy.
       "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "migrations",
     },
@@ -24,5 +30,10 @@
     { "binding": "CACHE", "id": "00000000000000000000000000000002" },
   ],
   "triggers": { "crons": ["17 * * * *"] },
-  "observability": { "enabled": true },
+  "observability": {
+    "enabled": true,
+    "redact_query_string": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 1 },
+  },
 }

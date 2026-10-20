@@ -1,3 +1,10 @@
+/**
+ * Cloudflare Worker bindings and runtime config.
+ *
+ * Domain code depends on Repository, ObjectStore, CacheStore, and
+ * IdentityProvider. This Env type is the Cloudflare entry contract; a later
+ * host would supply the same ports from its own bindings.
+ */
 export interface Env {
   DB: D1Database;
   MEDIA: R2Bucket;

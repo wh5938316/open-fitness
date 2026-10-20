@@ -5,11 +5,16 @@ import { resolve } from 'node:path';
 const state = resolve('.wrangler/e2e-state');
 await rm(state, { recursive: true, force: true });
 const executable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+const wranglerEnv = {
+  ...process.env,
+  WRANGLER_SEND_METRICS: 'false',
+  SETUP_TOKEN: 'e2e-only-setup-token-with-more-than-32-characters',
+};
 const command = (args) =>
   new Promise((resolve, reject) => {
     const child = spawn(executable, args, {
       stdio: 'inherit',
-      env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
+      env: wranglerEnv,
     });
     child.on('error', reject);
     child.on('exit', (code) =>
@@ -45,7 +50,7 @@ const child = spawn(
     '--var',
     'SETUP_TOKEN:e2e-only-setup-token-with-more-than-32-characters',
   ],
-  { stdio: 'inherit', env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } },
+  { stdio: 'inherit', env: wranglerEnv },
 );
 for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => child.kill(signal));
 child.on('error', (error) => {
