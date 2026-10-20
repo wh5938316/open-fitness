@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/dist/
+**/.wrangler/
+**/public/auth.js
+**/public/README.md
+**/test-results/
+**/playwright-report/
+**/coverage/

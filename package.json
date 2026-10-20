@@ -1,0 +1,30 @@
+{
+  "name": "open-fitness",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenFitness: an open-source fitness platform for agents and native clients.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.0.6",
+  "scripts": {
+    "dev": "pnpm --filter @openfitness/server dev",
+    "build": "pnpm --filter @openfitness/server build",
+    "typecheck": "pnpm --filter @openfitness/server typecheck",
+    "test": "pnpm --filter @openfitness/server test",
+    "test:e2e": "pnpm --filter @openfitness/server test:e2e",
+    "check": "pnpm format:check && pnpm --filter @openfitness/server check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "pnpm --filter @openfitness/server db:migrate",
+    "db:migrate:remote": "pnpm --filter @openfitness/server db:migrate:remote",
+    "deploy": "pnpm --filter @openfitness/server deploy",
+    "owner:recover": "pnpm --filter @openfitness/server owner:recover",
+    "browser:install": "pnpm --filter @openfitness/server exec playwright install chromium",
+    "cf": "pnpm --filter @openfitness/server exec wrangler"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}

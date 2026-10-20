@@ -1,0 +1,4 @@
+PUBLIC_BASE_URL=http://localhost:8787
+SETUP_TOKEN=
+DEFAULT_TIME_ZONE=America/New_York
+OFF_USER_AGENT=OpenFitness/0.1 (self-hosted)

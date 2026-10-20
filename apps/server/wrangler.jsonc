@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "open-fitness",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+  "vars": {
+    "DEFAULT_TIME_ZONE": "America/New_York",
+    "OFF_USER_AGENT": "OpenFitness/0.1 (self-hosted)",
+    "MAX_IMAGE_BYTES": "10485760",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "open-fitness",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "open-fitness-media" }],
+  "kv_namespaces": [
+    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000001" },
+    { "binding": "CACHE", "id": "00000000000000000000000000000002" },
+  ],
+  "triggers": { "crons": ["17 * * * *"] },
+  "observability": { "enabled": true },
+}
