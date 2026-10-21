@@ -22,26 +22,22 @@ export function page(
   :root{font:16px/1.6 system-ui,sans-serif;color:#182827;background:#f4f7f3}body{margin:0;padding:32px 20px}main{max-width:640px;margin:36px auto;background:white;padding:32px;border:1px solid #dce5dd;border-radius:16px}h1{font-size:28px;line-height:1.2}a{color:#176246}label{display:block;margin:16px 0}input{box-sizing:border-box;display:block;width:100%;padding:12px;margin-top:5px;border:1px solid #aabdb0;border-radius:7px;font:inherit}button{font:inherit;cursor:pointer;padding:10px 18px;border:1px solid #176246;border-radius:7px;color:white;background:#176246;margin:6px 6px 6px 0}button.secondary{background:white;color:#176246}button:disabled{opacity:.55}header{display:flex;justify-content:space-between;align-items:center;gap:20px}small{color:#53665d}#status[role=alert]{color:#a02727}code{overflow-wrap:anywhere}form.inline{display:inline}li{margin:16px 0}section{margin:28px 0}footer{margin-top:32px;border-top:1px solid #e5ebe4;padding-top:16px}
   </style></head><body><main data-mode="${mode}" data-return-to="${escapeHtml(returnTo)}" ${attributes}><header><strong>OpenFitness</strong><div><form class="inline" action="/language" method="post"><input type="hidden" name="locale" value="en"><input type="hidden" name="returnTo" value="${escapeHtml(returnTo)}"><button class="secondary" lang="en">${t(locale, 'englishName')}</button></form><form class="inline" action="/language" method="post"><input type="hidden" name="locale" value="zh-CN"><input type="hidden" name="returnTo" value="${escapeHtml(returnTo)}"><button class="secondary" lang="zh-CN">${t(locale, 'simplifiedChineseName')}</button></form></div></header>${content}<p id="status" role="status" aria-live="polite"></p><footer><small><a href="/README.md">README</a> · <a href="/openapi.json">OpenAPI</a> · MIT</small></footer></main><script id="messages" type="application/json">${serialized}</script><script type="module" src="/auth.js"></script></body></html>`;
 }
-export function loginPage(
-  locale: Locale,
-  setup: boolean,
-  returnTo: string,
-  clerkPublishableKey?: string,
-): string {
-  if (!setup && clerkPublishableKey) {
-    const complete = '/auth/clerk/complete?returnTo=' + encodeURIComponent(returnTo);
+export function loginPage(locale: Locale, returnTo: string, clerkPublishableKey?: string): string {
+  if (!clerkPublishableKey)
     return page(
       locale,
       'login',
-      `<h1>${t(locale, 'clerkSignIn')}</h1><p>${t(locale, 'clerkSignInHelp')}</p><div id="clerk-sign-in"></div><h2>${t(locale, 'signIn')}</h2><button id="sign-in">${t(locale, 'signIn')}</button>`,
+      `<h1>${t(locale, 'clerkSignIn')}</h1><p>${t(locale, 'clerkUnavailable')}</p>`,
       returnTo,
-      `data-clerk-key="${escapeHtml(clerkPublishableKey)}" data-clerk-complete="${escapeHtml(complete)}"`,
     );
-  }
-  const content = setup
-    ? `<h1>${t(locale, 'setup')}</h1><p>${t(locale, 'setupHelp')}</p><form id="register-form"><label>${t(locale, 'setupToken')}<input id="setup-token" type="password" autocomplete="off" required minlength="32"></label><label>${t(locale, 'passkeyName')}<input id="passkey-name" value="${t(locale, 'defaultPasskeyName')}" maxlength="100"></label><button type="submit">${t(locale, 'registerPasskey')}</button></form>`
-    : `<h1>${t(locale, 'signIn')}</h1><button id="sign-in">${t(locale, 'signIn')}</button>`;
-  return page(locale, setup ? 'setup' : 'login', content, returnTo);
+  const complete = '/auth/clerk/complete?returnTo=' + encodeURIComponent(returnTo);
+  return page(
+    locale,
+    'login',
+    `<h1>${t(locale, 'clerkSignIn')}</h1><p>${t(locale, 'clerkSignInHelp')}</p><div id="clerk-sign-in"></div>`,
+    returnTo,
+    `data-clerk-key="${escapeHtml(clerkPublishableKey)}" data-clerk-complete="${escapeHtml(complete)}"`,
+  );
 }
 export function clerkCompletePage(
   locale: Locale,
@@ -81,7 +77,7 @@ export function adminPage(
   return page(
     locale,
     'admin',
-    `<h1>${t(locale, 'connections')}</h1>${list}<section><h2>${t(locale, 'addPasskey')}</h2><form id="register-form"><label>${t(locale, 'passkeyName')}<input id="passkey-name" maxlength="100" value="${t(locale, 'defaultBackupPasskeyName')}"></label><button>${t(locale, 'addPasskey')}</button></form></section><form action="/auth/logout" method="post"><button class="secondary">${t(locale, 'signOut')}</button></form>`,
+    `<h1>${t(locale, 'connections')}</h1>${list}<form action="/auth/logout" method="post"><button class="secondary">${t(locale, 'signOut')}</button></form>`,
   );
 }
 export function accountPage(

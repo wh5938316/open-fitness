@@ -447,7 +447,6 @@ export async function cleanupMedia(env: Env): Promise<void> {
   else await env.CACHE.delete('maintenance:r2-cursor');
   await env.DB.batch([
     env.DB.prepare('DELETE FROM upload_tickets WHERE expires_at<?').bind(Date.now()),
-    env.DB.prepare('DELETE FROM auth_challenges WHERE expires_at<?').bind(Date.now()),
     env.DB.prepare('DELETE FROM sessions WHERE expires_at<?').bind(Date.now()),
     env.DB.prepare('DELETE FROM consent_claims WHERE expires_at<?').bind(Date.now()),
   ]);

@@ -390,7 +390,41 @@ try {
     ['orphan', 0, 1, 'missing-owner'],
     'FOREIGN KEY',
   );
+  const retired = migrations.find((migration) => migration.name.startsWith('0006'));
+  assert(retired, 'expected migration 0006');
+  await db.batch(retired.queries.map((query) => db.prepare(query)));
+  assert(
+    (
+      await db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE name IN ('passkeys','auth_challenges','bootstrap_claims')",
+        )
+        .all()
+    ).results.length === 0,
+    'local auth tables were not dropped',
+  );
+  await db
+    .prepare('UPDATE owners SET session_epoch=session_epoch+1 WHERE id=?')
+    .bind('user-b')
+    .run();
+  assert(
+    (await db
+      .prepare('SELECT token_hash FROM sessions WHERE token_hash=?')
+      .bind('sess-b2')
+      .first()) == null,
+    'retired recovery kept the rotated user session',
+  );
+  assert(
+    (
+      await db
+        .prepare('SELECT data FROM documents WHERE owner_id=? AND id=?')
+        .bind('owner', 'meal-1')
+        .first()
+    )?.data === mealData,
+    'retiring local auth rewrote the meal',
+  );
   console.log('migration 0005 preserved owner data and per-owner recovery');
+  console.log('migration 0006 removed local WebAuthn tables');
 } finally {
   await miniflare.dispose();
   rmSync(persist, { recursive: true, force: true });

@@ -73,8 +73,6 @@ const child = spawn(
     '--var',
     'PUBLIC_BASE_URL:http://localhost:18787',
     '--var',
-    'SETUP_TOKEN:e2e-only-setup-token-with-more-than-32-characters',
-    '--var',
     'CLERK_TEST_MODE:1',
     '--var',
     'CLERK_AUTO_PROVISION:true',

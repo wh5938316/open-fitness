@@ -20,7 +20,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "pnpm build:client && wrangler deploy",
     "check": "pnpm typecheck && pnpm test && pnpm build",
-    "owner:recover": "node scripts/recover-owner.mjs"
+    "user:recover": "node scripts/recover-user.mjs"
   },
   "dependencies": {
     "@clerk/backend": "^3.25.0",
@@ -28,8 +28,6 @@
     "@clerk/localizations": "^4.23.0",
     "@cloudflare/workers-oauth-provider": "^1.2.3",
     "@modelcontextprotocol/server": "^2.3.1",
-    "@simplewebauthn/browser": "^14.0.0",
-    "@simplewebauthn/server": "^14.0.3",
     "hono": "^4.13.13",
     "zod": "^4.0.0"
   },

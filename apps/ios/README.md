@@ -61,7 +61,7 @@ Optional coach summaries contain daily steps, active energy, exercise minutes, l
 
 `OpenFitnessKit` tests cover PKCE/callback attacks, origin restrictions, concurrent refresh, missing nutrients and health versions, account boundaries, durable retries and both language dictionaries. XCUITest navigates deterministic debug fixtures for training, recipe detail and Chinese settings. Debug fixtures are compiled out of Release. They do not contact a service or claim a real HealthKit write.
 
-Workers integration tests validate the device permission, single writer, leases, receipts, corrections, recovery, and cache boundary against local D1/KV/R2. Browser acceptance validates the shared real passkey/OAuth/MCP flow. Production passkey approval, real Watch sensor data, background delivery, device signing and Apple Health permissions must also be checked on your own physical devices.
+Workers integration tests validate the device permission, single writer, leases, receipts, corrections, recovery, and cache boundary against local D1/KV/R2. Browser acceptance validates the shared Clerk sign-in, OAuth, and MCP flow. Production Clerk approval, real Watch sensor data, background delivery, device signing and Apple Health permissions must also be checked on your own physical devices.
 
 Not included: nutrition import mode, multi-device Watch workout mirroring, standalone Watch networking, iPhone-only workout export, Health Connect, long-term imported health aggregates, or App Store submission automation.
 

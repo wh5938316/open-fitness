@@ -100,7 +100,7 @@ async function exchange(
   });
 }
 
-describe('passkey boundaries', () => {
+describe('sign-in boundaries', () => {
   it('registers a native redirect and preserves separately approved HealthKit permission', async () => {
     const owner = await new AuthService(env).owner();
     try {
@@ -170,92 +170,22 @@ describe('passkey boundaries', () => {
       '/authorize?scope=fitness%3Afull+offline_access',
     );
   });
-  it('rejects malformed authentication payloads with stable input errors', async () => {
-    for (const [path, value] of [
-      ['/auth/passkeys/registration-options', null],
-      ['/auth/passkeys/registration-options', { setupToken: 123 }],
-      ['/auth/passkeys/register', { response: {}, name: 123 }],
-      ['/auth/passkeys/authenticate', null],
-      ['/auth/passkeys/authenticate', { response: [] }],
-    ] as const) {
-      const response = await request(path, {
-        method: 'POST',
-        headers: { Origin: origin, 'Content-Type': 'application/json' },
-        body: JSON.stringify(value),
-      });
-      expect(response.status).toBe(422);
-      expect(((await response.json()) as any).error.code).toBe('INVALID_INPUT');
-    }
-  });
-  it('requires the setup secret and binds challenges to the browser, purpose, origin, and expiry', async () => {
-    const missing = await request('/auth/passkeys/registration-options', {
-      method: 'POST',
-      headers: { Origin: origin, 'Content-Type': 'application/json' },
-      body: '{}',
-    });
-    expect(missing.status).toBe(403);
-    const wrongOrigin = await request('/auth/passkeys/registration-options', {
-      method: 'POST',
-      headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ setupToken: env.SETUP_TOKEN }),
-    });
-    expect(wrongOrigin.status).toBe(403);
-    const options = await request('/auth/passkeys/registration-options', {
-      method: 'POST',
-      headers: { Origin: origin, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ setupToken: env.SETUP_TOKEN }),
-    });
-    expect(options.status).toBe(200);
-    const cookie = cookieValues(options);
-    const auth = new AuthService(env);
-    await expect(
-      auth.register(new Request(origin, { method: 'POST', headers: { Origin: origin } }), {
-        response: {},
-      }),
-    ).rejects.toMatchObject({ code: 'CHALLENGE_REQUIRED' });
-    await expect(
-      auth.register(
-        new Request(origin, { method: 'POST', headers: { Origin: origin, Cookie: cookie } }),
-        { response: {} },
-      ),
-    ).rejects.toMatchObject({ code: 'INVALID_PASSKEY' });
-    await expect(
-      auth.register(
-        new Request(origin, { method: 'POST', headers: { Origin: origin, Cookie: cookie } }),
-        { response: {} },
-      ),
-    ).rejects.toMatchObject({ code: 'INVALID_CHALLENGE' });
-    const login = await request('/auth/passkeys/authentication-options', {
-      method: 'POST',
-      headers: { Origin: origin },
-    });
-    await env.DB.prepare('UPDATE auth_challenges SET expires_at=0 WHERE used_at IS NULL').run();
-    await expect(
-      auth.authenticate(
-        new Request(origin, {
-          method: 'POST',
-          headers: { Origin: origin, Cookie: cookieValues(login) },
-        }),
-        {},
-      ),
-    ).rejects.toMatchObject({ code: 'INVALID_CHALLENGE' });
-  });
   it('serves translated pages and keeps validation codes stable across languages', async () => {
     const [en, zh] = await Promise.all([
-      request('/setup', { headers: { 'Accept-Language': 'en' } }),
-      request('/setup', { headers: { 'Accept-Language': 'zh-CN' } }),
+      request('/sign-in', { headers: { 'Accept-Language': 'en' } }),
+      request('/sign-in', { headers: { 'Accept-Language': 'zh-CN' } }),
     ]);
-    expect(await en.text()).toContain('Set up OpenFitness');
-    expect(await zh.text()).toContain('设置 OpenFitness');
+    expect(await en.text()).toContain('Sign-in is not configured');
+    expect(await zh.text()).toContain('此部署尚未配置登录');
     const fail = async (language: string) => {
-      const response = await request('/auth/passkeys/registration-options', {
+      const response = await request('/auth/clerk/session', {
         method: 'POST',
         headers: {
           Origin: origin,
           'Content-Type': 'application/json',
           'Accept-Language': language,
         },
-        body: '{}',
+        body: '{',
       });
       return (await response.json()) as any;
     };
@@ -527,6 +457,8 @@ describe('OAuth and official MCP client interoperability', () => {
         .bind(exercise.id)
         .first(),
     ).toBeTruthy();
-    expect((await request('/setup')).status).toBe(200);
+    const setup = await request('/setup');
+    expect(setup.status).toBe(302);
+    expect(setup.headers.get('Location')).toBe('/sign-in');
   });
 });
