@@ -3,17 +3,17 @@ import { nutrientKeys, type Food, type Ingredient, type Nutrients } from './sche
 
 export function scaleNutrients(nutrients: Nutrients, factor: number): Nutrients {
   return Object.fromEntries(
-    nutrientKeys.map((key) => [
-      key,
-      factor === 0 ? 0 : nutrients[key] === null ? null : round(nutrients[key] * factor),
-    ]),
+    nutrientKeys.map((key) => {
+      const value = nutrients[key];
+      return [key, factor === 0 ? 0 : value == null ? null : round(value * factor)];
+    }),
   ) as Nutrients;
 }
 export function sumNutrients(items: Nutrients[]): Nutrients {
   return Object.fromEntries(
     nutrientKeys.map((key) => [
       key,
-      items.some((item) => item[key] === null)
+      items.some((item) => item[key] == null)
         ? null
         : round(items.reduce((sum, item) => sum + (item[key] ?? 0), 0)),
     ]),

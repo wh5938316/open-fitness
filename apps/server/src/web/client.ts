@@ -1,4 +1,5 @@
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import { mountFoods } from './foods';
 
 const root = document.querySelector<HTMLElement>('main')!;
 const messages = JSON.parse(document.getElementById('messages')!.textContent!) as Record<
@@ -56,3 +57,4 @@ document.getElementById('sign-in')?.addEventListener('click', () => {
     navigate();
   });
 });
+if (root.dataset.mode === 'foods') mountFoods(root, messages, status);

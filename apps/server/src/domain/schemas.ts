@@ -23,13 +23,23 @@ export const isoDateTime = z.iso.datetime({ offset: true });
 export const quantity = z.number().finite().nonnegative();
 export const positive = z.number().finite().positive();
 export const unit = z.enum(['g', 'ml', 'serving']);
-export const nutrientKeys = ['energyKcal', 'proteinG', 'carbohydrateG', 'fatG', 'fiberG'] as const;
+export const nutrientKeys = [
+  'energyKcal',
+  'proteinG',
+  'carbohydrateG',
+  'fatG',
+  'fiberG',
+  'sodiumMg',
+  'calciumMg',
+] as const;
 export const nutrientsSchema = z.object({
   energyKcal: quantity.nullable().default(null),
   proteinG: quantity.nullable().default(null),
   carbohydrateG: quantity.nullable().default(null),
   fatG: quantity.nullable().default(null),
   fiberG: quantity.nullable().default(null),
+  sodiumMg: quantity.nullable().default(null),
+  calciumMg: quantity.nullable().default(null),
 });
 export const foodSchema = z
   .object({
@@ -45,6 +55,8 @@ export const foodSchema = z
       reference: z.string().max(2000).optional(),
       basis: z.string().max(4000).optional(),
     }),
+    coverAssetId: id.nullable().optional(),
+    coverThumbnailAssetId: id.nullable().optional(),
     notes,
   })
   .superRefine((food, ctx) => {

@@ -300,6 +300,12 @@ describe('nutrition and localization', () => {
     expect(() =>
       foodNutrition({ ...rice(), basis: { quantity: 1, unit: 'serving' } }, 100, 'g'),
     ).toThrow();
+    const legacy = { ...rice(), nutrients: { ...rice().nutrients } };
+    delete (legacy.nutrients as { sodiumMg?: number | null }).sodiumMg;
+    delete (legacy.nutrients as { calciumMg?: number | null }).calciumMg;
+    expect(foodNutrition(legacy, 100, 'g').sodiumMg).toBeNull();
+    expect(foodNutrition(legacy, 100, 'g').calciumMg).toBeNull();
+    expect(foodNutrition(legacy, 100, 'g').energyKcal).toBe(130);
   });
   it('uses local calendar bounds across daylight saving transitions', () => {
     const spring = dayBounds('2026-03-08', 'America/New_York');
@@ -513,5 +519,182 @@ describe('private recipe media', () => {
     ])
       expect(() => publicImageUrl(source)).toThrow();
     expect(publicImageUrl('https://images.example.com/a.png').hostname).toBe('images.example.com');
+  });
+});
+
+const milk = () => ({
+  name: '明治无糖低脂纯牛奶',
+  aliases: ['明治低脂奶'],
+  nutrients: {
+    energyKcal: 47,
+    proteinG: 3.5,
+    carbohydrateG: 5,
+    fatG: 1.4,
+    fiberG: null,
+    sodiumMg: 60,
+    calciumMg: 115,
+  },
+  basis: { quantity: 100, unit: 'ml' as const },
+  servingSize: { quantity: 200, unit: 'ml' as const },
+  preparation: 'as_sold' as const,
+  source: {
+    kind: 'user' as const,
+    basis:
+      'Label per 100 ml: 196 kJ (47 kcal), protein 3.5 g, fat 1.4 g, carbohydrate 5.0 g, sodium 60 mg, calcium 115 mg.',
+  },
+});
+async function readyCover(s: FitnessService): Promise<Entity<any>> {
+  const media = new MediaService(s, env, new R2ObjectStore(env.MEDIA), 'http://localhost:8787');
+  media.register();
+  const upload = (await s.execute('create_media_upload', {
+    operationId: op(),
+    contentType: 'image/png',
+    role: 'food_cover',
+  })) as any;
+  return (await media.upload(
+    new Request(upload.uploadUrl, { method: 'PUT', body: imageBytes() }),
+    upload.uploadUrl.split('/').at(-1)!,
+  )) as Entity<any>;
+}
+
+describe('custom food templates', () => {
+  it('saves a covered food, logs an adjustable portion, and keeps the meal snapshot', async () => {
+    const s = service();
+    const asset = await readyCover(s);
+    expect(asset.data.role).toBe('food_cover');
+    const saved = (await s.execute('save_food', {
+      operationId: op(),
+      data: { ...milk(), coverAssetId: asset.id },
+    })) as Entity<any>;
+    expect(saved.data.coverAssetId).toBe(asset.id);
+    expect(saved.data.nutrients.calciumMg).toBe(115);
+    const fetched = (await s.execute('get_food', { id: saved.id })) as Entity<any>;
+    expect(fetched.data.coverAssetId).toBe(asset.id);
+    const found = (await s.execute('search_foods', { query: '低脂奶' })) as any;
+    expect(found.items.some((item: Entity<any>) => item.id === saved.id)).toBe(true);
+    expect(found.items.find((item: Entity<any>) => item.id === saved.id).data.coverAssetId).toBe(
+      asset.id,
+    );
+    const meal = (await s.execute('log_meal', {
+      operationId: op(),
+      occurredAt: '2026-10-21T00:30:00+08:00',
+      ingredients: [{ foodId: saved.id, quantity: 200, unit: 'ml' }],
+    })) as Entity<any>;
+    expect(meal.data.nutrients).toMatchObject({
+      energyKcal: 94,
+      proteinG: 7,
+      carbohydrateG: 10,
+      fatG: 2.8,
+      fiberG: null,
+      sodiumMg: 120,
+      calciumMg: 230,
+    });
+    const oneCup = (await s.execute('log_meal', {
+      operationId: op(),
+      occurredAt: '2026-10-21T00:35:00+08:00',
+      ingredients: [{ foodId: saved.id, quantity: 1, unit: 'serving' }],
+    })) as Entity<any>;
+    expect(oneCup.data.nutrients.energyKcal).toBe(94);
+    expect(oneCup.data.ingredients[0].food.coverAssetId).toBe(asset.id);
+    const revised = (await s.execute('save_food', {
+      operationId: op(),
+      id: saved.id,
+      expectedVersion: saved.version,
+      data: {
+        ...saved.data,
+        nutrients: { ...saved.data.nutrients, energyKcal: 50 },
+      },
+    })) as Entity<any>;
+    expect(revised.data.nutrients.energyKcal).toBe(50);
+    expect(
+      ((await s.execute('get_meal', { id: meal.id })) as Entity<any>).data.nutrients.energyKcal,
+    ).toBe(94);
+    const foodRefs = await env.DB.prepare(
+      "SELECT asset_id FROM media_references WHERE target_kind='food' AND target_id=?",
+    )
+      .bind(saved.id)
+      .all<{ asset_id: string }>();
+    expect(foodRefs.results.map((row) => row.asset_id)).toContain(asset.id);
+    await s.execute('delete_food', {
+      operationId: op(),
+      id: saved.id,
+      expectedVersion: revised.version,
+    });
+    const afterDelete = await env.DB.prepare(
+      "SELECT asset_id FROM media_references WHERE target_kind='food' AND target_id=?",
+    )
+      .bind(saved.id)
+      .all();
+    expect(afterDelete.results).toHaveLength(0);
+    const mealRefs = await env.DB.prepare(
+      "SELECT asset_id FROM media_references WHERE target_kind='meal' AND target_id=?",
+    )
+      .bind(meal.id)
+      .all<{ asset_id: string }>();
+    expect(mealRefs.results.map((row) => row.asset_id)).toContain(asset.id);
+  });
+  it('rejects a cover that is not ready and can replace only the image', async () => {
+    const s = service();
+    const media = new MediaService(s, env, new R2ObjectStore(env.MEDIA), 'http://localhost:8787');
+    media.register();
+    const pending = (await s.execute('create_media_upload', {
+      operationId: op(),
+      contentType: 'image/png',
+      role: 'food_cover',
+    })) as any;
+    const saved = (await s.execute('save_food', {
+      operationId: op(),
+      data: milk(),
+    })) as Entity<any>;
+    await expect(
+      s.execute('save_food', {
+        operationId: op(),
+        id: saved.id,
+        expectedVersion: saved.version,
+        data: { ...saved.data, coverAssetId: pending.asset.id },
+      }),
+    ).rejects.toMatchObject({ code: 'ASSET_NOT_READY' });
+    await expect(
+      s.execute('attach_food_image', {
+        operationId: op(),
+        foodId: saved.id,
+        assetId: pending.asset.id,
+        expectedVersion: saved.version,
+      }),
+    ).rejects.toMatchObject({ code: 'ASSET_NOT_READY' });
+    const asset = (await media.upload(
+      new Request(pending.uploadUrl, { method: 'PUT', body: imageBytes() }),
+      pending.uploadUrl.split('/').at(-1)!,
+    )) as Entity<any>;
+    const covered = (await s.execute('attach_food_image', {
+      operationId: op(),
+      foodId: saved.id,
+      assetId: asset.id,
+      expectedVersion: saved.version,
+    })) as Entity<any>;
+    expect(covered.data.coverAssetId).toBe(asset.id);
+    expect(covered.data.nutrients).toEqual(saved.data.nutrients);
+    const found = (await s.execute('search_foods', { query: '明治无糖' })) as {
+      items: Entity<any>[];
+    };
+    expect(found.items.find((item) => item.id === saved.id)?.data.coverAssetId).toBe(asset.id);
+  });
+  it('tells the assistant to recognize food outside the server and store the result', async () => {
+    const s = service();
+    new MediaService(s, env, new R2ObjectStore(env.MEDIA), 'http://localhost:8787').register();
+    expect(s.operations.get('save_food')?.description).toContain('does not recognize');
+    expect(s.operations.get('save_food')?.description).toContain('coverAssetId');
+    expect(s.operations.get('save_food')?.description).toContain('sodiumMg');
+    expect(s.operations.get('attach_food_image')?.description).toContain('food_cover');
+    expect(s.operations.get('search_foods')?.description).toContain('coverAssetId');
+    expect(s.operations.get('get_food')?.description).toContain('coverAssetId');
+    expect(s.operations.get('create_media_upload')?.description).toContain('does not recognize');
+    const context = (await s.execute('get_agent_context', {})) as any;
+    expect(context.capabilities.foodRecognition).toBe('provided_by_agent');
+    expect(context.capabilities.customFoods).toBe(true);
+    expect(context.instructions).toContain('does not recognize');
+    const chinese = (await service('zh-CN').execute('get_agent_context', {})) as any;
+    expect(chinese.instructions).toContain('不识别');
+    expect(chinese.instructions).toContain('save_food');
   });
 });
