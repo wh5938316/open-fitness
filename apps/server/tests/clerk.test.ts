@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
 import { createApp } from '../src/app';
 import { base64url, randomToken, sha256 } from '../src/crypto';
+import { clerkAccountPortalOrigin, clerkAccountPortalUrl } from '../src/auth';
 import {
   generateClerkTestKeys,
   signClerkTestToken,
@@ -289,10 +290,36 @@ describe('Clerk session exchange', () => {
     expect(remote.status).toBe(404);
   });
 
-  it('relaxes Clerk CSP only on the sign-in and completion pages', async () => {
+  it('redirects sign-in to the Clerk Account Portal', () => {
+    expect(clerkAccountPortalOrigin('https://example.clerk.accounts.dev')).toBe(
+      'https://example.accounts.dev',
+    );
+    expect(clerkAccountPortalOrigin('https://clerk.example.test')).toBe(
+      'https://accounts.example.test',
+    );
+    expect(clerkAccountPortalOrigin('https://not-clerk.example')).toBeNull();
+    const runtime = clerkEnv();
+    return request('/sign-in?returnTo=https://evil.example', runtime).then(async (signIn) => {
+      expect(signIn.status).toBe(302);
+      const location = new URL(signIn.headers.get('Location') ?? '');
+      expect(location.origin).toBe('https://accounts.example.test');
+      expect(location.pathname).toBe('/sign-in');
+      const back = new URL(location.searchParams.get('redirect_url') ?? '');
+      expect(back.origin).toBe(origin);
+      expect(back.pathname).toBe('/auth/clerk/complete');
+      expect(back.searchParams.get('returnTo')).toBe('/admin');
+      expect(signIn.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
+      expect(
+        clerkAccountPortalUrl('https://example.clerk.accounts.dev', 'user', origin + '/account'),
+      ).toBe(
+        'https://example.accounts.dev/user?redirect_url=' + encodeURIComponent(origin + '/account'),
+      );
+    });
+  });
+
+  it('relaxes Clerk CSP only while exchanging or ending a Clerk session', async () => {
     const plain = await request('/sign-in', withEnv({}));
     expect(plain.headers.get('Content-Security-Policy')).toContain("script-src 'self'");
-    expect(plain.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
     expect(plain.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
     const runtime = clerkEnv();
     const previous = await env.DB.prepare('SELECT setup_completed FROM owners WHERE id=?')
@@ -300,8 +327,11 @@ describe('Clerk session exchange', () => {
       .first<{ setup_completed: number }>();
     await env.DB.prepare('UPDATE owners SET setup_completed=1 WHERE id=?').bind('owner').run();
     try {
-      const signIn = await request('/sign-in', runtime);
-      const policy = signIn.headers.get('Content-Security-Policy');
+      const admin = await request('/admin', runtime);
+      expect(admin.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
+      expect(admin.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
+      const complete = await request('/auth/clerk/complete?returnTo=/admin', runtime);
+      const policy = complete.headers.get('Content-Security-Policy');
       expect(policy).toContain(
         "script-src 'self' https://clerk.example.test https://challenges.cloudflare.com https://*.protect.clerk.com",
       );
@@ -311,15 +341,7 @@ describe('Clerk session exchange', () => {
       expect(policy).toContain(
         "frame-src 'self' https://challenges.cloudflare.com https://*.protect.clerk.com",
       );
-      expect(await signIn.text()).toContain('data-clerk-key="pk_test_example"');
-      const admin = await request('/admin', runtime);
-      expect(admin.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
-      expect(admin.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
-      const complete = await request('/auth/clerk/complete?returnTo=/admin', runtime);
-      expect(complete.headers.get('Content-Security-Policy')).toContain(
-        'https://*.protect.clerk.com:*',
-      );
-      expect(complete.headers.get('Content-Security-Policy')).toContain('https://img.clerk.com');
+      expect(await complete.text()).toContain('data-clerk-key="pk_test_example"');
       const signOut = await request('/auth/clerk/sign-out', runtime);
       expect(signOut.headers.get('Content-Security-Policy')).toContain(
         'https://*.protect.clerk.com',

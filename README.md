@@ -68,7 +68,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open `http://localhost:8787/sign-in`. Clerk exchanges a short-lived session token for this service's own session cookie. Sign-in and authorization pages support English and Simplified Chinese. See [Clerk operations](docs/operations/clerk.md). Binding the existing `owner` row is a manual database update and is not part of local test runs.
+Open `http://localhost:8787/sign-in`. The browser is sent to Clerk's hosted sign-in page, then this service exchanges a short-lived session token for its own session cookie. Sign-in completion and authorization pages support English and Simplified Chinese. See [Clerk operations](docs/operations/clerk.md). Binding the existing `owner` row is a manual database update and is not part of local test runs.
 
 The placeholder resource IDs in `apps/server/wrangler.jsonc` are for local simulation only. Production deployment requires your own resources and IDs.
 

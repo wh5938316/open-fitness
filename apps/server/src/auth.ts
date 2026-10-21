@@ -113,6 +113,47 @@ export function clerkPublishableKey(env: Env): string | null {
   if (!key || !clerkFrontendOrigin(env.CLERK_FRONTEND_API)) return null;
   return key;
 }
+const DEV_ACCOUNT_PORTAL_SUFFIXES = [
+  '.accounts.dev',
+  '.accountsstage.dev',
+  '.accounts.lclclerk.com',
+];
+export function clerkAccountPortalOrigin(frontendApi?: string): string | null {
+  const origin = clerkFrontendOrigin(frontendApi);
+  if (!origin) return null;
+  const hostname = new URL(origin).hostname;
+  for (const suffix of DEV_ACCOUNT_PORTAL_SUFFIXES) {
+    const frontendSuffix = '.clerk' + suffix;
+    if (hostname.endsWith(frontendSuffix) && hostname.length > frontendSuffix.length)
+      return `https://${hostname.slice(0, -frontendSuffix.length)}${suffix}`;
+  }
+  if (hostname.startsWith('clerk.') && hostname.length > 'clerk.'.length)
+    return `https://accounts.${hostname.slice('clerk.'.length)}`;
+  return null;
+}
+export function clerkAccountPortalUrl(
+  frontendApi: string | undefined,
+  page: 'sign-in' | 'sign-up' | 'user',
+  redirectUrl: string,
+): string | null {
+  const portal = clerkAccountPortalOrigin(frontendApi);
+  if (!portal) return null;
+  let target: URL;
+  try {
+    target = new URL(redirectUrl);
+  } catch {
+    return null;
+  }
+  if (
+    (target.protocol !== 'https:' && target.protocol !== 'http:') ||
+    target.username ||
+    target.password
+  )
+    return null;
+  const url = new URL('/' + page, portal);
+  url.searchParams.set('redirect_url', target.href);
+  return url.href;
+}
 export function contentSecurityPolicy(env: Env, clerkDocument: boolean): string {
   const strict =
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
