@@ -12,7 +12,7 @@
 
 `taxonomy.json` holds English and Chinese labels for body parts, equipment, muscles, and movement categories. Search text and `list_exercise_taxonomy` both read it.
 
-`musclemap-regions.json` maps catalogue region ids onto `@musclemap/assets` groups and surface ids. `hip-flexors` and `serratus` have no traced path. The flat SVGs are generated into `public/musclemap/` with `pnpm --filter @openfitness/server musclemap:svg`. Photo bodies from that package are not used.
+`musclemap-regions.json` maps catalogue region ids onto MuscleMap groups and surface ids. `musclemap-extra-paths.json` adds hip-flexor, serratus, and upper-back outlines that the package does not include. The flat SVGs are generated into `public/musclemap/` with `pnpm --filter @openfitness/server musclemap:svg`. Photo bodies from that package are not used.
 
 ## Rebuild
 

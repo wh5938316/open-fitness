@@ -17,4 +17,4 @@ Regenerate after a package upgrade:
 pnpm --filter @openfitness/server musclemap:svg
 ```
 
-Regions with no traced surface in `@musclemap/assets` 1.1.0: `hip-flexors` (`HIP_FLEXORS` is empty) and `serratus` (no group). `upper-back` uses latissimus and rhomboid surfaces because `BACK_UPPER` has no path. See `apps/server/catalog/musclemap-regions.json`.
+`hip-flexors`, `serratus`, and `upper-back` are extra paths in `apps/server/catalog/musclemap-extra-paths.json`, traced for this project because `@musclemap/assets` 1.1.0 does not draw them. Trapezius stays separate from upper back. See `apps/server/catalog/musclemap-regions.json`.

@@ -413,7 +413,7 @@ describe('exercise catalogue', () => {
     expect(female.data.diagram?.hrefs?.map((item) => item.href).join(' ')).toContain('female');
   });
 
-  it('publishes taxonomy, attribution, and a 404 until the SVG files exist', async () => {
+  it('publishes taxonomy, attribution, and the generated body diagrams', async () => {
     const taxonomy = (await service('zh-CN').execute('list_exercise_taxonomy', {})) as {
       bodyParts: { id: string; label: string }[];
       diagrams: {
@@ -428,12 +428,16 @@ describe('exercise catalogue', () => {
     expect(taxonomy.bodyParts.find((item) => item.id === 'chest')?.label).toBe('胸部');
     expect(taxonomy.diagrams.artwork).toBe('ready');
     expect(taxonomy.diagrams.regions).toContain('upper-back');
-    expect(taxonomy.diagrams.unmatched).toEqual(
-      expect.arrayContaining(['hip-flexors', 'serratus']),
+    expect(taxonomy.diagrams.unmatched).toEqual([]);
+    const upper = taxonomy.diagrams.mapping.find((item) => item.region === 'upper-back');
+    expect(upper?.surfaces).toEqual(['UPPER_BACK_LEFT', 'UPPER_BACK_RIGHT']);
+    expect(upper?.surfaces).not.toContain('LATISSIMUS_LEFT');
+    expect(taxonomy.diagrams.mapping.find((item) => item.region === 'hip-flexors')?.matched).toBe(
+      true,
     );
-    expect(
-      taxonomy.diagrams.mapping.find((item) => item.region === 'upper-back')?.surfaces,
-    ).toContain('LATISSIMUS_LEFT');
+    expect(taxonomy.diagrams.mapping.find((item) => item.region === 'serratus')?.matched).toBe(
+      true,
+    );
     expect(taxonomy.diagrams.assets.male.front).toBe('/musclemap/male-front.svg');
     expect(taxonomy.attribution).toContain('openGym');
     const missingCtx = createExecutionContext();
@@ -456,6 +460,15 @@ describe('exercise catalogue', () => {
     expect(svg).toContain('viewBox="0 0 1024 1536"');
     expect(svg).toContain('data-surface="CHEST_LEFT"');
     expect(svg).toContain('data-region="chest"');
+    expect(svg).toContain('data-surface="HIP_FLEXOR_LEFT"');
+    expect(svg).toContain('data-surface="SERRATUS_LEFT"');
+    expect(svg).toContain('data-extra="open-fitness"');
     expect(svg).not.toMatch(/webp|body-paths/i);
+    const back = await createApp(env).fetch(
+      new Request('http://localhost:8787/musclemap/male-back.svg'),
+      env,
+      createExecutionContext(),
+    );
+    expect(await back.text()).toContain('data-surface="UPPER_BACK_LEFT"');
   });
 });

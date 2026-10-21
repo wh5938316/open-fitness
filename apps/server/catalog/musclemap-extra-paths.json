@@ -1,0 +1,63 @@
+{
+  "source": "open-fitness",
+  "license": "MIT",
+  "note": "Paths traced for OpenFitness on top of @musclemap/assets 1.1.0. They fill hip-flexors, serratus, and upper-back, which that package does not draw. Coordinates use viewBox 0 0 1024 1536. A mirrored right path is generated for every left path.",
+  "diagrams": {
+    "male-front": [
+      {
+        "group": "HIP_FLEXORS",
+        "id": "HIP_FLEXOR_LEFT",
+        "mirror": true,
+        "d": "M446 708 L468 700 L484 722 L492 748 L474 774 L456 760 L440 730 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M352 446 L376 442 L404 452 L374 460 L348 454 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M348 462 L372 458 L398 470 L370 478 L344 470 Z"
+      }
+    ],
+    "female-front": [
+      {
+        "group": "HIP_FLEXORS",
+        "id": "HIP_FLEXOR_LEFT",
+        "mirror": true,
+        "d": "M450 694 L474 686 L492 712 L486 750 L464 758 L446 730 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M396 432 L422 428 L440 444 L418 452 L392 444 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M392 450 L416 446 L432 462 L412 470 L388 458 Z"
+      }
+    ],
+    "male-back": [
+      {
+        "group": "BACK_UPPER",
+        "id": "UPPER_BACK_LEFT",
+        "mirror": true,
+        "d": "M436 434 L448 438 L450 450 L442 456 L432 446 L434 438 Z"
+      }
+    ],
+    "female-back": [
+      {
+        "group": "BACK_UPPER",
+        "id": "UPPER_BACK_LEFT",
+        "mirror": true,
+        "d": "M440 434 L458 440 L460 452 L444 460 L434 448 L438 438 Z"
+      }
+    ]
+  }
+}

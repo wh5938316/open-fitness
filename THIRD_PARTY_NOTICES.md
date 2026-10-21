@@ -75,6 +75,8 @@ Where a fresh description was written for this project, `needsRewrite` is false.
 
 The four SVGs under `apps/server/public/musclemap/` are generated from `@musclemap/assets` 1.1.0 (flat path data only). The package's photo/webp bodies are not shipped.
 
+OpenFitness adds the hip-flexor, serratus, and upper-back outlines in `apps/server/catalog/musclemap-extra-paths.json`. Those paths are our modification of the MIT diagram. They are merged when the SVGs are generated so a later package update does not erase them. The base geometry remains Jsplice / MuscleMap; the added paths are OpenFitness.
+
 - Package: https://www.npmjs.com/package/@musclemap/assets
 - Repository: https://github.com/Jsplice/MuscleMap
 - License: MIT

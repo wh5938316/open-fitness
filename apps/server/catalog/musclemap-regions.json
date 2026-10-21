@@ -60,9 +60,9 @@
     },
     "hip-flexors": {
       "groups": ["HIP_FLEXORS"],
-      "surfaces": [],
-      "matched": false,
-      "note": "HIP_FLEXORS is declared by @musclemap/assets 1.1.0 and has no traced path."
+      "surfaces": ["HIP_FLEXOR_LEFT", "HIP_FLEXOR_RIGHT"],
+      "matched": true,
+      "note": "OpenFitness addition. Iliopsoas along the upper inner hip, below the abs and above the inner quad."
     },
     "lower-back": {
       "groups": ["BACK_LOWER"],
@@ -80,10 +80,10 @@
       "matched": true
     },
     "serratus": {
-      "groups": [],
-      "surfaces": [],
-      "matched": false,
-      "note": "@musclemap/assets 1.1.0 has no serratus group or surface."
+      "groups": ["SERRATUS"],
+      "surfaces": ["SERRATUS_LEFT", "SERRATUS_RIGHT"],
+      "matched": true,
+      "note": "OpenFitness addition. Serrated slips on the front ribcage below the chest and lateral to the abs."
     },
     "trapezius": {
       "groups": ["TRAPEZIUS"],
@@ -96,10 +96,10 @@
       "matched": true
     },
     "upper-back": {
-      "groups": ["LATS", "RHOMBOIDS"],
-      "surfaces": ["LATISSIMUS_LEFT", "LATISSIMUS_RIGHT", "RHOMBOID_LEFT", "RHOMBOID_RIGHT"],
+      "groups": ["BACK_UPPER"],
+      "surfaces": ["UPPER_BACK_LEFT", "UPPER_BACK_RIGHT"],
       "matched": true,
-      "note": "BACK_UPPER has no traced path. Upper back highlights latissimus and rhomboid surfaces. Trapezius stays a separate region."
+      "note": "OpenFitness addition. Mid-back between the shoulder blades, below the trapezius and separate from latissimus and the package rhomboid paths."
     }
   }
 }

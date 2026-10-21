@@ -85,7 +85,12 @@ for (const name of requiredSvgs) {
   const svg = readFileSync(file, 'utf8');
   assert(svg.includes('viewBox="0 0 1024 1536"'), `${name} is missing the MuscleMap viewBox`);
   assert(svg.includes('data-surface='), `${name} is missing surface ids`);
+  assert(svg.includes('data-extra="open-fitness"'), `${name} is missing OpenFitness paths`);
   assert(!/webp|body-paths/i.test(svg), `${name} includes photo or openGym geometry`);
+  if (name.endsWith('front.svg')) {
+    assert(svg.includes('HIP_FLEXOR_LEFT') && svg.includes('SERRATUS_LEFT'), name);
+  }
+  if (name.endsWith('back.svg')) assert(svg.includes('UPPER_BACK_LEFT'), name);
 }
 for (const name of readdirSync(musclemap)) {
   const file = join(musclemap, name);
