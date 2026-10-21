@@ -129,6 +129,13 @@ for (const name of requiredSvgs) {
 }
 for (const name of readdirSync(musclemap)) {
   const file = join(musclemap, name);
+  if (name === 'previews') {
+    assert(statSync(file).isDirectory(), 'musclemap previews should be a directory');
+    for (const preview of readdirSync(file)) {
+      assert(!/\.webp$/i.test(preview), 'photo body was committed');
+    }
+    continue;
+  }
   assert(statSync(file).isFile(), 'unexpected musclemap entry');
   assert(!/\.webp$/i.test(name), 'photo body was committed');
 }

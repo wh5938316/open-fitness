@@ -17,4 +17,4 @@ Regenerate after a package upgrade:
 pnpm --filter @openfitness/server musclemap:svg
 ```
 
-`hip-flexors`, `serratus`, and `upper-back` are extra paths in `apps/server/catalog/musclemap-extra-paths.json`, traced for this project because `@musclemap/assets` 1.1.0 does not draw them. Trapezius stays separate from upper back. See `apps/server/catalog/musclemap-regions.json`.
+`hip-flexors`, `serratus`, and `upper-back` are extra paths in `apps/server/catalog/musclemap-extra-paths.json`, traced for this project because `@musclemap/assets` 1.1.0 does not draw them as separate catalogue regions. Serratus is four rib slips under the chest. Upper back is the rhomboid sheet inside the shoulder blade, separate from trapezius and latissimus. Highlight previews are in `previews/`. See `apps/server/catalog/musclemap-regions.json`.

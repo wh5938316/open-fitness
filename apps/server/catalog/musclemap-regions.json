@@ -83,7 +83,7 @@
       "groups": ["SERRATUS"],
       "surfaces": ["SERRATUS_LEFT", "SERRATUS_RIGHT"],
       "matched": true,
-      "note": "OpenFitness addition. Serrated slips on the front ribcage below the chest and lateral to the abs."
+      "note": "OpenFitness addition. Four finger-shaped slips on the lateral ribcage, in the notch under the chest and above the obliques."
     },
     "trapezius": {
       "groups": ["TRAPEZIUS"],
@@ -99,7 +99,7 @@
       "groups": ["BACK_UPPER"],
       "surfaces": ["UPPER_BACK_LEFT", "UPPER_BACK_RIGHT"],
       "matched": true,
-      "note": "OpenFitness addition. Mid-back between the shoulder blades, below the trapezius and separate from latissimus and the package rhomboid paths."
+      "note": "OpenFitness addition. Rhomboid sheet between the spine and the medial scapula, from the upper scapula to its lower tip, kept off the trapezius and medial to the lats."
     }
   }
 }
