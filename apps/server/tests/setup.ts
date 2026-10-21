@@ -30,13 +30,14 @@ beforeAll(async () => {
     statements.push(
       env.DB.prepare(
         `INSERT OR REPLACE INTO catalog_exercise_i18n(
-          exercise_id, locale, name, aliases, instructions, provenance
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
+          exercise_id, locale, name, aliases, description, instructions, provenance
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         row.exerciseId,
         row.locale,
         row.name,
         JSON.stringify(row.aliases),
+        (row as { description?: string | null }).description ?? null,
         row.instructions ?? null,
         JSON.stringify(row.provenance),
       ),

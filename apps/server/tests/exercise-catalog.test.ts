@@ -69,10 +69,28 @@ describe('exercise catalogue', () => {
       source: 'catalog',
     })) as { items: Entity<Exercise>[] };
     expect(chinese.items.some((item) => item.id === 'cat-0025')).toBe(true);
+    const pullups = (await service('zh-CN').execute('search_exercises', {
+      query: '引体向上',
+      limit: 20,
+      source: 'catalog',
+    })) as { items: Entity<Exercise>[] };
+    expect(pullups.items.some((item) => item.id === 'cat-0652')).toBe(true);
+    await env.DB.prepare(
+      `UPDATE catalog_exercise_i18n SET description = ? WHERE exercise_id = 'cat-0025'`,
+    )
+      .bind('仰卧把杠铃从胸前推起，这个探针句只用于检索。')
+      .run();
+    const byDescription = (await service('zh-CN').execute('search_exercises', {
+      query: '探针句只用于检索',
+      limit: 20,
+      source: 'catalog',
+    })) as { items: Entity<Exercise>[] };
+    expect(byDescription.items.map((item) => item.id)).toContain('cat-0025');
     const localized = (await service('zh-CN').execute('get_exercise', {
       id: 'cat-0025',
     })) as Entity<Exercise>;
     expect(localized.data.name).toBe('杠铃卧推');
+    expect(localized.data.description).toContain('探针句只用于检索');
     expect(localized.data.aliases).toContain('barbell bench press');
     expect(localized.data.diagram?.hrefs?.[0]?.href).toBe('/musclemap/male-front.svg');
     expect(localized.data.diagram?.gender).toBe('male');

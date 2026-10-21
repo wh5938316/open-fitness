@@ -602,10 +602,19 @@ try {
       ) VALUES ('cat-0001','0001','exercisedb',1,'{"name":"Example"}','example','waist','body weight','abs','strength',0,'2026-10-21T00:00:00.000Z')`,
     )
     .run();
+  const i18nDescription = migrations.find((migration) => migration.name.startsWith('0009'));
+  assert(i18nDescription, 'expected migration 0009');
+  await db.batch(i18nDescription.queries.map((query) => db.prepare(query)));
+  const descriptionColumn = await db.prepare(`PRAGMA table_info('catalog_exercise_i18n')`).all();
+  assert(
+    descriptionColumn.results.some((column) => column.name === 'description'),
+    'catalog_exercise_i18n.description was not added',
+  );
   console.log('migration 0005 preserved owner data and per-owner recovery');
   console.log('migration 0006 removed local WebAuthn tables');
   console.log('migration 0007 backfilled the earliest food barcode per owner');
   console.log('migration 0008 added the global exercise catalogue');
+  console.log('migration 0009 added Chinese exercise descriptions');
 } finally {
   await miniflare.dispose();
   rmSync(persist, { recursive: true, force: true });

@@ -18,6 +18,7 @@ interface ExerciseRow {
   needs_rewrite: number;
   zh_name: string | null;
   zh_aliases: string | null;
+  zh_description: string | null;
   zh_instructions: string | null;
   zh_provenance: string | null;
   sort_name?: string;
@@ -28,8 +29,8 @@ interface ExerciseRow {
 const columns = `catalog_exercises.id, catalog_exercises.external_id, catalog_exercises.source,
   catalog_exercises.catalog_version, catalog_exercises.data, catalog_exercises.updated_at,
   catalog_exercises.needs_rewrite,
-  i.name AS zh_name, i.aliases AS zh_aliases, i.instructions AS zh_instructions,
-  i.provenance AS zh_provenance`;
+  i.name AS zh_name, i.aliases AS zh_aliases, i.description AS zh_description,
+  i.instructions AS zh_instructions, i.provenance AS zh_provenance`;
 const joined = `FROM catalog_exercises
   LEFT JOIN catalog_exercise_i18n i
     ON i.exercise_id = catalog_exercises.id AND i.locale = 'zh-CN'`;
@@ -39,6 +40,7 @@ function translation(row: ExerciseRow): ExerciseTranslation | undefined {
   return {
     ...(row.zh_name ? { name: row.zh_name } : {}),
     aliases: row.zh_aliases ? (JSON.parse(row.zh_aliases) as string[]) : [],
+    ...(row.zh_description ? { description: row.zh_description } : {}),
     ...(row.zh_instructions ? { instructions: row.zh_instructions } : {}),
     provenance: JSON.parse(row.zh_provenance) as ExerciseTranslation['provenance'],
   };
@@ -102,10 +104,12 @@ export class D1ExerciseCatalog implements ExerciseCatalog {
           AND (
             ifnull(translation.name, '') LIKE ? ESCAPE '\\'
             OR ifnull(translation.aliases, '') LIKE ? ESCAPE '\\'
+            OR ifnull(translation.description, '') LIKE ? ESCAPE '\\'
+            OR ifnull(translation.instructions, '') LIKE ? ESCAPE '\\'
           )
       )
     )`);
-    params.push(contains, contains, contains);
+    params.push(contains, contains, contains, contains, contains);
     const cursor =
       options.cursor && 'mode' in options.cursor && options.cursor.mode === 'rank'
         ? options.cursor

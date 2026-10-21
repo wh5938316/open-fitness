@@ -27,6 +27,7 @@ const BACK = new Set(['gluteal', 'hamstring', 'lower-back', 'trapezius', 'tricep
 export interface ExerciseTranslation {
   name?: string;
   aliases?: string[];
+  description?: string;
   instructions?: string;
   provenance: { method: 'machine' | 'human'; reviewed: boolean; tool?: string };
 }
@@ -191,6 +192,7 @@ export function presentExercise(
   if (locale === 'zh-CN' && zh?.name) {
     aliases.add(copy.name);
     copy.name = zh.name;
+    if (zh.description) copy.description = zh.description;
     if (zh.instructions) copy.instructions = zh.instructions;
   } else if (zh?.name) aliases.add(zh.name);
   for (const alias of zh?.aliases ?? []) aliases.add(alias);

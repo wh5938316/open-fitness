@@ -283,6 +283,7 @@ const fixture = {
       locale: 'zh-CN',
       name: translations[id].name ?? null,
       aliases: translations[id].aliases ?? [],
+      description: translations[id].description ?? null,
       instructions: translations[id].instructions ?? null,
       provenance: translations[id].provenance,
     })),

@@ -152,6 +152,8 @@ export function searchText(exercise, translation) {
     ...(exercise.secondaryMuscles ?? []),
     exercise.movementCategory,
     translation?.name,
+    translation?.description,
+    translation?.instructions,
     ...(translation?.aliases ?? []),
     label(exercise.bodyPart, 'en'),
     label(exercise.bodyPart, 'zh-CN'),

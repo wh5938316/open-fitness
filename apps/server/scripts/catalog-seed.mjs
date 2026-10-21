@@ -82,16 +82,18 @@ for (const row of catalog.exercises) {
   if (!translation) continue;
   statements.push(
     `INSERT INTO catalog_exercise_i18n(
-      exercise_id, locale, name, aliases, instructions, provenance
+      exercise_id, locale, name, aliases, description, instructions, provenance
     ) VALUES (
       ${sqlString(row.id)}, 'zh-CN',
       ${translation.name ? sqlString(translation.name) : 'NULL'},
       ${sqlString(JSON.stringify(translation.aliases ?? []))},
+      ${translation.description ? sqlString(translation.description) : 'NULL'},
       ${translation.instructions ? sqlString(translation.instructions) : 'NULL'},
       ${sqlString(JSON.stringify(translation.provenance))}
     ) ON CONFLICT(exercise_id, locale) DO UPDATE SET
       name = excluded.name,
       aliases = excluded.aliases,
+      description = excluded.description,
       instructions = excluded.instructions,
       provenance = excluded.provenance;`,
   );

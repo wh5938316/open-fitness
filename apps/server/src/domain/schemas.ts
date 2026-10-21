@@ -177,6 +177,7 @@ export const muscleMapSchema = z.object({
 export const exerciseTranslationSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   aliases: z.array(z.string().max(200)).max(30).optional(),
+  description: z.string().max(20000).optional(),
   instructions: z.string().max(20000).optional(),
   provenance: z.object({
     method: z.enum(['machine', 'human']),
