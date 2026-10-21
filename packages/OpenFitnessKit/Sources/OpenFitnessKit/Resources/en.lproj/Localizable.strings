@@ -165,6 +165,7 @@
 "privacy" = "Your data, your server";
 "preview" = "Preview data";
 "foodProvider" = "Open Food Facts";
+"catalogDegraded" = "Open Food Facts is temporarily unavailable. Showing saved matches.";
 "noActiveWorkout" = "Choose a plan to get moving.";
 "nutritionVersion" = "Nutrition version";
 "additions" = "Extras for this meal";

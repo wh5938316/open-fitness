@@ -135,6 +135,11 @@ export interface Repository {
     operationId: string,
     requestHash: string,
   ): Promise<{ response: unknown } | null>;
+  findFoodByBarcode<T = Record<string, unknown>>(
+    ownerId: string,
+    barcode: string,
+  ): Promise<Entity<T> | null>;
+  listFoodBarcodes(ownerId: string): Promise<string[]>;
   commit(input: Commit): Promise<unknown>;
   healthExports(ownerId: string, limit: number, cursor?: string): Promise<unknown>;
 }

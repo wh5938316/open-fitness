@@ -129,14 +129,16 @@ struct IngredientPicker: View {
   @Environment(\.dismiss) private var dismiss
   var selected: (Ingredient) -> Void
   @State private var query = ""
-  @State private var items: [Food] = []
+  @State private var items: [FoodSearchHit] = []
   @State private var choosing: Food?
+  @State private var choosingFoodId: String?
   @State private var showingQuantity = false
   @State private var quantity = 100.0
   @State private var unit = "g"
   @State private var creating = false
   @State private var searching = false
   @State private var loadError: String?
+  @State private var catalogDegraded = false
   var body: some View {
     NavigationStack {
       List {
@@ -145,19 +147,35 @@ struct IngredientPicker: View {
         } label: {
           Label(model.text(.newFood), systemImage: "square.and.pencil")
         }
-        ForEach(Array(items.enumerated()), id: \.offset) { _, food in
+        if catalogDegraded {
+          Text(model.text(.catalogDegraded)).font(.footnote).foregroundStyle(.secondary)
+        }
+        ForEach(items) { hit in
           Button {
-            choosing = food
-            quantity = food.basis.quantity
-            unit = food.basis.unit
-            showingQuantity = true
+            let food = hit.food
+            if let savedId = hit.savedId {
+              choosing = food
+              choosingFoodId = savedId
+              quantity = food.basis.quantity
+              unit = food.basis.unit
+              showingQuantity = true
+            } else if let barcode = food.barcode {
+              model.perform {
+                let saved = try await model.importFood(barcode: barcode)
+                choosing = saved.data
+                choosingFoodId = saved.id
+                quantity = saved.data.basis.quantity
+                unit = saved.data.basis.unit
+                showingQuantity = true
+              }
+            }
           } label: {
             VStack(alignment: .leading, spacing: 5) {
-              Text(food.name).foregroundStyle(.primary)
+              Text(hit.food.name).foregroundStyle(.primary)
               Text(
-                "\(model.copy.number(food.nutrients.energyKcal)) \(model.text(.kcal)) / \(model.copy.number(food.basis.quantity)) \(food.basis.unit)"
+                "\(model.copy.number(hit.food.nutrients.energyKcal)) \(model.text(.kcal)) / \(model.copy.number(hit.food.basis.quantity)) \(hit.food.basis.unit)"
               ).font(.caption).foregroundStyle(.secondary)
-              if food.source.kind == "open_food_facts" {
+              if hit.food.source.kind == "open_food_facts" {
                 Text(model.text(.foodProvider)).font(.caption2).foregroundStyle(.secondary)
               }
             }
@@ -177,6 +195,7 @@ struct IngredientPicker: View {
       .task(id: query) {
         guard query.count >= 2 else {
           items = []
+          catalogDegraded = false
           return
         }
         do {
@@ -184,7 +203,8 @@ struct IngredientPicker: View {
           searching = true
           let result = try await model.searchFoods(query)
           if !Task.isCancelled {
-            items = result
+            items = result.hits
+            catalogDegraded = result.catalogDegraded
             loadError = nil
             searching = false
           }
@@ -218,7 +238,9 @@ struct IngredientPicker: View {
             ToolbarItem(placement: .confirmationAction) {
               Button(model.text(.addIngredient)) {
                 if let choosing {
-                  selected(.init(quantity: quantity, unit: unit, food: choosing))
+                  var ingredient = Ingredient(quantity: quantity, unit: unit, food: choosing)
+                  ingredient.foodId = choosingFoodId
+                  selected(ingredient)
                   dismiss()
                 }
               }.disabled(quantity <= 0)

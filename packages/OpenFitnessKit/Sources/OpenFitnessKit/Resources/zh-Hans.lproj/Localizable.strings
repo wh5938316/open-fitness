@@ -165,6 +165,7 @@
 "privacy" = "你的数据，你的服务";
 "preview" = "预览数据";
 "foodProvider" = "Open Food Facts";
+"catalogDegraded" = "Open Food Facts 暂时不可用，以下是已保存的匹配。";
 "noActiveWorkout" = "选择一个计划，开始动起来。";
 "nutritionVersion" = "营养版本";
 "additions" = "本餐加配";

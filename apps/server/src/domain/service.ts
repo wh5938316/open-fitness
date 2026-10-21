@@ -11,6 +11,9 @@ import type {
   Mutation,
   Repository,
 } from '../types';
+import { requireBarcode } from './barcode';
+import type { CatalogLookup, CatalogSearch } from './catalog';
+import { applyFoodEdit } from './food';
 import {
   dayBounds,
   foodNutrition,
@@ -47,8 +50,9 @@ import {
 } from './schemas';
 
 export interface FoodCatalog {
-  lookup(barcode: string): Promise<Food | null>;
-  search(query: string): Promise<Food[]>;
+  lookup(barcode: string): Promise<CatalogLookup>;
+  search(query: string): Promise<CatalogSearch>;
+  refresh(barcode: string): Promise<Food>;
 }
 export interface Prepared {
   response: unknown;
@@ -105,15 +109,29 @@ export class FitnessService {
       );
       if (replay) return replay.response;
     }
-    const result = await operation.run(args);
-    if (!isPrepared(result)) return result;
-    return this.repository.commit({
-      actor: this.actor,
-      operation: name,
-      operationId: String(args.operationId),
-      requestHash,
-      ...result,
-    });
+    return this.finish(operation, args, requestHash);
+  }
+  private async finish(
+    operation: Operation,
+    args: Record<string, unknown>,
+    requestHash: string,
+    attempt = 0,
+  ): Promise<unknown> {
+    try {
+      const result = await operation.run(args);
+      if (!isPrepared(result)) return result;
+      return await this.repository.commit({
+        actor: this.actor,
+        operation: operation.name,
+        operationId: String(args.operationId),
+        requestHash,
+        ...result,
+      });
+    } catch (error) {
+      if (attempt < 2 && error instanceof AppError && error.code === 'FOOD_BARCODE_EXISTS')
+        return this.finish(operation, args, requestHash, attempt + 1);
+      throw error;
+    }
   }
   async require<T>(kind: EntityKind, entityId: string): Promise<Entity<T>> {
     const doc = await this.repository.get<T>(this.actor.ownerId, kind, entityId);
@@ -186,36 +204,93 @@ export class FitnessService {
       })),
     };
   }
-  async ingredients(inputs: IngredientInput[]): Promise<Ingredient[]> {
-    const result = await Promise.all(
-      inputs.map(async (input) => {
-        const food = input.foodId
-          ? (await this.require<Food>('food', input.foodId)).data
-          : input.food!;
-        return {
-          id: input.id ?? crypto.randomUUID(),
-          foodId: input.foodId,
-          label: input.label ?? food.name,
-          quantity: input.quantity,
-          unit: input.unit,
-          food: structuredClone(food),
-          nutrients: foodNutrition(food, input.quantity, input.unit),
-        };
-      }),
+  async resolveIngredients(
+    inputs: IngredientInput[],
+    adopt: boolean,
+  ): Promise<{ ingredients: Ingredient[]; adopted: Entity<Food>[] }> {
+    const adopted: Entity<Food>[] = [];
+    const pending = new Map<string, Entity<Food>>();
+    const lookedUp = new Map<string, Food>();
+    const ingredients: Ingredient[] = [];
+    for (const input of inputs) {
+      let food: Food;
+      let foodId = input.foodId;
+      if (foodId) {
+        food = (await this.require<Food>('food', foodId)).data;
+      } else if (input.catalogBarcode) {
+        const code = requireBarcode(input.catalogBarcode);
+        const existing =
+          pending.get(code) ??
+          (await this.repository.findFoodByBarcode<Food>(this.actor.ownerId, code));
+        if (existing) {
+          food = existing.data;
+          foodId = existing.id;
+        } else if (lookedUp.has(code) && !adopt) {
+          food = lookedUp.get(code)!;
+          foodId = undefined;
+        } else {
+          const found = await this.catalog.lookup(code);
+          if (!found.food) throw notFound();
+          food = found.food;
+          if (adopt) {
+            const doc = await this.save<Food>('food', food, {});
+            pending.set(code, doc);
+            adopted.push(doc);
+            food = doc.data;
+            foodId = doc.id;
+          } else {
+            lookedUp.set(code, food);
+            foodId = undefined;
+          }
+        }
+      } else {
+        food = input.food!;
+      }
+      ingredients.push({
+        id: input.id ?? crypto.randomUUID(),
+        foodId,
+        label: input.label ?? food.name,
+        quantity: input.quantity,
+        unit: input.unit,
+        food: structuredClone(food),
+        nutrients: foodNutrition(food, input.quantity, input.unit),
+      });
+    }
+    assert(
+      new Set(ingredients.map((item) => item.id)).size === ingredients.length,
+      'DUPLICATE_INGREDIENT',
     );
-    assert(new Set(result.map((item) => item.id)).size === result.length, 'DUPLICATE_INGREDIENT');
-    return result;
+    return { ingredients, adopted };
+  }
+  private adopt(prepared: Prepared, adopted: Entity<Food>[]): Prepared {
+    if (!adopted.length) return prepared;
+    const response =
+      prepared.response && typeof prepared.response === 'object'
+        ? { ...(prepared.response as Record<string, unknown>), adoptedFoods: adopted }
+        : prepared.response;
+    return {
+      ...prepared,
+      response,
+      mutations: [...adopted.map((entity) => ({ entity })), ...prepared.mutations],
+    };
   }
   async readyAsset(assetId: string | null | undefined): Promise<void> {
     if (!assetId) return;
     const asset = await this.require<{ status: string }>('asset', assetId);
     assert(asset.data.status === 'ready', 'ASSET_NOT_READY');
   }
-  async addIngredients(base: Ingredient[], additions: IngredientInput[]): Promise<Ingredient[]> {
-    const result = [...base, ...(await this.ingredients(additions))];
-    assert(result.length <= 100, 'TOO_MANY_INGREDIENTS');
-    assert(new Set(result.map((item) => item.id)).size === result.length, 'DUPLICATE_INGREDIENT');
-    return result;
+  async addIngredients(
+    base: Ingredient[],
+    additions: IngredientInput[],
+  ): Promise<{ ingredients: Ingredient[]; adopted: Entity<Food>[] }> {
+    const extra = await this.resolveIngredients(additions, true);
+    const ingredients = [...base, ...extra.ingredients];
+    assert(ingredients.length <= 100, 'TOO_MANY_INGREDIENTS');
+    assert(
+      new Set(ingredients.map((item) => item.id)).size === ingredients.length,
+      'DUPLICATE_INGREDIENT',
+    );
+    return { ingredients, adopted: extra.adopted };
   }
   mealPrepared(doc: Entity<Meal>, expectedVersion?: number): Prepared {
     return this.prepared(doc, expectedVersion, {
@@ -276,6 +351,7 @@ export class FitnessService {
           healthExport: 'awaiting_device',
           healthImport: false,
           imageProcessing: 'provided_by_agent',
+          foodCatalog: 'cached_open_food_facts',
         },
       }),
     });
@@ -350,18 +426,46 @@ export class FitnessService {
         path: `/${plural}/:id`,
         run: async (args) => this.require(kind, args.id),
       });
-      this.add({
-        name:
-          kind === 'recipe' || kind === 'food' || kind === 'exercise'
-            ? `search_${suffix === 'exercise' ? 'exercises' : suffix + 's'}`
-            : `list_${suffix}s`,
-        description: `List or search your ${plural} using cursor pagination.`,
-        schema: listSchema,
-        readOnly: true,
-        method: 'GET',
-        path: `/${plural}`,
-        run: async (args) => this.repository.list(this.actor.ownerId, kind, args),
-      });
+      if (kind === 'food') {
+        this.add({
+          name: 'search_foods',
+          description:
+            "List or search this owner's foods by name, alias, or barcode. Set includeCatalog to add Open Food Facts matches that are not already saved, under catalog.items. catalog.catalogStatus is degraded when upstream is unavailable.",
+          schema: listSchema.extend({ includeCatalog: z.boolean().default(false) }),
+          readOnly: true,
+          method: 'GET',
+          path: '/foods',
+          run: async (args) => {
+            const page = await this.repository.list(this.actor.ownerId, 'food', args);
+            if (!args.includeCatalog) return page;
+            const query = args.query?.trim() ?? '';
+            if (query.length < 2)
+              return { ...page, catalog: { items: [], catalogStatus: 'ok' as const } };
+            const catalog = await this.catalog.search(query);
+            const owned = new Set(await this.repository.listFoodBarcodes(this.actor.ownerId));
+            return {
+              ...page,
+              catalog: {
+                items: catalog.items.filter((food) => !food.barcode || !owned.has(food.barcode)),
+                catalogStatus: catalog.catalogStatus,
+              },
+            };
+          },
+        });
+      } else {
+        this.add({
+          name:
+            kind === 'recipe' || kind === 'exercise'
+              ? `search_${suffix === 'exercise' ? 'exercises' : suffix + 's'}`
+              : `list_${suffix}s`,
+          description: `List or search your ${plural} using cursor pagination.`,
+          schema: listSchema,
+          readOnly: true,
+          method: 'GET',
+          path: `/${plural}`,
+          run: async (args) => this.repository.list(this.actor.ownerId, kind, args),
+        });
+      }
       if (kind !== 'asset')
         this.add({
           name: `delete_${suffix}`,
@@ -400,7 +504,10 @@ export class FitnessService {
     ] as const) {
       this.add({
         name: `save_${kind}`,
-        description: `Create or update a ${kind}. Supply expectedVersion when updating. Nutrition estimates must include their basis.`,
+        description:
+          kind === 'food'
+            ? 'Create or update a food. Supply expectedVersion when updating. Editing nutrients, basis, or serving size of an Open Food Facts food changes source.kind to user and keeps the barcode. Renames, aliases, and notes do not. Nutrition estimates must include their basis.'
+            : `Create or update a ${kind}. Supply expectedVersion when updating. Nutrition estimates must include their basis.`,
         schema: z.object({ ...mutation, data: schema }),
         readOnly: false,
         method: 'POST',
@@ -408,7 +515,13 @@ export class FitnessService {
         run: async (args) => {
           if (kind === 'exercise')
             for (const assetId of args.data.mediaAssetIds) await this.readyAsset(assetId);
-          const doc = await this.save(kind, args.data, args);
+          let data = args.data;
+          if (kind === 'food' && args.id) {
+            const current = await this.require<Food>('food', args.id);
+            if (current.version !== args.expectedVersion) throw conflict();
+            data = applyFoodEdit(current.data, args.data);
+          }
+          const doc = await this.save(kind, data, args);
           return this.prepared(doc, args.expectedVersion);
         },
       });
@@ -416,33 +529,109 @@ export class FitnessService {
     this.add({
       name: 'lookup_food',
       description:
-        'Look up a packaged product in Open Food Facts by barcode. Read-only; save the returned food explicitly to keep it.',
-      schema: z.object({ barcode: z.string().regex(/^\d{4,32}$/) }),
+        "Look up a barcode in this owner's foods, then the Open Food Facts cache, then upstream. localFood is set when the barcode is already saved. A stale cached product is returned when upstream is unavailable. Read-only; use import_food to adopt it.",
+      schema: z.object({ barcode: z.string().min(4).max(64) }),
       readOnly: true,
       method: 'GET',
       path: '/food-catalog/:barcode',
-      run: async (args) => ({ food: await this.catalog.lookup(args.barcode) }),
+      run: async (args) => {
+        const code = requireBarcode(args.barcode);
+        const localFood = await this.repository.findFoodByBarcode<Food>(this.actor.ownerId, code);
+        if (localFood) return { food: localFood.data, localFood, stale: false };
+        const found = await this.catalog.lookup(code);
+        return {
+          food: found.food,
+          localFood: null,
+          stale: found.stale,
+          ...(found.stale ? { catalogStatus: 'degraded' as const } : {}),
+        };
+      },
     });
     this.add({
       name: 'search_food_catalog',
       description:
-        'Search Open Food Facts products. Results may be incomplete; explicit estimates are supported for missing ingredients.',
+        'Deprecated. Use search_foods with includeCatalog instead. Searches the Open Food Facts cache and upstream catalog. When upstream is unavailable, returns cached matches and catalogStatus "degraded".',
       schema: z.object({ query: z.string().min(2).max(200) }),
       readOnly: true,
       method: 'GET',
       path: '/food-catalog',
-      run: async (args) => ({ items: await this.catalog.search(args.query) }),
+      run: async (args) => this.catalog.search(args.query),
+    });
+    this.add({
+      name: 'import_food',
+      description:
+        "Adopt an Open Food Facts product into this owner's foods by barcode. Repeating the import returns the existing food with created false. Twelve-digit UPC-A barcodes match their EAN-13 form.",
+      schema: z.object({ operationId, barcode: z.string().min(4).max(64) }),
+      readOnly: false,
+      method: 'POST',
+      path: '/foods/import',
+      run: async (args) => {
+        const code = requireBarcode(args.barcode);
+        const existing = await this.repository.findFoodByBarcode<Food>(this.actor.ownerId, code);
+        if (existing) return { response: { food: existing, created: false }, mutations: [] };
+        const found = await this.catalog.lookup(code);
+        if (!found.food) throw notFound();
+        const doc = await this.save<Food>('food', found.food, {});
+        const prepared = this.prepared(doc);
+        return {
+          ...prepared,
+          response: { food: doc, created: true, ...(found.stale ? { stale: true } : {}) },
+        };
+      },
+    });
+    this.add({
+      name: 'refresh_food',
+      description:
+        'Refresh a saved food from Open Food Facts. if_unmodified returns 409 when source.kind is no longer open_food_facts. overwrite replaces label nutrients and restores open_food_facts provenance while keeping aliases and notes. Meals and recipes are not rewritten.',
+      schema: z.object({
+        operationId,
+        id,
+        expectedVersion: z.number().int().positive(),
+        mode: z.enum(['if_unmodified', 'overwrite']),
+      }),
+      readOnly: false,
+      method: 'POST',
+      path: '/foods/:id/refresh',
+      run: async (args) => {
+        const current = await this.require<Food>('food', args.id);
+        if (current.version !== args.expectedVersion) throw conflict();
+        if (!current.data.barcode)
+          throw new AppError(422, 'FOOD_BARCODE_REQUIRED', 'invalidBarcode');
+        if (args.mode === 'if_unmodified' && current.data.source.kind !== 'open_food_facts')
+          throw new AppError(409, 'FOOD_MODIFIED', 'foodModified');
+        const latest = await this.catalog.refresh(current.data.barcode);
+        const data: Food = {
+          ...current.data,
+          name: latest.name,
+          nutrients: latest.nutrients,
+          basis: latest.basis,
+          barcode: current.data.barcode,
+          source: {
+            kind: 'open_food_facts',
+            reference: latest.source.reference ?? current.data.source.reference,
+            basis: latest.source.basis,
+            retrievedAt: latest.source.retrievedAt,
+            upstreamModifiedAt: latest.source.upstreamModifiedAt,
+          },
+        };
+        if (latest.servingSize) data.servingSize = latest.servingSize;
+        else delete data.servingSize;
+        return this.prepared(
+          await this.save<Food>('food', data, { id: current.id, expectedVersion: current.version }),
+          current.version,
+        );
+      },
     });
     this.add({
       name: 'calculate_nutrition',
       description:
-        'Calculate nutrition from food IDs or explicit food snapshots and quantities. Unknown nutrients remain null.',
+        'Calculate nutrition from food IDs, catalogBarcode values, or explicit food snapshots and quantities. catalogBarcode is resolved read-only and is not saved. Unknown nutrients remain null.',
       schema: z.object({ ingredients: ingredientsSchema }),
       readOnly: true,
       method: 'POST',
       path: '/nutrition/calculate',
       run: async (args) => {
-        const ingredients = await this.ingredients(args.ingredients);
+        const { ingredients } = await this.resolveIngredients(args.ingredients, false);
         return { ingredients, nutrients: sumNutrients(ingredients.map((item) => item.nutrients)) };
       },
     });
@@ -468,7 +657,7 @@ export class FitnessService {
     this.add({
       name: 'save_recipe',
       description:
-        'Create a reusable recipe or restaurant meal template. Quantities describe the entire batch; yield.servings defines standard portions. Updating affects future meals only.',
+        'Create a reusable recipe or restaurant meal template. Quantities describe the entire batch; yield.servings defines standard portions. Updating affects future meals only. An ingredient catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({ ...mutation, data: recipeSchema }),
       readOnly: false,
       method: 'POST',
@@ -476,7 +665,8 @@ export class FitnessService {
       run: async (args) => {
         await this.readyAsset(args.data.coverAssetId);
         await this.readyAsset(args.data.coverThumbnailAssetId);
-        const ingredients = await this.ingredients(args.data.ingredients);
+        const resolved = await this.resolveIngredients(args.data.ingredients, true);
+        const ingredients = resolved.ingredients;
         const nutrients = sumNutrients(ingredients.map((item) => item.nutrients));
         const previous = args.id ? await this.require<Recipe>('recipe', args.id) : null;
         const data: Recipe = {
@@ -490,22 +680,25 @@ export class FitnessService {
             : null,
         };
         const doc = await this.save<Recipe>('recipe', data, args);
-        return this.prepared(doc, args.expectedVersion, {
-          mediaReferences: [
-            {
-              assetId: data.coverAssetId ?? null,
-              targetKind: 'recipe',
-              targetId: doc.id,
-              slot: 'cover',
-            },
-          ],
-        });
+        return this.adopt(
+          this.prepared(doc, args.expectedVersion, {
+            mediaReferences: [
+              {
+                assetId: data.coverAssetId ?? null,
+                targetKind: 'recipe',
+                targetId: doc.id,
+                slot: 'cover',
+              },
+            ],
+          }),
+          resolved.adopted,
+        );
       },
     });
     this.add({
       name: 'log_meal',
       description:
-        'Record an actual meal from ingredient quantities and save an immutable nutrition snapshot.',
+        'Record an actual meal from ingredient quantities and save an immutable nutrition snapshot. An ingredient catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({
         operationId,
         occurredAt: isoDateTime,
@@ -518,7 +711,8 @@ export class FitnessService {
       path: '/meals',
       run: async (args) => {
         await this.readyAsset(args.imageAssetId);
-        const ingredients = await this.ingredients(args.ingredients);
+        const resolved = await this.resolveIngredients(args.ingredients, true);
+        const ingredients = resolved.ingredients;
         const doc = await this.save<Meal>(
           'meal',
           {
@@ -530,13 +724,13 @@ export class FitnessService {
           },
           {},
         );
-        return this.mealPrepared(doc);
+        return this.adopt(this.mealPrepared(doc), resolved.adopted);
       },
     });
     this.add({
       name: 'log_meal_from_recipe',
       description:
-        'Log a saved recipe by servings or cooked grams without reanalyzing it. Overrides replace absolute ingredient amounts after scaling; additions apply only to this meal.',
+        'Log a saved recipe by servings or cooked grams without reanalyzing it. Overrides replace absolute ingredient amounts after scaling; additions apply only to this meal. An addition catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({
         operationId,
         recipeId: id,
@@ -573,7 +767,8 @@ export class FitnessService {
           servings / recipe.data.yield.servings,
           args.overrides,
         );
-        const ingredients = await this.addIngredients(portion, args.additions);
+        const resolved = await this.addIngredients(portion, args.additions);
+        const ingredients = resolved.ingredients;
         const doc = await this.save<Meal>(
           'meal',
           {
@@ -586,13 +781,13 @@ export class FitnessService {
           },
           {},
         );
-        return this.mealPrepared(doc);
+        return this.adopt(this.mealPrepared(doc), resolved.adopted);
       },
     });
     this.add({
       name: 'revise_meal',
       description:
-        'Correct one recorded meal. This does not modify its source recipe or other meals.',
+        'Correct one recorded meal. This does not modify its source recipe or other meals. An ingredient or addition catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({
         operationId,
         id,
@@ -614,10 +809,18 @@ export class FitnessService {
         );
         const old = await this.require<Meal>('meal', args.id);
         await this.readyAsset(args.imageAssetId);
-        const base = args.ingredients
-          ? await this.ingredients(args.ingredients)
-          : portionIngredients(old.data.ingredients, 1, args.overrides ?? []);
-        const ingredients = await this.addIngredients(base, args.additions);
+        let adopted: Entity<Food>[] = [];
+        let ingredients: Ingredient[];
+        if (args.ingredients) {
+          const resolved = await this.resolveIngredients(args.ingredients, true);
+          ingredients = resolved.ingredients;
+          adopted = resolved.adopted;
+        } else {
+          const base = portionIngredients(old.data.ingredients, 1, args.overrides ?? []);
+          const resolved = await this.addIngredients(base, args.additions);
+          ingredients = resolved.ingredients;
+          adopted = resolved.adopted;
+        }
         const data: Meal = {
           ...old.data,
           ingredients,
@@ -628,7 +831,10 @@ export class FitnessService {
             : old.data.occurredAt,
           imageAssetId: args.imageAssetId === undefined ? old.data.imageAssetId : args.imageAssetId,
         };
-        return this.mealPrepared(await this.save<Meal>('meal', data, args), args.expectedVersion);
+        return this.adopt(
+          this.mealPrepared(await this.save<Meal>('meal', data, args), args.expectedVersion),
+          adopted,
+        );
       },
     });
     this.add({

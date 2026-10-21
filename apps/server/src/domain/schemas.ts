@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { barcodeFromReference, normalizeBarcode } from './barcode';
 
 export const id = z.string().min(1).max(128);
 export const operationId = z.string().min(8).max(128);
@@ -31,10 +32,19 @@ export const nutrientsSchema = z.object({
   fatG: quantity.nullable().default(null),
   fiberG: quantity.nullable().default(null),
 });
-export const foodSchema = z
+const absentString = z
+  .string()
+  .max(64)
+  .nullish()
+  .transform((value) => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
+  });
+const foodObject = z
   .object({
     name: z.string().min(1).max(200),
     aliases: z.array(z.string().max(200)).max(30).default([]),
+    barcode: absentString,
     nutrients: nutrientsSchema,
     basis: z.object({ quantity: positive, unit }),
     servingSize: z.object({ quantity: positive, unit: z.enum(['g', 'ml']) }).optional(),
@@ -42,30 +52,68 @@ export const foodSchema = z
     preparation: z.enum(['raw', 'cooked', 'as_sold']).default('as_sold'),
     source: z.object({
       kind: z.enum(['open_food_facts', 'user', 'bot_estimate']),
-      reference: z.string().max(2000).optional(),
-      basis: z.string().max(4000).optional(),
+      reference: z
+        .string()
+        .max(2000)
+        .nullish()
+        .transform((value) => value ?? undefined),
+      basis: z
+        .string()
+        .max(4000)
+        .nullish()
+        .transform((value) => value ?? undefined),
+      retrievedAt: isoDateTime.nullish().transform((value) => value ?? undefined),
+      upstreamModifiedAt: isoDateTime.nullish().transform((value) => value ?? undefined),
     }),
     notes,
   })
   .superRefine((food, ctx) => {
+    if (food.barcode && !normalizeBarcode(food.barcode))
+      ctx.addIssue({ code: 'custom', path: ['barcode'], message: 'Invalid barcode.' });
     if (food.source.kind === 'bot_estimate' && !food.source.basis?.trim())
       ctx.addIssue({
         code: 'custom',
         path: ['source', 'basis'],
         message: 'An estimate must explain its basis.',
       });
+    if (
+      food.source.kind === 'open_food_facts' &&
+      !(food.barcode && normalizeBarcode(food.barcode)) &&
+      !barcodeFromReference(food.source.reference)
+    )
+      ctx.addIssue({
+        code: 'custom',
+        path: ['barcode'],
+        message: 'Open Food Facts foods require a barcode.',
+      });
   });
+export const foodSchema = foodObject.transform((food) => {
+  const barcode =
+    (food.barcode ? normalizeBarcode(food.barcode) : null) ??
+    (food.source.kind === 'open_food_facts' ? barcodeFromReference(food.source.reference) : null);
+  if (!barcode) {
+    const rest = { ...food };
+    delete rest.barcode;
+    return rest;
+  }
+  return { ...food, barcode };
+});
 export const ingredientSchema = z
   .object({
-    id: id.optional(),
-    foodId: id.optional(),
+    id: id.nullish().transform((value) => value ?? undefined),
+    foodId: id.nullish().transform((value) => value ?? undefined),
     food: foodSchema.optional(),
-    label: z.string().max(200).optional(),
+    catalogBarcode: absentString,
+    label: z
+      .string()
+      .max(200)
+      .nullish()
+      .transform((value) => value ?? undefined),
     quantity: positive,
     unit,
   })
-  .refine((value) => Boolean(value.foodId || value.food), {
-    message: 'Provide foodId or an explicit food snapshot.',
+  .refine((value) => Boolean(value.foodId || value.food || value.catalogBarcode), {
+    message: 'Provide foodId, catalogBarcode, or an explicit food snapshot.',
   });
 export const ingredientsSchema = z.array(ingredientSchema).min(1).max(100);
 export const overrideSchema = z.object({ ingredientId: id, quantity, unit: unit.optional() });

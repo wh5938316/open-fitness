@@ -8,7 +8,8 @@ import {
   insufficientScope,
 } from '@cloudflare/workers-oauth-provider';
 import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
-import { OpenFoodFacts } from './adapters/open-food-facts';
+import { createFoodCatalog } from './adapters/cached-food-catalog';
+import { D1FoodCatalogStore } from './adapters/d1-food-catalog';
 import { D1HealthSyncStore } from './adapters/cloudflare-health';
 import { registerHealthOperations } from './domain/health';
 import {
@@ -37,16 +38,11 @@ import {
   loginPage,
 } from './web/pages';
 import { sha256 } from './crypto';
+import { requireBarcode } from './domain/barcode';
+import { foodSchema } from './domain/schemas';
 
 function createServices(env: Env, actor: Actor, origin: string) {
-  const service = new FitnessService(
-    new D1Repository(env.DB),
-    actor,
-    new OpenFoodFacts(
-      new KVCache(env.CACHE),
-      env.OFF_USER_AGENT ?? 'OpenFitness/0.1 (self-hosted)',
-    ),
-  );
+  const service = new FitnessService(new D1Repository(env.DB), actor, createFoodCatalog(env));
   const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
   media.register();
   registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
@@ -139,6 +135,8 @@ function businessApp(service: FitnessService, media: MediaService) {
       if (operation.method === 'GET') {
         input = { ...c.req.query() };
         if ('limit' in input) input.limit = Number(input.limit);
+        if (input.includeCatalog === 'true') input.includeCatalog = true;
+        else if (input.includeCatalog === 'false') input.includeCatalog = false;
       } else {
         try {
           input = await c.req.json();
@@ -313,6 +311,46 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     return c.json({
       data: { token: await signClerkTestToken(env.CLERK_TEST_PRIVATE_KEY, claims) },
     });
+  });
+  app.put('/__test/food-catalog', async (c) => {
+    const host = new URL(c.req.url).hostname;
+    if (env.CLERK_TEST_MODE !== '1' || (host !== 'localhost' && host !== '127.0.0.1'))
+      throw notFound();
+    let body: {
+      forceStatus?: string | null;
+      fixture?: { code?: string; name?: string; kcal?: number } | null;
+      product?: { code?: string; brands?: string | null; fetchedAt?: string; food?: unknown };
+    } = {};
+    try {
+      body = await c.req.json();
+    } catch {
+      throw new AppError(422, 'INVALID_JSON');
+    }
+    const cache = new KVCache(env.CACHE);
+    if (body.forceStatus === null) await env.CACHE.delete('off:test:force-status');
+    else if (
+      body.forceStatus === '503' ||
+      body.forceStatus === '429' ||
+      body.forceStatus === 'fixture'
+    )
+      await cache.put('off:test:force-status', body.forceStatus, 120);
+    else if (body.forceStatus !== undefined)
+      throw new AppError(422, 'INVALID_INPUT', 'invalidInput');
+    if (body.fixture === null) await env.CACHE.delete('off:test:fixture');
+    else if (body.fixture) await cache.put('off:test:fixture', body.fixture, 120);
+    if (body.product) {
+      const food = foodSchema.parse(body.product.food);
+      const code = requireBarcode(body.product.code ?? food.barcode ?? '');
+      await new D1FoodCatalogStore(env.DB).upsert({
+        code,
+        productName: food.name,
+        brands: body.product.brands ?? null,
+        food: { ...food, barcode: code },
+        upstreamModifiedAt: food.source.upstreamModifiedAt ?? null,
+        fetchedAt: body.product.fetchedAt ?? new Date().toISOString(),
+      });
+    }
+    return c.json({ data: { ok: true } });
   });
   app.post('/language', async (c) => {
     requireOrigin(c.req.raw, auth.origin);
@@ -559,6 +597,16 @@ function withHtml(headers: Headers): Headers {
 }
 export async function scheduled(env: Env): Promise<void> {
   await cleanupMedia(env);
+  try {
+    await createFoodCatalog(env).refreshStale();
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        event: 'catalog_refresh_failed',
+        code: error instanceof AppError ? error.code : 'INTERNAL_ERROR',
+      }),
+    );
+  }
   const cursor = await env.CACHE.get('maintenance:oauth-cursor');
   const result = await new AuthService(env)
     .helpers()

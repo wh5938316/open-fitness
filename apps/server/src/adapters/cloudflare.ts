@@ -1,4 +1,5 @@
 import { AppError, conflict } from '../errors';
+import { containsLike } from '../domain/search';
 import { healthStatements } from './cloudflare-health';
 import type {
   CacheStore,
@@ -50,17 +51,21 @@ export class D1Repository implements Repository {
     const conditions = ['owner_id=?', 'kind=?', 'deleted=0'];
     const values: (string | number)[] = [ownerId, kind];
     if (options.query) {
-      conditions.push('LOWER(data) LIKE ?');
-      values.push(
-        '%' +
-          options.query
-            .toLowerCase()
-            .replaceAll('\\', '\\\\')
-            .replaceAll('%', '\\%')
-            .replaceAll('_', '\\_') +
-          '%',
-      );
-      conditions[conditions.length - 1] += " ESCAPE '\\'";
+      const pattern = containsLike(options.query);
+      if (kind === 'food') {
+        conditions.push(`(
+          LOWER(COALESCE(json_extract(data, '$.name'), '')) LIKE ? ESCAPE '\\'
+          OR LOWER(COALESCE(json_extract(data, '$.barcode'), '')) LIKE ? ESCAPE '\\'
+          OR EXISTS (
+            SELECT 1 FROM json_each(documents.data, '$.aliases') AS alias
+            WHERE LOWER(alias.value) LIKE ? ESCAPE '\\'
+          )
+        )`);
+        values.push(pattern, pattern, pattern);
+      } else {
+        conditions.push("LOWER(data) LIKE ? ESCAPE '\\'");
+        values.push(pattern);
+      }
     }
     if (options.cursor) {
       let cursor: { date: string; id: string };
@@ -131,6 +136,29 @@ export class D1Repository implements Repository {
     if (row.request_hash !== requestHash)
       throw new AppError(409, 'IDEMPOTENCY_CONFLICT', 'idempotencyConflict');
     return { response: JSON.parse(row.response) };
+  }
+  async findFoodByBarcode<T>(ownerId: string, barcode: string): Promise<Entity<T> | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT * FROM documents
+         WHERE owner_id=? AND kind='food' AND deleted=0
+           AND json_extract(data, '$.barcode')=?
+         LIMIT 1`,
+      )
+      .bind(ownerId, barcode)
+      .first<Row>();
+    return row ? entity<T>(row) : null;
+  }
+  async listFoodBarcodes(ownerId: string): Promise<string[]> {
+    const rows = await this.db
+      .prepare(
+        `SELECT json_extract(data, '$.barcode') AS barcode FROM documents
+         WHERE owner_id=? AND kind='food' AND deleted=0
+           AND json_type(data, '$.barcode')='text'`,
+      )
+      .bind(ownerId)
+      .all<{ barcode: string }>();
+    return rows.results.map((row) => row.barcode);
   }
   async commit(input: Commit): Promise<unknown> {
     const replay = await this.replay(input.actor.ownerId, input.operationId, input.requestHash);
@@ -289,6 +317,8 @@ export class D1Repository implements Repository {
         throw new AppError(409, 'HEALTH_EXPORT_CONFLICT', 'healthLeaseExpired');
       if (text.includes('HEALTH_WRITER_BUSY'))
         throw new AppError(409, 'HEALTH_WRITER_BUSY', 'healthWriterConflict');
+      if (text.includes('documents_food_barcode') || text.includes('$.barcode'))
+        throw new AppError(409, 'FOOD_BARCODE_EXISTS', 'foodBarcodeExists');
       if (text.includes('VERSION_CONFLICT') || text.includes('UNIQUE constraint')) throw conflict();
       throw error;
     }

@@ -23,8 +23,11 @@ const actor = (locale: Locale = 'en'): Actor => ({
 });
 const service = (locale: Locale = 'en') =>
   new FitnessService(new D1Repository(env.DB), actor(locale), {
-    lookup: async () => null,
-    search: async () => [],
+    lookup: async () => ({ food: null, stale: false }),
+    search: async () => ({ items: [], catalogStatus: 'ok' }),
+    refresh: async () => {
+      throw new Error('catalog refresh is not configured');
+    },
   });
 const op = () => crypto.randomUUID();
 const food = (name: string, energy: number, protein: number, carbs: number, fat: number): Food =>

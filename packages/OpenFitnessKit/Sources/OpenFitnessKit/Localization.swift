@@ -168,6 +168,7 @@ public enum CopyKey: String, CaseIterable, Sendable {
   case privacy
   case preview
   case foodProvider
+  case catalogDegraded
   case noActiveWorkout
   case nutritionVersion
   case additions
