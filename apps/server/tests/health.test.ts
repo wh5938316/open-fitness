@@ -10,7 +10,13 @@ function phone(id: string, scopes = ['fitness:full', 'health:sync']) {
   const service = new FitnessService(
     new D1Repository(env.DB),
     { ownerId: 'owner', id, kind: 'bot', locale: 'en', timeZone: 'America/New_York', scopes },
-    { lookup: async () => null, search: async () => [] },
+    {
+      lookup: async () => ({ food: null, stale: false }),
+      search: async () => ({ items: [], catalogStatus: 'ok' as const }),
+      refresh: async () => {
+        throw new Error('catalog refresh is not configured');
+      },
+    },
   );
   registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
   return service;

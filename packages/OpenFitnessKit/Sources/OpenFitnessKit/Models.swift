@@ -71,15 +71,23 @@ public struct FoodSource: Codable, Sendable {
   public var kind: String
   public var reference: String?
   public var basis: String?
-  public init(kind: String = "user", reference: String? = nil, basis: String? = nil) {
+  public var retrievedAt: String?
+  public var upstreamModifiedAt: String?
+  public init(
+    kind: String = "user", reference: String? = nil, basis: String? = nil,
+    retrievedAt: String? = nil, upstreamModifiedAt: String? = nil
+  ) {
     self.kind = kind
     self.reference = reference
     self.basis = basis
+    self.retrievedAt = retrievedAt
+    self.upstreamModifiedAt = upstreamModifiedAt
   }
 }
 public struct Food: Codable, Sendable {
   public var name: String
   public var aliases: [String]?
+  public var barcode: String?
   public var nutrients: Nutrients
   public var basis: FoodBasis
   public var servingSize: FoodBasis?
@@ -88,9 +96,11 @@ public struct Food: Codable, Sendable {
   public var source: FoodSource
   public var notes: String?
   public init(
-    name: String, nutrients: Nutrients, basis: FoodBasis = .init(), source: FoodSource = .init()
+    name: String, nutrients: Nutrients, basis: FoodBasis = .init(), source: FoodSource = .init(),
+    barcode: String? = nil
   ) {
     self.name = name
+    self.barcode = barcode
     self.nutrients = nutrients
     self.basis = basis
     self.source = source

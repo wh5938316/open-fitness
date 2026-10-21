@@ -11,6 +11,16 @@ private struct CachedAccount: Codable {
   var savedAt: Date
 }
 
+struct FoodSearchHit: Identifiable, Sendable {
+  var id: String
+  var food: Food
+  var savedId: String?
+}
+struct FoodSearchResults: Sendable {
+  var hits: [FoodSearchHit]
+  var catalogDegraded: Bool
+}
+
 @MainActor @Observable
 final class AppModel {
   var serverAddress: String
@@ -539,22 +549,53 @@ final class AppModel {
       fields: ["expectedVersion": .number(Double(value.version))])
     await refresh()
   }
-  func searchFoods(_ query: String) async throws -> [Food] {
-    if query.allSatisfy(\.isNumber), query.count >= 4 {
-      struct Lookup: Decodable, Sendable { var food: Food? }
-      return try await api().request(Lookup.self, path: "/api/v1/food-catalog/\(query.pathSegment)")
-        .food.map { [$0] } ?? []
+  func searchFoods(_ query: String) async throws -> FoodSearchResults {
+    let digits = query.filter(\.isNumber)
+    if digits.count == query.count, [8, 12, 13, 14].contains(digits.count) {
+      struct Lookup: Decodable, Sendable {
+        var food: Food?
+        var localFood: Record<Food>?
+        var stale: Bool?
+      }
+      let lookup = try await api().request(
+        Lookup.self, path: "/api/v1/food-catalog/\(digits.pathSegment)")
+      if let saved = lookup.localFood {
+        return .init(
+          hits: [.init(id: saved.id, food: saved.data, savedId: saved.id)], catalogDegraded: false)
+      }
+      if let food = lookup.food {
+        return .init(
+          hits: [.init(id: food.barcode ?? digits, food: food, savedId: nil)],
+          catalogDegraded: lookup.stale == true)
+      }
+      return .init(hits: [], catalogDegraded: lookup.stale == true)
     }
-    struct Catalog: Decodable, Sendable { var items: [Food] }
+    struct Page: Decodable, Sendable {
+      struct Catalog: Decodable, Sendable {
+        var items: [Food]
+        var catalogStatus: String?
+      }
+      var items: [Record<Food>]
+      var catalog: Catalog?
+    }
     let encoded = query.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
-    async let saved = api().request(
-      RecordPage<Food>.self, path: "/api/v1/foods?query=\(encoded)&limit=30")
-    async let catalog = api().request(Catalog.self, path: "/api/v1/food-catalog?query=\(encoded)")
-    let local = (try? await saved.items.map(\.data)) ?? []
-    do { return local + (try await catalog.items) } catch {
-      if local.isEmpty { throw error }
-      return local
+    let page = try await api().request(
+      Page.self, path: "/api/v1/foods?query=\(encoded)&includeCatalog=true&limit=30")
+    var hits = page.items.map { FoodSearchHit(id: $0.id, food: $0.data, savedId: $0.id) }
+    for food in page.catalog?.items ?? [] {
+      hits.append(
+        .init(id: "catalog-" + (food.barcode ?? food.name), food: food, savedId: nil))
     }
+    return .init(hits: hits, catalogDegraded: page.catalog?.catalogStatus == "degraded")
+  }
+  func importFood(barcode: String) async throws -> Record<Food> {
+    struct Imported: Decodable, Sendable {
+      var food: Record<Food>
+      var created: Bool
+    }
+    return try await api().mutation(
+      Imported.self, path: "/api/v1/foods/import", fields: ["barcode": .string(barcode)]
+    ).food
   }
   func uploadCover(_ data: Data, recipe: Record<Recipe>) async throws {
     struct Ticket: Decodable, Sendable {

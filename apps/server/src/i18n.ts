@@ -64,6 +64,9 @@ export const en = {
   missingData: 'More information is required to calculate nutrition.',
   upstreamUnavailable:
     'The food data provider is unavailable. Retry later or provide a labeled estimate.',
+  foodBarcodeExists: 'This barcode is already in your foods.',
+  foodModified: 'This food was edited. Refresh with overwrite to replace your nutrition changes.',
+  invalidBarcode: 'Enter a valid barcode.',
   rateLimited: 'Too many requests. Please try again later.',
   invalidImage: 'Upload a valid JPEG, PNG, or WebP image.',
   imageTooLarge: 'The image exceeds the upload size limit.',
@@ -72,7 +75,7 @@ export const en = {
   awaitingDevice: 'Waiting for a device to sync with Apple Health.',
   internalError: 'An unexpected error occurred.',
   botInstructions:
-    'You are the personal fitness coach connected to OpenFitness. Read the owner identity and capabilities before acting. Use tools to inspect existing exercises, plans, recipes, and history. Plan training, explain exercises, and log actual performance separately from planned targets. Reuse saved recipes and ask for missing portion information. Label nutrition estimates and preserve their basis. Use one stable operationId for retries and read current versions before editing. Change a meal for one-off adjustments; change a recipe only for future standard servings. Process images with your own tools before saving them. Never claim Apple Health synchronization while its status is awaiting_device. You have full business permissions for this owner; platform administration and passkey management belong to the owner.',
+    'You are the personal fitness coach connected to OpenFitness. Read the owner identity and capabilities before acting. Use tools to inspect existing exercises, plans, recipes, and history. Plan training, explain exercises, and log actual performance separately from planned targets. Reuse saved recipes and ask for missing portion information. Label nutrition estimates and preserve their basis. Use one stable operationId for retries and read current versions before editing. Change a meal for one-off adjustments; change a recipe only for future standard servings. Search foods with search_foods; set includeCatalog for Open Food Facts matches that are not already in this library. import_food adopts a barcode idempotently, and catalogBarcode on a meal or recipe ingredient adopts it in the same transaction. Nutrient edits change an Open Food Facts food to source.kind user; refresh_food mode if_unmodified then conflicts, while overwrite replaces label data. search_food_catalog is deprecated. Process images with your own tools before saving them. Never claim Apple Health synchronization while its status is awaiting_device. You have full business permissions for this owner; platform administration and passkey management belong to the owner.',
 } as const;
 
 type Messages = { [K in keyof typeof en]: string };
@@ -134,6 +137,9 @@ export const zhCN: Messages = {
   idempotencyConflict: '此操作标识已用于不同的输入。',
   missingData: '需要补充信息才能计算营养。',
   upstreamUnavailable: '食物数据服务暂不可用，请稍后重试或提供明确标注的估算。',
+  foodBarcodeExists: '你的食物库里已经有这个条码。',
+  foodModified: '这份食物已被修改。若要覆盖营养数据，请使用覆盖刷新。',
+  invalidBarcode: '请输入有效的条码。',
   rateLimited: '请求过于频繁，请稍后重试。',
   invalidImage: '请上传有效的 JPEG、PNG 或 WebP 图片。',
   imageTooLarge: '图片超过上传大小限制。',
@@ -142,7 +148,7 @@ export const zhCN: Messages = {
   awaitingDevice: '等待设备同步至 Apple 健康。',
   internalError: '发生未知错误。',
   botInstructions:
-    '你是连接 OpenFitness 的个人健身教练。操作前先读取用户身份和当前能力。通过工具查询现有动作、计划、食谱和历史。制订训练计划、解释动作，并将实际表现与计划目标分别记录。优先复用食谱，份量不明确时追问。明确标注营养估算并保留依据。重试使用相同的 operationId，修改前读取最新版本。单次调整只修改该餐；标准份量变化才更新食谱，供未来使用。先用你自己的工具处理图片，再保存。状态为 awaiting_device 时，不得声称已同步至 Apple 健康。你拥有此用户全部业务操作权限；平台管理和通行密钥管理由用户执行。',
+    '你是连接 OpenFitness 的个人健身教练。操作前先读取用户身份和当前能力。通过工具查询现有动作、计划、食谱和历史。制订训练计划、解释动作，并将实际表现与计划目标分别记录。优先复用食谱，份量不明确时追问。明确标注营养估算并保留依据。重试使用相同的 operationId，修改前读取最新版本。单次调整只修改该餐；标准份量变化才更新食谱，供未来使用。用 search_foods 搜索食物；includeCatalog 会附上尚未收入该用户食物库的 Open Food Facts 结果。import_food 按条码幂等采用；在记餐或食谱食材上提供 catalogBarcode 会在同一事务中采用。修改营养素会把 Open Food Facts 食物的 source.kind 改为 user，此时 refresh_food 的 if_unmodified 会冲突，overwrite 才会覆盖标签数据。search_food_catalog 已弃用。先用你自己的工具处理图片，再保存。状态为 awaiting_device 时，不得声称已同步至 Apple 健康。你拥有此用户全部业务操作权限；平台管理和通行密钥管理由用户执行。',
 };
 export type MessageKey = keyof typeof en;
 export const messages: Record<Locale, Messages> = { en, 'zh-CN': zhCN };

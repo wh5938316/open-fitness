@@ -423,8 +423,147 @@ try {
     )?.data === mealData,
     'retiring local auth rewrote the meal',
   );
+  const catalogMigration = migrations.find((migration) => migration.name.startsWith('0007'));
+  assert(catalogMigration, 'expected migration 0007');
+  const offFood = (name, reference) =>
+    JSON.stringify({
+      name,
+      aliases: [],
+      nutrients: {
+        energyKcal: 1,
+        proteinG: null,
+        carbohydrateG: null,
+        fatG: null,
+        fiberG: null,
+      },
+      basis: { quantity: 100, unit: 'g' },
+      preparation: 'as_sold',
+      source: { kind: 'open_food_facts', reference, basis: 'Product label.' },
+      notes: '',
+    });
+  const insertFood = (ownerId, id, data, createdAt) =>
+    db
+      .prepare(
+        'INSERT INTO documents(owner_id,kind,id,version,data,deleted,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',
+      )
+      .bind(ownerId, 'food', id, 1, data, 0, createdAt, createdAt);
+  await db.batch([
+    insertFood(
+      'owner',
+      'food-early',
+      offFood('Early', 'https://world.openfoodfacts.org/product/123456789012'),
+      '2026-01-01T00:00:00.000Z',
+    ),
+    insertFood(
+      'owner',
+      'food-late',
+      offFood('Late', 'https://world.openfoodfacts.org/product/123456789012'),
+      '2026-02-01T00:00:00.000Z',
+    ),
+    insertFood(
+      'owner',
+      'food-ean8',
+      offFood('Short', 'https://world.openfoodfacts.org/product/12345678'),
+      '2026-01-02T00:00:00.000Z',
+    ),
+    insertFood(
+      'user-b',
+      'food-other-owner',
+      offFood('Other', 'https://world.openfoodfacts.org/product/123456789012'),
+      '2026-03-01T00:00:00.000Z',
+    ),
+    insertFood(
+      'owner',
+      'food-unparsed',
+      offFood('Mystery', 'https://example.test/not-a-product'),
+      '2026-01-03T00:00:00.000Z',
+    ),
+  ]);
+  const earlyRevisionBefore = await db
+    .prepare(
+      'SELECT COUNT(*) AS count FROM document_revisions WHERE owner_id=? AND kind=? AND id=?',
+    )
+    .bind('owner', 'food', 'food-early')
+    .first();
+  await db.batch(catalogMigration.queries.map((query) => db.prepare(query)));
+  const early = await db
+    .prepare('SELECT version,data FROM documents WHERE owner_id=? AND id=?')
+    .bind('owner', 'food-early')
+    .first();
+  const earlyData = JSON.parse(early.data);
+  assert(early.version === 2, 'backfilled food did not gain a revision version');
+  assert(earlyData.barcode === '0123456789012', '12-digit UPC-A was not stored as EAN-13');
+  assert(earlyData.name === 'Early', 'backfill rewrote the food name');
+  const earlyRevisionAfter = await db
+    .prepare(
+      'SELECT COUNT(*) AS count FROM document_revisions WHERE owner_id=? AND kind=? AND id=?',
+    )
+    .bind('owner', 'food', 'food-early')
+    .first();
+  assert(
+    earlyRevisionAfter.count === earlyRevisionBefore.count + 1,
+    'backfill did not record a new revision',
+  );
+  const late = await db
+    .prepare('SELECT version,data FROM documents WHERE owner_id=? AND id=?')
+    .bind('owner', 'food-late')
+    .first();
+  assert(
+    late.version === 1 && JSON.parse(late.data).barcode === undefined,
+    'duplicate barcode was backfilled onto a later food',
+  );
+  const ean8 = await db
+    .prepare("SELECT json_extract(data, '$.barcode') AS barcode FROM documents WHERE id=?")
+    .bind('food-ean8')
+    .first();
+  assert(ean8.barcode === '12345678', 'EAN-8 barcode was not preserved');
+  const otherOwner = await db
+    .prepare("SELECT json_extract(data, '$.barcode') AS barcode FROM documents WHERE id=?")
+    .bind('food-other-owner')
+    .first();
+  assert(otherOwner.barcode === '0123456789012', 'another owner lost the same barcode');
+  const unparsed = await db
+    .prepare('SELECT version,data FROM documents WHERE id=?')
+    .bind('food-unparsed')
+    .first();
+  assert(
+    unparsed.version === 1 && JSON.parse(unparsed.data).barcode === undefined,
+    'unparseable reference was rewritten',
+  );
+  assert(
+    (
+      await db
+        .prepare('SELECT data FROM documents WHERE owner_id=? AND id=?')
+        .bind('owner', 'meal-1')
+        .first()
+    )?.data === mealData,
+    'catalog migration rewrote a meal',
+  );
+  await expectFailure(
+    db,
+    'INSERT INTO documents(owner_id,kind,id,version,data,deleted,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',
+    [
+      'owner',
+      'food',
+      'food-duplicate',
+      1,
+      offFood('Duplicate', 'https://world.openfoodfacts.org/product/0123456789012').replace(
+        '"notes":""',
+        '"notes":"","barcode":"0123456789012"',
+      ),
+      0,
+      '2026-04-01T00:00:00.000Z',
+      '2026-04-01T00:00:00.000Z',
+    ],
+    'documents_food_barcode',
+  );
+  const catalog = await db
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='catalog_products'")
+    .first();
+  assert(catalog?.name === 'catalog_products', 'catalog_products was not created');
   console.log('migration 0005 preserved owner data and per-owner recovery');
   console.log('migration 0006 removed local WebAuthn tables');
+  console.log('migration 0007 backfilled the earliest food barcode per owner');
 } finally {
   await miniflare.dispose();
   rmSync(persist, { recursive: true, force: true });

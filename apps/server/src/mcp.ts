@@ -20,9 +20,14 @@ export async function handleMcp(request: Request, service: FitnessService): Prom
               readOnlyHint: operation.readOnly,
               destructiveHint: operation.name.startsWith('delete_'),
               idempotentHint: !operation.readOnly,
-              openWorldHint: ['lookup_food', 'search_food_catalog', 'import_recipe_image'].includes(
-                operation.name,
-              ),
+              openWorldHint: [
+                'lookup_food',
+                'search_food_catalog',
+                'search_foods',
+                'import_food',
+                'refresh_food',
+                'import_recipe_image',
+              ].includes(operation.name),
             },
           },
           async (args: any) => {
