@@ -6,6 +6,7 @@ dist/
 .env.*
 !.env.example
 **/public/auth.js
+**/public/auth-*.js
 **/public/README.md
 test-results/
 playwright-report/

@@ -26,8 +26,10 @@ import { resolveLocale, t } from './i18n';
 import { cleanupMedia, MediaService } from './media';
 import { handleMcp } from './mcp';
 import type { Actor, AuthProps, Env } from './types';
+import { handleClerkWebhook } from './clerk-webhook';
 import { signClerkTestToken } from './test-clerk-jwt';
 import {
+  accountPage,
   adminPage,
   clerkCompletePage,
   clerkSignOutPage,
@@ -378,12 +380,67 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       .all<{ id: string; name: string; created_at: string }>();
     return c.html(adminPage(await locale(c.req.raw), bots.results, session.owner.time_zone));
   });
+  app.get('/account', async (c) => {
+    const session = await auth.session(c.req.raw);
+    if (!session) return c.redirect('/sign-in?returnTo=%2Faccount');
+    const bots = await env.DB.prepare(
+      "SELECT id,name,created_at FROM bots WHERE owner_id=? AND status='active' ORDER BY created_at DESC",
+    )
+      .bind(session.owner.id)
+      .all<{ id: string; name: string; created_at: string }>();
+    return c.html(
+      accountPage(
+        await locale(c.req.raw),
+        bots.results,
+        session.owner.time_zone,
+        clerkPublishableKey(env) ?? undefined,
+      ),
+    );
+  });
+  app.post('/account/time-zone', async (c) => {
+    requireOrigin(c.req.raw, auth.origin);
+    const session = await auth.session(c.req.raw);
+    if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
+    const form = await c.req.parseBody();
+    const timeZone = typeof form.timeZone === 'string' ? form.timeZone.trim() : '';
+    if (!timeZone || timeZone.length > 100) throw new AppError(422, 'INVALID_TIME_ZONE');
+    try {
+      new Intl.DateTimeFormat('en', { timeZone }).format();
+    } catch {
+      throw new AppError(422, 'INVALID_TIME_ZONE');
+    }
+    await env.DB.prepare('UPDATE owners SET time_zone=? WHERE id=?')
+      .bind(timeZone, session.owner.id)
+      .run();
+    return c.redirect('/account', 303);
+  });
+  app.post('/account/sessions/revoke', async (c) => {
+    requireOrigin(c.req.raw, auth.origin);
+    const session = await auth.session(c.req.raw);
+    if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
+    await env.DB.prepare('UPDATE owners SET session_epoch=session_epoch+1 WHERE id=?')
+      .bind(session.owner.id)
+      .run();
+    c.header('Set-Cookie', auth.cookie(auth.sessionCookie, '', 0));
+    return c.redirect(clerkPublishableKey(env) ? '/auth/clerk/sign-out' : '/sign-in', 303);
+  });
+  app.post('/webhooks/clerk', (c) => handleClerkWebhook(c.req.raw, env));
   app.post('/admin/bots/:id/revoke', async (c) => {
     requireOrigin(c.req.raw, auth.origin);
     const session = await auth.session(c.req.raw);
     if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
     await auth.revokeBot(session.owner.id, c.req.param('id'));
-    return c.redirect('/admin', 303);
+    const referer = c.req.header('Referer');
+    let next = '/admin';
+    if (referer) {
+      try {
+        const path = new URL(referer).pathname;
+        if (path === '/account' || path === '/admin') next = path;
+      } catch {
+        next = '/admin';
+      }
+    }
+    return c.redirect(next, 303);
   });
   app.get('/authorize', async (c) => {
     const parsed = await auth.helpers().parseAuthRequest(c.req.raw);
@@ -437,6 +494,8 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       .bind(await sha256(token), Date.now())
       .first<{ owner_id: string }>();
     if (!ticket) throw new AppError(410, 'UPLOAD_EXPIRED', 'uploadExpired');
+    const uploadSession = await auth.session(c.req.raw);
+    if (uploadSession && uploadSession.owner.id !== ticket.owner_id) throw notFound();
     const owner = await auth.owner(ticket.owner_id);
     if (owner.status !== 'active') throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
     const actor = auth.ownerActor(owner, c.req.raw);
