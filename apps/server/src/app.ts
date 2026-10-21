@@ -207,7 +207,8 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     );
   });
   const locale = async (request: Request) => {
-    const owner = await auth.owner();
+    const session = await auth.session(request);
+    const owner = session?.owner ?? (await auth.owner());
     return resolveLocale(
       cookies(request).of_locale ?? owner.locale,
       request.headers.get('Accept-Language') ?? '',
@@ -222,7 +223,13 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
   app.get('/openapi.json', (c) => {
     const { service } = createServices(
       env,
-      { ownerId: 'owner', id: 'schema', kind: 'owner', locale: 'en', timeZone: 'America/New_York' },
+      {
+        ownerId: 'schema',
+        id: 'schema',
+        kind: 'owner',
+        locale: 'en',
+        timeZone: 'America/New_York',
+      },
       auth.origin,
     );
     return c.json(openApi(service, auth.origin));
@@ -252,8 +259,11 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     const form = await c.req.parseBody();
     if (form.locale !== 'en' && form.locale !== 'zh-CN') throw new AppError(422, 'INVALID_LOCALE');
     c.header('Set-Cookie', auth.cookie('of_locale', form.locale, 31536000));
-    if (await auth.session(c.req.raw))
-      await env.DB.prepare("UPDATE owners SET locale=? WHERE id='owner'").bind(form.locale).run();
+    const session = await auth.session(c.req.raw);
+    if (session)
+      await env.DB.prepare('UPDATE owners SET locale=? WHERE id=?')
+        .bind(form.locale, session.owner.id)
+        .run();
     return c.redirect(safeReturn(String(form.returnTo ?? '/admin')), 303);
   });
   app.post('/auth/passkeys/registration-options', async (c) => {
@@ -288,15 +298,17 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     const session = await auth.session(c.req.raw);
     if (!session) return c.redirect('/sign-in?returnTo=%2Fadmin');
     const bots = await env.DB.prepare(
-      "SELECT id,name,created_at FROM bots WHERE status='active' ORDER BY created_at DESC",
-    ).all<{ id: string; name: string; created_at: string }>();
+      "SELECT id,name,created_at FROM bots WHERE owner_id=? AND status='active' ORDER BY created_at DESC",
+    )
+      .bind(session.owner.id)
+      .all<{ id: string; name: string; created_at: string }>();
     return c.html(adminPage(await locale(c.req.raw), bots.results, session.owner.time_zone));
   });
   app.post('/admin/bots/:id/revoke', async (c) => {
     requireOrigin(c.req.raw, auth.origin);
-    if (!(await auth.session(c.req.raw)))
-      throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
-    await auth.revokeBot(c.req.param('id'));
+    const session = await auth.session(c.req.raw);
+    if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
+    await auth.revokeBot(session.owner.id, c.req.param('id'));
     return c.redirect('/admin', 303);
   });
   app.get('/authorize', async (c) => {
@@ -318,14 +330,16 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
   });
   app.post('/authorize', async (c) => {
     requireOrigin(c.req.raw, auth.origin);
-    if (!(await auth.session(c.req.raw)))
-      throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
+    const session = await auth.session(c.req.raw);
+    if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
     const form = await c.req.parseBody();
     if (typeof form.handle !== 'string' || (form.decision !== 'allow' && form.decision !== 'deny'))
       throw new AppError(422, 'INVALID_CONSENT');
     try {
-      await env.DB.prepare('INSERT INTO consent_claims VALUES(?,?)')
-        .bind(await sha256(form.handle), Date.now() + 1200000)
+      await env.DB.prepare(
+        'INSERT INTO consent_claims(handle_hash,expires_at,owner_id) VALUES(?,?,?)',
+      )
+        .bind(await sha256(form.handle), Date.now() + 1200000, session.owner.id)
         .run();
     } catch (error) {
       if (String(error).includes('UNIQUE constraint'))
@@ -337,15 +351,24 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       return new Response(null, { status: 303, headers: result.headers });
     }
     const approved = await auth.helpers().approveConsent(c.req.raw, form.handle);
-    const location = await auth.completeAuthorization(approved.request);
+    const location = await auth.completeAuthorization(approved.request, session.owner);
     approved.headers.set('Location', location);
     return new Response(null, { status: 303, headers: approved.headers });
   });
   app.put('/uploads/:token', async (c) => {
-    const actor = auth.ownerActor(await auth.owner(), c.req.raw);
+    const token = c.req.param('token');
+    const ticket = await env.DB.prepare(
+      'SELECT owner_id FROM upload_tickets WHERE token_hash=? AND used_at IS NULL AND expires_at>?',
+    )
+      .bind(await sha256(token), Date.now())
+      .first<{ owner_id: string }>();
+    if (!ticket) throw new AppError(410, 'UPLOAD_EXPIRED', 'uploadExpired');
+    const owner = await auth.owner(ticket.owner_id);
+    if (owner.status !== 'active') throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
+    const actor = auth.ownerActor(owner, c.req.raw);
     actor.id = 'upload-capability';
     const { media } = createServices(env, actor, auth.origin);
-    return c.json({ data: await media.upload(c.req.raw, c.req.param('token')) });
+    return c.json({ data: await media.upload(c.req.raw, token) });
   });
   app.all('/.well-known/oauth-protected-resource', (c) =>
     resource.fetch(c.req.raw, env, c.executionCtx as ExecutionContext),

@@ -14,14 +14,19 @@ export interface Env {
 
 export type Locale = 'en' | 'zh-CN';
 export interface Owner {
-  id: 'owner';
+  id: string;
   locale: Locale | null;
   time_zone: string;
   setup_completed: number;
   session_epoch: number;
+  health_writer_device_id: string | null;
+  clerk_user_id: string | null;
+  email: string | null;
+  status: 'active' | 'disabled';
+  created_at: number | null;
 }
 export interface Actor {
-  ownerId: 'owner';
+  ownerId: string;
   id: string;
   kind: 'owner' | 'bot';
   locale: Locale;
@@ -29,7 +34,7 @@ export interface Actor {
   scopes?: readonly string[];
 }
 export interface AuthProps {
-  ownerId: 'owner';
+  ownerId: string;
   botId: string;
   epoch: number;
 }
@@ -39,11 +44,11 @@ export interface OwnerSession {
   actor: Actor;
 }
 export interface IdentityProvider {
-  owner(): Promise<Owner>;
+  owner(id?: string): Promise<Owner>;
   session(request: Request): Promise<OwnerSession | null>;
   ownerActor(owner: Owner, request: Request): Actor;
   botActor(identity: AuthProps, request: Request, scopes?: readonly string[]): Promise<Actor>;
-  revokeBot(botId: string): Promise<void>;
+  revokeBot(ownerId: string, botId: string): Promise<void>;
 }
 export type EntityKind = 'exercise' | 'plan' | 'workout' | 'food' | 'recipe' | 'meal' | 'asset';
 export interface Entity<T = Record<string, unknown>> {

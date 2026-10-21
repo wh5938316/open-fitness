@@ -226,9 +226,15 @@ export class D1Repository implements Repository {
       statements.push(
         this.db
           .prepare(
-            'INSERT INTO upload_tickets(token_hash,asset_id,content_type,expires_at) VALUES(?,?,?,?)',
+            'INSERT INTO upload_tickets(token_hash,asset_id,content_type,expires_at,owner_id) VALUES(?,?,?,?,?)',
           )
-          .bind(ticket.tokenHash, ticket.assetId, ticket.contentType, ticket.expiresAt),
+          .bind(
+            ticket.tokenHash,
+            ticket.assetId,
+            ticket.contentType,
+            ticket.expiresAt,
+            input.actor.ownerId,
+          ),
       );
     }
     for (const mutation of input.mutations)
@@ -257,13 +263,16 @@ export class D1Repository implements Repository {
     }
     statements.push(
       this.db
-        .prepare('INSERT INTO audit_events VALUES(?,?,?,?,?)')
+        .prepare(
+          'INSERT INTO audit_events(id,actor_id,operation,target_id,created_at,owner_id) VALUES(?,?,?,?,?,?)',
+        )
         .bind(
           crypto.randomUUID(),
           input.actor.id,
           input.operation,
           input.mutations[0]?.entity.id ?? null,
           now,
+          input.actor.ownerId,
         ),
     );
     try {
