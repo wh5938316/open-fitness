@@ -120,12 +120,12 @@ export function contentSecurityPolicy(env: Env, clerkDocument: boolean): string 
   if (!clerkDocument || !frontend) return strict;
   return [
     "default-src 'self'",
-    `script-src 'self' ${frontend} https://challenges.cloudflare.com`,
+    `script-src 'self' ${frontend} https://challenges.cloudflare.com https://*.protect.clerk.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' https://img.clerk.com",
-    `connect-src 'self' ${frontend} https://clerk-telemetry.com`,
+    `connect-src 'self' ${frontend} https://clerk-telemetry.com https://*.clerk-telemetry.com https://*.protect.clerk.com:*`,
     "worker-src 'self' blob:",
-    'frame-src https://challenges.cloudflare.com',
+    "frame-src 'self' https://challenges.cloudflare.com https://*.protect.clerk.com",
     "frame-ancestors 'none'",
     "base-uri 'none'",
     `form-action 'self' ${frontend}`,

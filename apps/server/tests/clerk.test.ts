@@ -293,6 +293,7 @@ describe('Clerk session exchange', () => {
     const plain = await request('/sign-in', withEnv({}));
     expect(plain.headers.get('Content-Security-Policy')).toContain("script-src 'self'");
     expect(plain.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
+    expect(plain.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
     const runtime = clerkEnv();
     const previous = await env.DB.prepare('SELECT setup_completed FROM owners WHERE id=?')
       .bind('owner')
@@ -300,19 +301,65 @@ describe('Clerk session exchange', () => {
     await env.DB.prepare('UPDATE owners SET setup_completed=1 WHERE id=?').bind('owner').run();
     try {
       const signIn = await request('/sign-in', runtime);
-      expect(signIn.headers.get('Content-Security-Policy')).toContain('https://clerk.example.test');
+      const policy = signIn.headers.get('Content-Security-Policy');
+      expect(policy).toContain(
+        "script-src 'self' https://clerk.example.test https://challenges.cloudflare.com https://*.protect.clerk.com",
+      );
+      expect(policy).toContain(
+        "connect-src 'self' https://clerk.example.test https://clerk-telemetry.com https://*.clerk-telemetry.com https://*.protect.clerk.com:*",
+      );
+      expect(policy).toContain(
+        "frame-src 'self' https://challenges.cloudflare.com https://*.protect.clerk.com",
+      );
       expect(await signIn.text()).toContain('data-clerk-key="pk_test_example"');
       const admin = await request('/admin', runtime);
       expect(admin.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
+      expect(admin.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
       const complete = await request('/auth/clerk/complete?returnTo=/admin', runtime);
       expect(complete.headers.get('Content-Security-Policy')).toContain(
-        'https://challenges.cloudflare.com',
+        'https://*.protect.clerk.com:*',
       );
       expect(complete.headers.get('Content-Security-Policy')).toContain('https://img.clerk.com');
+      const signOut = await request('/auth/clerk/sign-out', runtime);
+      expect(signOut.headers.get('Content-Security-Policy')).toContain(
+        'https://*.protect.clerk.com',
+      );
     } finally {
       await env.DB.prepare('UPDATE owners SET setup_completed=? WHERE id=?')
         .bind(previous?.setup_completed ?? 0, 'owner')
         .run();
     }
+  });
+
+  it('forwards hashed auth chunks to ASSETS', async () => {
+    const fetched: string[] = [];
+    const assets: Env['ASSETS'] = {
+      fetch(input: RequestInfo | URL, init?: RequestInit) {
+        const request = new Request(input, init);
+        fetched.push(new URL(request.url).pathname);
+        return Promise.resolve(
+          new Response('chunk', { headers: { 'content-type': 'text/javascript' } }),
+        );
+      },
+      connect() {
+        throw new Error('ASSETS.connect is not used');
+      },
+    };
+    const runtime = withEnv({ ASSETS: assets });
+    const chunk = await request('/auth-TQJJ5TGU.js', runtime);
+    expect(chunk.status).toBe(200);
+    expect(chunk.headers.get('content-type')).toContain('javascript');
+    expect(await chunk.text()).toBe('chunk');
+    const localization = await request('/auth-2A7M5HZH.js', runtime);
+    expect(localization.status).toBe(200);
+    const entry = await request('/auth.js', runtime);
+    expect(entry.status).toBe(200);
+    expect(fetched).toEqual(['/auth-TQJJ5TGU.js', '/auth-2A7M5HZH.js', '/auth.js']);
+    fetched.length = 0;
+    for (const path of ['/auth-TQJJ5TGU.js.map', '/assets/auth-TQJJ5TGU.js', '/auth-.js']) {
+      const rejected = await request(path, runtime);
+      expect(rejected.status).toBe(404);
+    }
+    expect(fetched).toEqual([]);
   });
 });
