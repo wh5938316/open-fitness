@@ -4,6 +4,15 @@ Clerk is the identity provider for new sign-ins. OpenFitness still issues its ow
 `__Host-of_session` cookie after a one-time token exchange. Clerk session JWTs are
 not accepted as API or MCP bearer tokens.
 
+`/sign-in` redirects to Clerk's hosted Account Portal. It does not embed Clerk's
+sign-in component. A development Frontend API such as
+`https://example.clerk.accounts.dev` uses `https://example.accounts.dev/sign-in`.
+A production Frontend API `https://clerk.example.com` uses
+`https://accounts.example.com/sign-in`. The link always includes `redirect_url`
+pointing at `/auth/clerk/complete` on `PUBLIC_BASE_URL`. That page loads Clerk.js
+only to call `session.getToken()` and exchange it for the local cookie. The
+Account Portal itself stays in English.
+
 Use a Clerk **development** instance for local and `workers.dev` work. A production
 Clerk instance needs a `clerk.<your-domain>` CNAME, and `*.workers.dev` cannot host
 that record. Production custom domains are an operations follow-up.

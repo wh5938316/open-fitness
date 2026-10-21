@@ -14,6 +14,7 @@ import { registerHealthOperations } from './domain/health';
 import {
   AuthService,
   FULL_SCOPE,
+  clerkAccountPortalUrl,
   clerkPublishableKey,
   contentSecurityPolicy,
   cookies,
@@ -209,9 +210,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       'Content-Security-Policy',
       contentSecurityPolicy(
         env,
-        ['/sign-in', '/auth/clerk/complete', '/auth/clerk/sign-out', '/account'].includes(
-          c.req.path,
-        ),
+        ['/auth/clerk/complete', '/auth/clerk/sign-out'].includes(c.req.path),
       ),
     );
     const length = Number(c.req.header('Content-Length') || 0);
@@ -262,9 +261,13 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
   app.get('/sign-in', async (c) => {
     const returnTo = safeReturn(c.req.query('returnTo'));
     if (await auth.session(c.req.raw)) return c.redirect(returnTo);
-    return c.html(
-      loginPage(await locale(c.req.raw), returnTo, clerkPublishableKey(env) ?? undefined),
-    );
+    const complete = new URL('/auth/clerk/complete', auth.origin);
+    complete.searchParams.set('returnTo', returnTo);
+    const portal = clerkPublishableKey(env)
+      ? clerkAccountPortalUrl(env.CLERK_FRONTEND_API, 'sign-in', complete.href)
+      : null;
+    if (!portal) return c.html(loginPage(await locale(c.req.raw), returnTo));
+    return c.redirect(portal);
   });
   app.get('/auth/clerk/complete', async (c) => {
     const key = clerkPublishableKey(env);
@@ -358,7 +361,8 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
         await locale(c.req.raw),
         bots.results,
         session.owner.time_zone,
-        clerkPublishableKey(env) ?? undefined,
+        clerkAccountPortalUrl(env.CLERK_FRONTEND_API, 'user', auth.origin + '/account') ??
+          undefined,
       ),
     );
   });
