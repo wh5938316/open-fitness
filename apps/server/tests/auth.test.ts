@@ -24,11 +24,9 @@ async function ownerSession(): Promise<string> {
   const owner = await new AuthService(env).owner();
   await env.DB.batch([
     env.DB.prepare("UPDATE owners SET setup_completed=1 WHERE id='owner'"),
-    env.DB.prepare('INSERT INTO sessions VALUES(?,?,?)').bind(
-      await sha256(token),
-      owner.session_epoch,
-      Date.now() + 600000,
-    ),
+    env.DB.prepare(
+      'INSERT INTO sessions(token_hash,epoch,expires_at,owner_id,created_at) VALUES(?,?,?,?,?)',
+    ).bind(await sha256(token), owner.session_epoch, Date.now() + 600000, owner.id, Date.now()),
   ]);
   return 'of_session=' + token;
 }
@@ -465,7 +463,10 @@ describe('OAuth and official MCP client interoperability', () => {
     });
     expect(refresh.status).toBe(200);
     await client.close();
-    await result.auth.revokeBot(context.structuredContent.data.actorId);
+    await result.auth.revokeBot(
+      context.structuredContent.data.ownerId,
+      context.structuredContent.data.actorId,
+    );
     const revoked = await request('/api/v1/agent-context', {
       headers: { Authorization: 'Bearer ' + tokens.access_token },
     });

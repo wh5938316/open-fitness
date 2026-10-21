@@ -71,6 +71,27 @@ export function requireOrigin(request: Request, origin: string): void {
   if (request.headers.get('Origin') !== origin)
     throw new AppError(403, 'INVALID_ORIGIN', 'forbidden');
 }
+const OWNER_COLUMNS =
+  'id, locale, time_zone, setup_completed, session_epoch, health_writer_device_id, clerk_user_id, email, status, created_at';
+function prefixedOwnerColumns(alias: string): string {
+  return OWNER_COLUMNS.split(', ')
+    .map((column) => `${alias}.${column}`)
+    .join(', ');
+}
+function ownerRecord(row: Owner): Owner {
+  return {
+    id: row.id,
+    locale: row.locale,
+    time_zone: row.time_zone,
+    setup_completed: row.setup_completed,
+    session_epoch: row.session_epoch,
+    health_writer_device_id: row.health_writer_device_id,
+    clerk_user_id: row.clerk_user_id,
+    email: row.email,
+    status: row.status,
+    created_at: row.created_at,
+  };
+}
 export class AuthService implements IdentityProvider {
   readonly origin: string;
   readonly sessionCookie: string;
@@ -95,8 +116,10 @@ export class AuthService implements IdentityProvider {
   helpers(): OAuthHelpers {
     return this.authorizationServer.getOAuthApi(this.env);
   }
-  async owner(): Promise<Owner> {
-    const owner = await this.env.DB.prepare("SELECT * FROM owners WHERE id='owner'").first<Owner>();
+  async owner(id = 'owner'): Promise<Owner> {
+    const owner = await this.env.DB.prepare(`SELECT ${OWNER_COLUMNS} FROM owners WHERE id=?`)
+      .bind(id)
+      .first<Owner>();
     if (!owner) throw new AppError(503, 'DATABASE_NOT_MIGRATED', 'internalError');
     return owner;
   }
@@ -104,20 +127,21 @@ export class AuthService implements IdentityProvider {
     const value = cookies(request)[this.sessionCookie];
     if (!value) return null;
     const tokenHash = await sha256(value);
-    const session = await this.env.DB.prepare(
-      'SELECT s.epoch,s.expires_at FROM sessions s WHERE token_hash=?',
+    const row = await this.env.DB.prepare(
+      `SELECT ${prefixedOwnerColumns('owners')}, s.epoch AS issued_epoch, s.expires_at
+       FROM sessions s JOIN owners ON owners.id = s.owner_id WHERE s.token_hash=?`,
     )
       .bind(tokenHash)
-      .first<{ epoch: number; expires_at: number }>();
-    if (!session || session.expires_at <= Date.now()) return null;
-    const owner = await this.owner();
-    if (session.epoch !== owner.session_epoch) return null;
+      .first<Owner & { issued_epoch: number; expires_at: number }>();
+    if (!row || row.expires_at <= Date.now() || row.issued_epoch !== row.session_epoch) return null;
+    if (row.status !== 'active') return null;
+    const owner = ownerRecord(row);
     return { owner, tokenHash, actor: this.ownerActor(owner, request) };
   }
   ownerActor(owner: Owner, request: Request): Actor {
     return {
-      ownerId: 'owner',
-      id: 'owner',
+      ownerId: owner.id,
+      id: owner.id,
       kind: 'owner',
       locale: resolveLocale(
         owner.locale ?? cookies(request).of_locale,
@@ -132,21 +156,24 @@ export class AuthService implements IdentityProvider {
     request: Request,
     scopes: readonly string[] = [FULL_SCOPE],
   ): Promise<Actor> {
-    if (!props || props.ownerId !== 'owner' || typeof props.botId !== 'string')
+    if (!props || typeof props.ownerId !== 'string' || typeof props.botId !== 'string')
       throw new AppError(401, 'INVALID_BOT_IDENTITY', 'unauthorized');
-    const [owner, bot] = await Promise.all([
-      this.owner(),
-      this.env.DB.prepare('SELECT status,epoch FROM bots WHERE id=?')
-        .bind(props.botId)
-        .first<{ status: string; epoch: number }>(),
-    ]);
+    const row = await this.env.DB.prepare(
+      `SELECT ${prefixedOwnerColumns('owners')}, b.status AS bot_status, b.epoch AS bot_epoch, b.owner_id AS bot_owner_id
+       FROM bots b JOIN owners ON owners.id = b.owner_id WHERE b.id=?`,
+    )
+      .bind(props.botId)
+      .first<Owner & { bot_status: string; bot_epoch: number; bot_owner_id: string }>();
     if (
-      !bot ||
-      bot.status !== 'active' ||
-      bot.epoch !== owner.session_epoch ||
-      props.epoch !== owner.session_epoch
+      !row ||
+      row.bot_owner_id !== props.ownerId ||
+      row.status !== 'active' ||
+      row.bot_status !== 'active' ||
+      row.bot_epoch !== row.session_epoch ||
+      props.epoch !== row.session_epoch
     )
       throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
+    const owner = ownerRecord(row);
     return { ...this.ownerActor(owner, request), id: props.botId, kind: 'bot', scopes };
   }
   cookie(name: string, value: string, seconds: number): string {
@@ -169,8 +196,8 @@ export class AuthService implements IdentityProvider {
     requireOrigin(request, this.origin);
     await this.rateLimit(request);
     const input = parseAuthInput(registrationOptionsSchema, raw);
-    const owner = await this.owner();
     const session = await this.session(request);
+    const owner = session?.owner ?? (await this.owner());
     const setup = !owner.setup_completed;
     if (setup) {
       if (
@@ -181,12 +208,16 @@ export class AuthService implements IdentityProvider {
       )
         throw new AppError(403, 'INVALID_SETUP_TOKEN', 'forbidden');
     } else if (!session) throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
-    const passkeys = await this.env.DB.prepare('SELECT id FROM passkeys').all<{ id: string }>();
+    const passkeys = await this.env.DB.prepare('SELECT id FROM passkeys WHERE owner_id=?')
+      .bind(owner.id)
+      .all<{ id: string }>();
     const options = await generateRegistrationOptions({
       rpName: 'OpenFitness',
       rpID: new URL(this.origin).hostname,
-      userName: 'owner',
-      userID: new TextEncoder().encode('openfitness-owner'),
+      // The original owner keeps the stable WebAuthn user handle already stored
+      // on authenticators. Other owners get their own handle.
+      userName: owner.id,
+      userID: new TextEncoder().encode(owner.id === 'owner' ? 'openfitness-owner' : owner.id),
       attestationType: 'none',
       excludeCredentials: passkeys.results.map((key) => ({ id: key.id })),
       authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
@@ -225,13 +256,15 @@ export class AuthService implements IdentityProvider {
     requireOrigin(request, this.origin);
     const input = parseAuthInput(registrationSchema, raw);
     const challenge = await this.consumeChallenge(request, ['setup', 'register']);
-    const owner = await this.owner();
+    const session = await this.session(request);
+    let owner: Owner;
     if (challenge.kind === 'setup') {
+      owner = await this.owner();
       if (owner.setup_completed) throw new AppError(403, 'SETUP_ALREADY_COMPLETED', 'forbidden');
     } else {
-      const session = await this.session(request);
       if (!session || session.tokenHash !== challenge.session_hash)
         throw new AppError(401, 'SESSION_REQUIRED', 'unauthorized');
+      owner = session.owner;
     }
     let verification;
     try {
@@ -252,15 +285,20 @@ export class AuthService implements IdentityProvider {
     const credential = verification.registrationInfo.credential;
     const statements: D1PreparedStatement[] = [];
     if (challenge.kind === 'setup')
-      statements.push(this.env.DB.prepare("INSERT INTO bootstrap_claims(id) VALUES('owner')"));
+      statements.push(
+        this.env.DB.prepare('INSERT INTO bootstrap_claims(id) VALUES(?)').bind(owner.id),
+      );
     statements.push(
-      this.env.DB.prepare('INSERT INTO passkeys VALUES(?,?,?,?,?,?)').bind(
+      this.env.DB.prepare(
+        'INSERT INTO passkeys(id,public_key,counter,transports,name,created_at,owner_id) VALUES(?,?,?,?,?,?,?)',
+      ).bind(
         credential.id,
         base64url(credential.publicKey),
         credential.counter,
         JSON.stringify(credential.transports ?? []),
         input.name || 'Passkey',
         new Date().toISOString(),
+        owner.id,
       ),
     );
     if (challenge.kind === 'setup') {
@@ -271,17 +309,22 @@ export class AuthService implements IdentityProvider {
         throw new AppError(503, 'INVALID_DEFAULT_TIME_ZONE', 'internalError');
       }
       statements.push(
-        this.env.DB.prepare(
-          "UPDATE owners SET setup_completed=1,time_zone=? WHERE id='owner'",
-        ).bind(timeZone),
+        this.env.DB.prepare('UPDATE owners SET setup_completed=1,time_zone=? WHERE id=?').bind(
+          timeZone,
+          owner.id,
+        ),
       );
     }
     const token = randomToken();
     statements.push(
-      this.env.DB.prepare('INSERT INTO sessions VALUES(?,?,?)').bind(
+      this.env.DB.prepare(
+        'INSERT INTO sessions(token_hash,epoch,expires_at,owner_id,created_at) VALUES(?,?,?,?,?)',
+      ).bind(
         await sha256(token),
         owner.session_epoch,
         Date.now() + 604800000,
+        owner.id,
+        Date.now(),
       ),
     );
     await this.env.DB.batch(statements);
@@ -308,7 +351,13 @@ export class AuthService implements IdentityProvider {
     const challenge = await this.consumeChallenge(request, ['authenticate']);
     const key = await this.env.DB.prepare('SELECT * FROM passkeys WHERE id=?')
       .bind(typeof response?.id === 'string' ? response.id : '')
-      .first<{ id: string; public_key: string; counter: number; transports: string }>();
+      .first<{
+        id: string;
+        public_key: string;
+        counter: number;
+        transports: string;
+        owner_id: string;
+      }>();
     if (!key) throw new AppError(401, 'INVALID_PASSKEY', 'unauthorized');
     let verification;
     try {
@@ -331,26 +380,32 @@ export class AuthService implements IdentityProvider {
       throw new AppError(401, 'INVALID_PASSKEY', 'unauthorized');
     }
     if (!verification.verified) throw new AppError(401, 'INVALID_PASSKEY', 'unauthorized');
-    const owner = await this.owner();
+    const owner = await this.owner(key.owner_id);
+    if (owner.status !== 'active') throw new AppError(403, 'OWNER_DISABLED', 'forbidden');
     const token = randomToken();
     await this.env.DB.batch([
-      this.env.DB.prepare('UPDATE passkeys SET counter=MAX(counter,?) WHERE id=?').bind(
-        verification.authenticationInfo.newCounter,
-        key.id,
-      ),
-      this.env.DB.prepare('INSERT INTO sessions VALUES(?,?,?)').bind(
+      this.env.DB.prepare(
+        'UPDATE passkeys SET counter=MAX(counter,?) WHERE id=? AND owner_id=?',
+      ).bind(verification.authenticationInfo.newCounter, key.id, owner.id),
+      this.env.DB.prepare(
+        'INSERT INTO sessions(token_hash,epoch,expires_at,owner_id,created_at) VALUES(?,?,?,?,?)',
+      ).bind(
         await sha256(token),
         owner.session_epoch,
         Date.now() + 604800000,
+        owner.id,
+        Date.now(),
       ),
     ]);
     return this.cookie(this.sessionCookie, token, 604800);
   }
-  async completeAuthorization(request: AuthRequest): Promise<string> {
-    const owner = await this.owner();
+  async completeAuthorization(request: AuthRequest, owner: Owner): Promise<string> {
+    if (owner.status !== 'active') throw new AppError(403, 'OWNER_DISABLED', 'forbidden');
     const client = await this.helpers().lookupClient(request.clientId);
     const botId = crypto.randomUUID();
-    await this.env.DB.prepare('INSERT INTO bots VALUES(?,?,?,?,?,?)')
+    await this.env.DB.prepare(
+      'INSERT INTO bots(id,client_id,name,status,epoch,created_at,owner_id) VALUES(?,?,?,?,?,?,?)',
+    )
       .bind(
         botId,
         request.clientId,
@@ -358,6 +413,7 @@ export class AuthService implements IdentityProvider {
         'active',
         owner.session_epoch,
         new Date().toISOString(),
+        owner.id,
       )
       .run();
     try {
@@ -374,18 +430,22 @@ export class AuthService implements IdentityProvider {
       });
       return result.redirectTo;
     } catch (error) {
-      await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=?").bind(botId).run();
+      await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=? AND owner_id=?")
+        .bind(botId, owner.id)
+        .run();
       throw error;
     }
   }
-  async revokeBot(botId: string): Promise<void> {
-    await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=?").bind(botId).run();
+  async revokeBot(ownerId: string, botId: string): Promise<void> {
+    await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=? AND owner_id=?")
+      .bind(botId, ownerId)
+      .run();
     let cursor: string | undefined;
     do {
-      const page = await this.helpers().listUserGrants('owner', { cursor, limit: 100 });
+      const page = await this.helpers().listUserGrants(ownerId, { cursor, limit: 100 });
       for (const grant of page.items)
         if ((grant.metadata as { botId?: string })?.botId === botId)
-          await this.helpers().revokeGrant(grant.id, 'owner');
+          await this.helpers().revokeGrant(grant.id, ownerId);
       cursor = page.cursor;
     } while (cursor);
   }

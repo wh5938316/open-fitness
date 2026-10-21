@@ -184,14 +184,18 @@ export class MediaService {
       path: '/media/uploads',
       run: async (args) => {
         const owner = await this.env.DB.prepare(
-          "SELECT session_epoch FROM owners WHERE id='owner'",
-        ).first<{ session_epoch: number }>();
+          'SELECT session_epoch, status FROM owners WHERE id=?',
+        )
+          .bind(this.service.actor.ownerId)
+          .first<{ session_epoch: number; status: string }>();
         if (!owner) throw new AppError(503, 'DATABASE_NOT_MIGRATED', 'internalError');
+        if (owner.status !== 'active')
+          throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
         const asset = await this.service.save<Asset>(
           'asset',
           {
             status: 'pending',
-            objectKey: 'owner/' + crypto.randomUUID(),
+            objectKey: this.service.actor.ownerId + '/' + crypto.randomUUID(),
             contentType: args.contentType,
             role: args.role,
             processing: args.processing,
@@ -257,7 +261,8 @@ export class MediaService {
         const body = await boundedBody(response, this.maxBytes);
         const image = inspectImage(body);
         const digest = await sha256(body);
-        const objectKey = 'owner/imports/' + crypto.randomUUID() + '-' + digest;
+        const objectKey =
+          this.service.actor.ownerId + '/imports/' + crypto.randomUUID() + '-' + digest;
         await this.store.put(objectKey, body, image.contentType);
         const asset = await this.service.save<Asset>(
           'asset',
@@ -318,28 +323,40 @@ export class MediaService {
   }
   async upload(request: Request, token: string): Promise<unknown> {
     const ticket = await this.env.DB.prepare(
-      'UPDATE upload_tickets SET used_at=? WHERE token_hash=? AND used_at IS NULL AND expires_at>? RETURNING asset_id,content_type',
+      'UPDATE upload_tickets SET used_at=? WHERE token_hash=? AND used_at IS NULL AND expires_at>? RETURNING asset_id,content_type,owner_id',
     )
       .bind(Date.now(), await sha256(token), Date.now())
-      .first<{ asset_id: string; content_type: string }>();
+      .first<{ asset_id: string; content_type: string; owner_id: string }>();
     if (!ticket) throw new AppError(410, 'UPLOAD_EXPIRED', 'uploadExpired');
+    if (ticket.owner_id !== this.service.actor.ownerId) throw notFound();
     const asset = await this.service.require<Asset>('asset', ticket.asset_id);
     assert(asset.data.status === 'pending', 'ASSET_ALREADY_UPLOADED');
     const owner = await this.env.DB.prepare(
-      "SELECT session_epoch FROM owners WHERE id='owner'",
-    ).first<{ session_epoch: number }>();
-    if (!owner || owner.session_epoch !== asset.data.authorizationEpoch)
+      'SELECT id, session_epoch, status FROM owners WHERE id=?',
+    )
+      .bind(ticket.owner_id)
+      .first<{ id: string; session_epoch: number; status: string }>();
+    if (
+      !owner ||
+      owner.status !== 'active' ||
+      owner.session_epoch !== asset.data.authorizationEpoch
+    )
       throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
     const actor = {
       ...this.service.actor,
       id: asset.data.createdBy,
-      kind: asset.data.createdBy === 'owner' ? ('owner' as const) : ('bot' as const),
+      kind: asset.data.createdBy === owner.id ? ('owner' as const) : ('bot' as const),
     };
     if (actor.kind === 'bot') {
-      const bot = await this.env.DB.prepare('SELECT status,epoch FROM bots WHERE id=?')
+      const bot = await this.env.DB.prepare('SELECT status,epoch,owner_id FROM bots WHERE id=?')
         .bind(actor.id)
-        .first<{ status: string; epoch: number }>();
-      if (!bot || bot.status !== 'active' || bot.epoch !== owner.session_epoch)
+        .first<{ status: string; epoch: number; owner_id: string }>();
+      if (
+        !bot ||
+        bot.owner_id !== owner.id ||
+        bot.status !== 'active' ||
+        bot.epoch !== owner.session_epoch
+      )
         throw new AppError(401, 'CONNECTION_REVOKED', 'unauthorized');
     }
     const body = await boundedBody(request, this.maxBytes);
@@ -381,45 +398,48 @@ export class MediaService {
 export async function cleanupMedia(env: Env): Promise<void> {
   const cutoff = new Date(Date.now() - 86400000).toISOString();
   const candidates = await env.DB.prepare(
-    "SELECT id,data FROM documents WHERE kind='asset' AND deleted=0 AND updated_at<? AND NOT EXISTS(SELECT 1 FROM media_references WHERE asset_id=documents.id) LIMIT 100",
+    `SELECT owner_id,id,data FROM documents WHERE kind='asset' AND deleted=0 AND updated_at<? AND NOT EXISTS(SELECT 1 FROM media_references WHERE owner_id=documents.owner_id AND asset_id=documents.id) LIMIT 100`,
   )
     .bind(cutoff)
-    .all<{ id: string; data: string }>();
+    .all<{ owner_id: string; id: string; data: string }>();
   for (const candidate of candidates.results) {
     const result = await env.DB.prepare(
-      "UPDATE documents SET deleted=1,version=version+1,updated_at=? WHERE kind='asset' AND id=? AND deleted=0 AND NOT EXISTS(SELECT 1 FROM media_references WHERE asset_id=documents.id) RETURNING id",
+      `UPDATE documents SET deleted=1,version=version+1,updated_at=? WHERE owner_id=? AND kind='asset' AND id=? AND deleted=0 AND NOT EXISTS(SELECT 1 FROM media_references WHERE owner_id=documents.owner_id AND asset_id=documents.id) RETURNING id`,
     )
-      .bind(new Date().toISOString(), candidate.id)
+      .bind(new Date().toISOString(), candidate.owner_id, candidate.id)
       .first();
     const original = JSON.parse(candidate.data) as Asset;
     if (
       result ||
       (
-        await env.DB.prepare("SELECT deleted FROM documents WHERE kind='asset' AND id=?")
-          .bind(candidate.id)
+        await env.DB.prepare(
+          "SELECT deleted FROM documents WHERE owner_id=? AND kind='asset' AND id=?",
+        )
+          .bind(candidate.owner_id, candidate.id)
           .first<{ deleted: number }>()
       )?.deleted
     ) {
       const shared = await env.DB.prepare(
-        "SELECT id FROM documents WHERE kind='asset' AND deleted=0 AND json_extract(data,'$.objectKey')=? LIMIT 1",
+        "SELECT id FROM documents WHERE owner_id=? AND kind='asset' AND deleted=0 AND json_extract(data,'$.objectKey')=? LIMIT 1",
       )
-        .bind(original.objectKey)
+        .bind(candidate.owner_id, original.objectKey)
         .first();
       if (!shared) await env.MEDIA.delete(original.objectKey);
     }
   }
   const cursor = await env.CACHE.get('maintenance:r2-cursor');
   const objects = await env.MEDIA.list({
-    prefix: 'owner/',
     limit: 100,
     ...(cursor ? { cursor } : {}),
   });
   for (const object of objects.objects) {
     if (object.uploaded.valueOf() >= Date.now() - 86400000) continue;
+    const ownerId = object.key.split('/')[0];
+    if (!ownerId || !object.key.includes('/')) continue;
     const tracked = await env.DB.prepare(
-      "SELECT id FROM documents WHERE kind='asset' AND deleted=0 AND json_extract(data,'$.objectKey')=? LIMIT 1",
+      "SELECT id FROM documents WHERE owner_id=? AND kind='asset' AND deleted=0 AND json_extract(data,'$.objectKey')=? LIMIT 1",
     )
-      .bind(object.key)
+      .bind(ownerId, object.key)
       .first();
     if (!tracked) await env.MEDIA.delete(object.key);
   }
