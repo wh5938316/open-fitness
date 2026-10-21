@@ -32,7 +32,7 @@ Both transports use the same validated application operations. The service uses 
 | D1 adapter               | Prepared SQLite statements, transactional batches, version guards     |
 | Object storage interface | Binary storage and private reads; R2 is the first implementation      |
 | Cache interface          | Open Food Facts snapshots and advisory request throttling             |
-| Authentication adapter   | Owner passkeys, sessions, OAuth, verified agent identities            |
+| Authentication adapter   | Clerk sign-in, local sessions, OAuth, verified agent identities       |
 
 D1 is the business source of truth. KV also persists the official OAuth provider's client registrations, grants, and tokens; it is not restricted to caching. R2 stores files, while D1 stores asset IDs and metadata. Versioned entities are typed JSON documents indexed by owner, kind, and ID. Revisions are append-only database snapshots, not a whole-account synchronization blob.
 
@@ -61,22 +61,14 @@ pnpm install --frozen-lockfile
 cp apps/server/.dev.vars.example apps/server/.dev.vars
 ```
 
-Set `SETUP_TOKEN` in `apps/server/.dev.vars` to a new random secret of at least 32 characters. Generate one locally with:
-
-```sh
-node --input-type=module -e 'import { randomBytes } from "node:crypto"; console.log(randomBytes(32).toString("base64url"))'
-```
-
-Keep `PUBLIC_BASE_URL=http://localhost:8787` for local development. Then:
+Keep `PUBLIC_BASE_URL=http://localhost:8787` for local development. Fill in the Clerk development-instance values in `apps/server/.dev.vars`. Then:
 
 ```sh
 pnpm db:migrate
 pnpm dev
 ```
 
-Open `http://localhost:8787/setup`, enter your setup token, and register your first passkey. Setup closes after successful enrollment. Add a backup passkey from the administration page, preferably on another authenticator. Sign-in and authorization pages support English and Simplified Chinese.
-
-Clerk can be used as an additional sign-in method. It exchanges a short-lived Clerk session token for this service's own session cookie. See [Clerk operations](docs/operations/clerk.md). Binding the existing `owner` row is a manual database update and is not part of local test runs.
+Open `http://localhost:8787/sign-in`. Clerk exchanges a short-lived session token for this service's own session cookie. Sign-in and authorization pages support English and Simplified Chinese. See [Clerk operations](docs/operations/clerk.md). Binding the existing `owner` row is a manual database update and is not part of local test runs.
 
 The placeholder resource IDs in `apps/server/wrangler.jsonc` are for local simulation only. Production deployment requires your own resources and IDs.
 
@@ -84,7 +76,7 @@ The placeholder resource IDs in `apps/server/wrangler.jsonc` are for local simul
 
 1. Add `https://YOUR_HOST/mcp` as a remote MCP server in a client that supports Streamable HTTP and OAuth. Use `http://localhost:8787/mcp` only when the client runs on your computer; a hosted client cannot reach your localhost.
 2. Let the client discover authorization metadata and use authorization code flow with S256 PKCE. CIMD and dynamic client registration are supported.
-3. Sign in with your passkey and approve the client. All approved assistants receive `fitness:full` business access. `offline_access` permits refresh tokens.
+3. Sign in with Clerk and approve the client. All approved assistants receive `fitness:full` business access. `offline_access` permits refresh tokens.
 4. Call `get_agent_context` first. It returns the server-assigned agent ID, owner ID, role, locale, time zone, capabilities, and versioned coaching instructions.
 5. Re-read the context at the beginning of a new conversation. Revoke individual connections from `/admin` when needed.
 
@@ -238,29 +230,31 @@ pnpm cf kv namespace create OAUTH_KV
 pnpm cf kv namespace create CACHE
 ```
 
-Replace the corresponding IDs in `apps/server/wrangler.jsonc`. Set `PUBLIC_BASE_URL` in its `vars` to the final HTTPS origin, and configure a custom domain if desired. The hostname is also the passkey RP ID; keep it stable when moving hosting providers or re-enroll passkeys after a hostname change.
+Replace the corresponding IDs in `apps/server/wrangler.jsonc`. Set `PUBLIC_BASE_URL` in its `vars` to the final HTTPS origin, and configure a custom domain before using a Clerk production instance. `workers.dev` cannot host the required Clerk Frontend API CNAME.
 
-Store a fresh setup token interactively, migrate, and deploy:
+Store Clerk secrets interactively, migrate, and deploy:
 
 ```sh
-pnpm cf secret put SETUP_TOKEN
+pnpm cf secret put CLERK_SECRET_KEY
+pnpm cf secret put CLERK_JWT_KEY
+pnpm cf secret put CLERK_WEBHOOK_SECRET
 pnpm db:migrate:remote
 pnpm deploy
 ```
 
 Keep R2 private. The hourly scheduled handler cleans expired authentication artifacts, OAuth state, and unused media. No model-provider API key is required by this server. Never commit `.dev.vars`, credentials, local databases, or test traces.
 
-### Owner recovery
+### User recovery
 
-If every passkey is lost, rotate `SETUP_TOKEN` first, then explicitly reset the appropriate environment:
+To sign one user out of every device and revoke that user's assistants:
 
 ```sh
-pnpm owner:recover --local
+pnpm user:recover -- --user owner --local
 # Or, deliberately target your deployed database:
-pnpm owner:recover --remote
+pnpm user:recover -- --user owner --remote
 ```
 
-Recovery atomically removes passkeys and sessions, revokes assistant connections through the owner epoch, and reopens setup. Fitness records and media are preserved. Re-enroll a passkey and reconnect assistants. Old OAuth credentials cannot access business operations after the epoch changes.
+Recovery increments only that user's session epoch. Fitness records and media are preserved. Other users are unchanged. Old OAuth credentials for that user cannot access business operations after the epoch changes. Do not run `--remote` as part of routine verification.
 
 ## Verification and contribution
 

@@ -1,9 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, request as playwrightRequest } from '@playwright/test';
 import { createHash, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
-test('registers and signs in with passkeys, authorizes an agent, uses private media, and revokes its grant', async ({
+const origin = 'http://localhost:18787';
+
+test('signs in with a Clerk test session, authorizes an agent, uses private media, and revokes its grant', async ({
   page,
   request,
 }) => {
@@ -14,58 +16,27 @@ test('registers and signs in with passkeys, authorizes an agent, uses private me
   await new Promise<void>((resolve) => callbackServer.listen(0, '127.0.0.1', resolve));
   const callbackUrl = `http://127.0.0.1:${(callbackServer.address() as AddressInfo).port}/callback`;
   try {
-    const origin = 'http://localhost:18787';
-    const cdp = await page.context().newCDPSession(page);
-    await cdp.send('WebAuthn.enable');
-    const options = {
-      protocol: 'ctap2',
-      transport: 'internal',
-      hasResidentKey: true,
-      hasUserVerification: true,
-      isUserVerified: true,
-      automaticPresenceSimulation: true,
-    } as const;
-    const primary = await cdp.send('WebAuthn.addVirtualAuthenticator', { options });
-    await page.goto('/setup');
-    await page.locator('#setup-token').fill('e2e-only-setup-token-with-more-than-32-characters');
-    await page.route(
-      '**/auth/passkeys/register',
-      async (route) => {
-        const payload = route.request().postDataJSON();
-        const clientData = JSON.parse(
-          Buffer.from(payload.response.response.clientDataJSON, 'base64url').toString('utf8'),
-        );
-        clientData.origin = 'https://attacker.example';
-        payload.response.response.clientDataJSON = Buffer.from(JSON.stringify(clientData)).toString(
-          'base64url',
-        );
-        await route.continue({ postData: JSON.stringify(payload) });
-      },
-      { times: 1 },
-    );
-    const rejectedRegistration = page.waitForResponse((response) =>
-      response.url().endsWith('/auth/passkeys/register'),
-    );
-    await page.getByRole('button', { name: 'Register a passkey', exact: true }).click();
-    expect((await rejectedRegistration).status()).toBe(401);
-    await expect(page.getByRole('alert')).toBeVisible();
-    await page.getByRole('button', { name: 'Register a passkey', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Connected assistants' })).toBeVisible();
-    await cdp.send('WebAuthn.removeVirtualAuthenticator', {
-      authenticatorId: primary.authenticatorId,
+    const minted = await request.post('/__test/clerk-token', {
+      data: { sub: 'user_owner_e2e', sid: 'sess_owner_e2e' },
     });
-    await cdp.send('WebAuthn.addVirtualAuthenticator', { options });
-    await page.locator('#passkey-name').fill('Acceptance backup key');
-    const backupResponse = page.waitForResponse(
-      (response) =>
-        response.url().endsWith('/auth/passkeys/register') &&
-        response.request().method() === 'POST',
-    );
-    await page.getByRole('button', { name: 'Add a backup passkey', exact: true }).click();
-    expect((await backupResponse).status()).toBe(200);
-    await expect(page.getByRole('heading', { name: 'Connected assistants' })).toBeVisible();
-    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-    await page.getByRole('button', { name: 'Sign in with a passkey', exact: true }).click();
+    expect(minted.status()).toBe(200);
+    const token = (await minted.json()).data.token as string;
+    const exchanged = await request.post('/auth/clerk/session', {
+      headers: { Origin: origin, Authorization: 'Bearer ' + token },
+      data: { returnTo: '/admin' },
+    });
+    expect(exchanged.status()).toBe(200);
+    const session = exchanged
+      .headersArray()
+      .find(
+        (header) =>
+          header.name.toLowerCase() === 'set-cookie' && header.value.startsWith('of_session='),
+      )
+      ?.value.split(';')[0];
+    expect(session).toBeTruthy();
+    const [name, value] = session!.split('=');
+    await page.context().addCookies([{ name: name!, value: value!, url: origin }]);
+    await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Connected assistants' })).toBeVisible();
     await page.screenshot({ path: 'test-results/admin-en.png', fullPage: true });
     await page.getByRole('button', { name: '简体中文', exact: true }).click();
@@ -141,7 +112,11 @@ test('registers and signs in with passkeys, authorizes an agent, uses private me
     const image = await request.get(`/api/v1/media/${ticket.asset.id}/content`, { headers });
     expect(image.status()).toBe(200);
     expect(await image.body()).toEqual(bytes);
-    expect((await request.get(`/api/v1/media/${ticket.asset.id}/content`)).status()).toBe(401);
+    const anonymous = await playwrightRequest.newContext();
+    expect(
+      (await anonymous.get(`${origin}/api/v1/media/${ticket.asset.id}/content`)).status(),
+    ).toBe(401);
+    await anonymous.dispose();
     const meal = await request.post('/api/v1/meals', {
       headers,
       data: {

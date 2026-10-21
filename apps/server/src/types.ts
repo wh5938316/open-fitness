@@ -5,7 +5,6 @@ export interface Env {
   CACHE: KVNamespace;
   ASSETS: Fetcher;
   PUBLIC_BASE_URL?: string;
-  SETUP_TOKEN?: string;
   DEFAULT_TIME_ZONE?: string;
   OFF_USER_AGENT?: string;
   MAX_IMAGE_BYTES?: string;

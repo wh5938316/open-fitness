@@ -28,12 +28,6 @@ describe('per-owner session epoch', () => {
         'INSERT INTO sessions(token_hash,epoch,expires_at,owner_id,created_at) VALUES(?,?,?,?,?)',
       ).bind(await sha256(otherToken), 0, now + 600000, otherId, now),
       env.DB.prepare(
-        'INSERT INTO passkeys(id,public_key,counter,transports,name,created_at,owner_id) VALUES(?,?,?,?,?,?,?)',
-      ).bind('pk-owner-' + stamp, 'pk', 0, '[]', 'Owner', new Date(now).toISOString(), owner.id),
-      env.DB.prepare(
-        'INSERT INTO passkeys(id,public_key,counter,transports,name,created_at,owner_id) VALUES(?,?,?,?,?,?,?)',
-      ).bind('pk-other-' + stamp, 'pk', 0, '[]', 'Other', new Date(now).toISOString(), otherId),
-      env.DB.prepare(
         'INSERT INTO bots(id,client_id,name,status,epoch,created_at,owner_id) VALUES(?,?,?,?,?,?,?)',
       ).bind(
         'bot-owner-' + stamp,
@@ -87,16 +81,6 @@ describe('per-owner session epoch', () => {
       new Request(origin, { headers: { Cookie: auth.sessionCookie + '=' + token } });
     expect((await auth.session(requestFor(ownerToken)))?.owner.id).toBe(owner.id);
     expect(await auth.session(requestFor(otherToken))).toBeNull();
-    expect(
-      await env.DB.prepare('SELECT id FROM passkeys WHERE id=?')
-        .bind('pk-owner-' + stamp)
-        .first(),
-    ).toBeTruthy();
-    expect(
-      await env.DB.prepare('SELECT id FROM passkeys WHERE id=?')
-        .bind('pk-other-' + stamp)
-        .first(),
-    ).toBeNull();
     expect(
       await env.DB.prepare('SELECT status FROM bots WHERE id=?')
         .bind('bot-owner-' + stamp)

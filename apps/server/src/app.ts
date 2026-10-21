@@ -256,29 +256,13 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     );
     return c.json(openApi(service, auth.origin));
   });
-  app.get('/', async (c) =>
-    c.redirect(
-      (await auth.session(c.req.raw))
-        ? '/admin'
-        : (await auth.owner()).setup_completed
-          ? '/sign-in'
-          : '/setup',
-    ),
-  );
-  app.get('/setup', async (c) => {
-    if ((await auth.owner()).setup_completed) return c.redirect('/sign-in');
-    return c.html(loginPage(await locale(c.req.raw), true, safeReturn(c.req.query('returnTo'))));
-  });
+  app.get('/', async (c) => c.redirect((await auth.session(c.req.raw)) ? '/admin' : '/sign-in'));
+  app.get('/setup', (c) => c.redirect('/sign-in'));
   app.get('/sign-in', async (c) => {
     const returnTo = safeReturn(c.req.query('returnTo'));
     if (await auth.session(c.req.raw)) return c.redirect(returnTo);
     return c.html(
-      loginPage(
-        await locale(c.req.raw),
-        !(await auth.owner()).setup_completed,
-        returnTo,
-        clerkPublishableKey(env) ?? undefined,
-      ),
+      loginPage(await locale(c.req.raw), returnTo, clerkPublishableKey(env) ?? undefined),
     );
   });
   app.get('/auth/clerk/complete', async (c) => {
@@ -341,26 +325,6 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
         .bind(form.locale, session.owner.id)
         .run();
     return c.redirect(safeReturn(String(form.returnTo ?? '/admin')), 303);
-  });
-  app.post('/auth/passkeys/registration-options', async (c) => {
-    const result = await auth.registrationOptions(c.req.raw, await c.req.json());
-    c.header('Set-Cookie', result.cookie);
-    return c.json({ data: result.options });
-  });
-  app.post('/auth/passkeys/register', async (c) => {
-    const cookie = await auth.register(c.req.raw, await c.req.json());
-    c.header('Set-Cookie', cookie);
-    return c.json({ data: { authenticated: true } });
-  });
-  app.post('/auth/passkeys/authentication-options', async (c) => {
-    const result = await auth.authenticationOptions(c.req.raw);
-    c.header('Set-Cookie', result.cookie);
-    return c.json({ data: result.options });
-  });
-  app.post('/auth/passkeys/authenticate', async (c) => {
-    const input = await c.req.json();
-    c.header('Set-Cookie', await auth.authenticate(c.req.raw, input?.response));
-    return c.json({ data: { authenticated: true } });
   });
   app.post('/auth/logout', async (c) => {
     requireOrigin(c.req.raw, auth.origin);

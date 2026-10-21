@@ -47,7 +47,6 @@ production change. Do not run it as part of routine local verification, tests, o
 deploys from this repository.
 
 Until that update is applied, Clerk sign-in cannot open the existing owner's data.
-The legacy passkey still can.
 
 ## Auto-provisioning and webhooks
 

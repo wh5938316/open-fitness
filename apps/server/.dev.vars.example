@@ -1,9 +1,8 @@
 PUBLIC_BASE_URL=http://localhost:8787
-SETUP_TOKEN=
 DEFAULT_TIME_ZONE=America/New_York
 OFF_USER_AGENT=OpenFitness/0.1 (self-hosted)
-# Clerk development instance. Leave blank to keep the legacy passkey sign-in only.
-# Do not commit real keys. CLERK_JWT_KEY is the Dashboard PEM public key.
+# Clerk development instance. Do not commit real keys.
+# CLERK_JWT_KEY is the Dashboard PEM public key.
 CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 CLERK_JWT_KEY=

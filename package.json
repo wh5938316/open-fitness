@@ -20,7 +20,7 @@
     "db:migrate": "pnpm --filter @openfitness/server db:migrate",
     "db:migrate:remote": "pnpm --filter @openfitness/server db:migrate:remote",
     "deploy": "pnpm --filter @openfitness/server deploy",
-    "owner:recover": "pnpm --filter @openfitness/server owner:recover",
+    "user:recover": "pnpm --filter @openfitness/server user:recover",
     "browser:install": "pnpm --filter @openfitness/server exec playwright install chromium",
     "cf": "pnpm --filter @openfitness/server exec wrangler",
     "apple:generate": "python3 scripts/generate-apple-project.py && xcrun --sdk macosx swift scripts/generate-app-icons.swift",

@@ -8,7 +8,6 @@ export default defineConfig({
       miniflare: {
         bindings: {
           PUBLIC_BASE_URL: 'http://localhost:8787',
-          SETUP_TOKEN: 'test-only-setup-token-with-more-than-32-characters',
           TEST_MIGRATIONS: await readD1Migrations('./migrations'),
         },
       },
