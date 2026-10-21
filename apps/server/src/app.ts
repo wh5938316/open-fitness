@@ -241,6 +241,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     return c.json({ status: 'ok', service: 'OpenFitness' });
   });
   app.get('/auth.js', (c) => env.ASSETS.fetch(c.req.raw));
+  app.get('/:chunk{auth-[A-Za-z0-9]+\\.js}', (c) => env.ASSETS.fetch(c.req.raw));
   app.get('/README.md', (c) => env.ASSETS.fetch(new Request(auth.origin + '/README.md')));
   app.get('/openapi.json', (c) => {
     const { service } = createServices(
