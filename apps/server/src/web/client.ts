@@ -56,3 +56,63 @@ document.getElementById('sign-in')?.addEventListener('click', () => {
     navigate();
   });
 });
+void startClerk().catch(() => {
+  status.textContent = messages.clerkExchangeFailed ?? messages.failure!;
+  status.setAttribute('role', 'alert');
+});
+async function startClerk(): Promise<void> {
+  const key = root.dataset.clerkKey;
+  const mode = root.dataset.mode;
+  if (!key || (mode !== 'login' && mode !== 'clerk-complete' && mode !== 'clerk-sign-out')) return;
+  const [{ Clerk }, { zhCN }] = await Promise.all([
+    import('@clerk/clerk-js'),
+    import('@clerk/localizations'),
+  ]);
+  const clerk = new Clerk(key);
+  await clerk.load({ localization: document.documentElement.lang === 'zh-CN' ? zhCN : undefined });
+  if (mode === 'clerk-sign-out') {
+    await clerk.signOut();
+    navigating = true;
+    location.replace('/sign-in');
+    return;
+  }
+  const completeUrl = new URL(root.dataset.clerkComplete || '/auth/clerk/complete', location.origin)
+    .href;
+  if (mode === 'login') {
+    if (clerk.session) {
+      navigating = true;
+      location.assign(completeUrl);
+      return;
+    }
+    const node = document.querySelector<HTMLDivElement>('#clerk-sign-in');
+    if (node)
+      clerk.mountSignIn(node, {
+        forceRedirectUrl: completeUrl,
+        signUpForceRedirectUrl: completeUrl,
+      });
+    return;
+  }
+  const token = await clerk.session?.getToken();
+  if (!token) {
+    status.textContent = messages.clerkExchangeFailed ?? messages.failure!;
+    status.setAttribute('role', 'alert');
+    return;
+  }
+  const response = await fetch('/auth/clerk/session', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ returnTo: root.dataset.returnTo || '/admin' }),
+  });
+  const result = (await response.json()) as {
+    data?: { returnTo?: string };
+    error?: { message?: string };
+  };
+  if (!response.ok || !result.data?.returnTo) {
+    status.textContent = result.error?.message ?? messages.clerkExchangeFailed ?? messages.failure!;
+    status.setAttribute('role', 'alert');
+    return;
+  }
+  navigating = true;
+  location.replace(result.data.returnTo);
+}

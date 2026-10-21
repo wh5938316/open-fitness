@@ -3,6 +3,12 @@ import type { Locale } from './types';
 export const en = {
   appName: 'OpenFitness',
   signIn: 'Sign in with a passkey',
+  clerkSignIn: 'Sign in',
+  clerkSignInHelp:
+    'Use an email code or a Clerk passkey. The deployment passkey below still works.',
+  clerkCompleting: 'Completing sign-in',
+  clerkExchangeFailed: 'Sign-in could not be completed.',
+  accountNotProvisioned: 'This account is not enabled.',
   setup: 'Set up OpenFitness',
   setupHelp: 'Enter the deployment setup token to register your first passkey.',
   setupToken: 'Setup token',
@@ -68,6 +74,11 @@ type Messages = { [K in keyof typeof en]: string };
 export const zhCN: Messages = {
   appName: 'OpenFitness',
   signIn: '使用通行密钥登录',
+  clerkSignIn: '登录',
+  clerkSignInHelp: '使用邮箱验证码或 Clerk 通行密钥。下方仍可使用此部署原有的通行密钥。',
+  clerkCompleting: '正在完成登录',
+  clerkExchangeFailed: '登录未能完成。',
+  accountNotProvisioned: '此账号未开通。',
   setup: '设置 OpenFitness',
   setupHelp: '输入部署时配置的引导口令，注册第一枚通行密钥。',
   setupToken: '引导口令',

@@ -10,10 +10,19 @@ import {
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
 import { z } from 'zod';
+import { ClerkIdentityVerifier } from './adapters/clerk';
 import { base64url, fromBase64url, randomToken, secretMatches, sha256 } from './crypto';
 import { AppError } from './errors';
 import { resolveLocale } from './i18n';
-import type { Actor, AuthProps, Env, IdentityProvider, Owner, OwnerSession } from './types';
+import type {
+  Actor,
+  AuthProps,
+  Env,
+  ExternalIdentityVerifier,
+  IdentityProvider,
+  Owner,
+  OwnerSession,
+} from './types';
 
 const passkeyResponseSchema = z.record(z.string(), z.unknown());
 const registrationOptionsSchema = z.object({ setupToken: z.string().max(1024).optional() });
@@ -92,12 +101,59 @@ function ownerRecord(row: Owner): Owner {
     created_at: row.created_at,
   };
 }
+const clerkSessionSchema = z.object({ returnTo: z.string().max(2000).optional() });
+export function clerkFrontendOrigin(value?: string): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.pathname !== '/' ||
+      url.search ||
+      url.hash
+    )
+      return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+export function clerkPublishableKey(env: Env): string | null {
+  const key = env.CLERK_PUBLISHABLE_KEY?.trim();
+  if (!key || !clerkFrontendOrigin(env.CLERK_FRONTEND_API)) return null;
+  return key;
+}
+export function contentSecurityPolicy(env: Env, clerkDocument: boolean): string {
+  const strict =
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+  const frontend = clerkFrontendOrigin(env.CLERK_FRONTEND_API);
+  if (!clerkDocument || !frontend) return strict;
+  return [
+    "default-src 'self'",
+    `script-src 'self' ${frontend} https://challenges.cloudflare.com`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' https://img.clerk.com",
+    `connect-src 'self' ${frontend} https://clerk-telemetry.com`,
+    "worker-src 'self' blob:",
+    'frame-src https://challenges.cloudflare.com',
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+    `form-action 'self' ${frontend}`,
+  ].join('; ');
+}
 export class AuthService implements IdentityProvider {
   readonly origin: string;
   readonly sessionCookie: string;
   readonly authorizationServer: OAuthAuthorizationServer<Env>;
-  constructor(public env: Env) {
+  readonly identities: ExternalIdentityVerifier;
+  constructor(
+    public env: Env,
+    identities?: ExternalIdentityVerifier,
+  ) {
     this.origin = baseUrl(env);
+    this.identities = identities ?? new ClerkIdentityVerifier(env, this.origin);
     this.sessionCookie = this.origin.startsWith('https:') ? '__Host-of_session' : 'of_session';
     this.authorizationServer = new OAuthAuthorizationServer<Env>({
       issuer: this.origin,
@@ -435,6 +491,55 @@ export class AuthService implements IdentityProvider {
         .run();
       throw error;
     }
+  }
+  async exchangeClerkSession(
+    request: Request,
+    raw: unknown,
+  ): Promise<{ cookie: string; returnTo: string }> {
+    requireOrigin(request, this.origin);
+    await this.rateLimit(request);
+    const header = request.headers.get('Authorization') ?? '';
+    const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : '';
+    if (!token) throw new AppError(401, 'INVALID_CLERK_TOKEN', 'unauthorized');
+    const input = parseAuthInput(clerkSessionSchema, raw);
+    if (input.returnTo !== undefined && safeReturn(input.returnTo) !== input.returnTo)
+      throw new AppError(400, 'INVALID_RETURN_TO', 'invalidInput');
+    const identity = await this.identities.verifySessionToken(token);
+    const owner = await this.env.DB.prepare(
+      `SELECT ${OWNER_COLUMNS} FROM owners WHERE clerk_user_id=?`,
+    )
+      .bind(identity.subject)
+      .first<Owner>();
+    if (!owner) throw new AppError(403, 'ACCOUNT_NOT_PROVISIONED', 'accountNotProvisioned');
+    if (owner.status !== 'active') throw new AppError(403, 'OWNER_DISABLED', 'forbidden');
+    const sessionToken = randomToken();
+    const now = Date.now();
+    await this.env.DB.batch([
+      this.env.DB.prepare(
+        'INSERT INTO sessions(token_hash,epoch,expires_at,owner_id,clerk_session_id,created_at) VALUES(?,?,?,?,?,?)',
+      ).bind(
+        await sha256(sessionToken),
+        owner.session_epoch,
+        now + 604800000,
+        owner.id,
+        identity.sessionId,
+        now,
+      ),
+      this.env.DB.prepare(
+        'INSERT INTO audit_events(id,actor_id,operation,target_id,created_at,owner_id) VALUES(?,?,?,?,?,?)',
+      ).bind(
+        crypto.randomUUID(),
+        owner.id,
+        'clerk_sign_in',
+        identity.sessionId,
+        new Date(now).toISOString(),
+        owner.id,
+      ),
+    ]);
+    return {
+      cookie: this.cookie(this.sessionCookie, sessionToken, 604800),
+      returnTo: safeReturn(input.returnTo),
+    };
   }
   async revokeBot(ownerId: string, botId: string): Promise<void> {
     await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=? AND owner_id=?")

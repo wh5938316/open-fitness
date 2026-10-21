@@ -11,14 +11,29 @@ import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
 import { OpenFoodFacts } from './adapters/open-food-facts';
 import { D1HealthSyncStore } from './adapters/cloudflare-health';
 import { registerHealthOperations } from './domain/health';
-import { AuthService, FULL_SCOPE, cookies, requireOrigin, safeReturn } from './auth';
+import {
+  AuthService,
+  FULL_SCOPE,
+  clerkPublishableKey,
+  contentSecurityPolicy,
+  cookies,
+  requireOrigin,
+  safeReturn,
+} from './auth';
 import { FitnessService } from './domain/service';
-import { AppError } from './errors';
+import { AppError, notFound } from './errors';
 import { resolveLocale, t } from './i18n';
 import { cleanupMedia, MediaService } from './media';
 import { handleMcp } from './mcp';
 import type { Actor, AuthProps, Env } from './types';
-import { adminPage, consentPage, loginPage } from './web/pages';
+import { signClerkTestToken } from './test-clerk-jwt';
+import {
+  adminPage,
+  clerkCompletePage,
+  clerkSignOutPage,
+  consentPage,
+  loginPage,
+} from './web/pages';
 import { sha256 } from './crypto';
 
 function createServices(env: Env, actor: Actor, origin: string) {
@@ -190,7 +205,12 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     c.header('Cache-Control', 'no-store');
     c.header(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+      contentSecurityPolicy(
+        env,
+        ['/sign-in', '/auth/clerk/complete', '/auth/clerk/sign-out', '/account'].includes(
+          c.req.path,
+        ),
+      ),
     );
     const length = Number(c.req.header('Content-Length') || 0);
     if (length > 2097152 && !c.req.path.startsWith('/uploads/'))
@@ -251,8 +271,62 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     const returnTo = safeReturn(c.req.query('returnTo'));
     if (await auth.session(c.req.raw)) return c.redirect(returnTo);
     return c.html(
-      loginPage(await locale(c.req.raw), !(await auth.owner()).setup_completed, returnTo),
+      loginPage(
+        await locale(c.req.raw),
+        !(await auth.owner()).setup_completed,
+        returnTo,
+        clerkPublishableKey(env) ?? undefined,
+      ),
     );
+  });
+  app.get('/auth/clerk/complete', async (c) => {
+    const key = clerkPublishableKey(env);
+    if (!key) return c.redirect('/sign-in');
+    return c.html(
+      clerkCompletePage(await locale(c.req.raw), safeReturn(c.req.query('returnTo')), key),
+    );
+  });
+  app.get('/auth/clerk/sign-out', async (c) => {
+    const key = clerkPublishableKey(env);
+    if (!key) return c.redirect('/sign-in');
+    return c.html(clerkSignOutPage(await locale(c.req.raw), key));
+  });
+  app.post('/auth/clerk/session', async (c) => {
+    let body: unknown = {};
+    try {
+      if (c.req.header('content-length') !== '0') body = await c.req.json();
+    } catch {
+      throw new AppError(422, 'INVALID_JSON');
+    }
+    const result = await auth.exchangeClerkSession(c.req.raw, body);
+    c.header('Set-Cookie', result.cookie);
+    return c.json({ data: { returnTo: result.returnTo } });
+  });
+  app.post('/__test/clerk-token', async (c) => {
+    const host = new URL(c.req.url).hostname;
+    if (env.CLERK_TEST_MODE !== '1' || (host !== 'localhost' && host !== '127.0.0.1'))
+      throw notFound();
+    if (!env.CLERK_TEST_PRIVATE_KEY)
+      throw new AppError(503, 'CLERK_NOT_CONFIGURED', 'internalError');
+    let body: { sub?: string; sid?: string; azp?: string; exp?: number } = {};
+    try {
+      if (c.req.header('content-length') !== '0') body = await c.req.json();
+    } catch {
+      throw new AppError(422, 'INVALID_JSON');
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const sub = typeof body.sub === 'string' && body.sub ? body.sub : 'user_test';
+    const claims: Record<string, unknown> = {
+      sub,
+      azp: typeof body.azp === 'string' ? body.azp : auth.origin,
+      iat: now,
+      nbf: now,
+      exp: typeof body.exp === 'number' ? body.exp : now + 60,
+    };
+    if (body.sid !== '') claims.sid = typeof body.sid === 'string' ? body.sid : 'sess_test';
+    return c.json({
+      data: { token: await signClerkTestToken(env.CLERK_TEST_PRIVATE_KEY, claims) },
+    });
   });
   app.post('/language', async (c) => {
     requireOrigin(c.req.raw, auth.origin);
@@ -292,7 +366,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     if (session)
       await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(session.tokenHash).run();
     c.header('Set-Cookie', auth.cookie(auth.sessionCookie, '', 0));
-    return c.redirect('/sign-in', 303);
+    return c.redirect(clerkPublishableKey(env) ? '/auth/clerk/sign-out' : '/sign-in', 303);
   });
   app.get('/admin', async (c) => {
     const session = await auth.session(c.req.raw);
