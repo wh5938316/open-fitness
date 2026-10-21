@@ -76,6 +76,8 @@ pnpm dev
 
 Open `http://localhost:8787/setup`, enter your setup token, and register your first passkey. Setup closes after successful enrollment. Add a backup passkey from the administration page, preferably on another authenticator. Sign-in and authorization pages support English and Simplified Chinese.
 
+Clerk can be used as an additional sign-in method. It exchanges a short-lived Clerk session token for this service's own session cookie. See [Clerk operations](docs/operations/clerk.md). Binding the existing `owner` row is a manual database update and is not part of local test runs.
+
 The placeholder resource IDs in `apps/server/wrangler.jsonc` are for local simulation only. Production deployment requires your own resources and IDs.
 
 ## Connect an assistant

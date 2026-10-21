@@ -10,6 +10,22 @@ export interface Env {
   OFF_USER_AGENT?: string;
   MAX_IMAGE_BYTES?: string;
   ALLOWED_ORIGINS?: string;
+  CLERK_SECRET_KEY?: string;
+  CLERK_JWT_KEY?: string;
+  CLERK_PUBLISHABLE_KEY?: string;
+  CLERK_FRONTEND_API?: string;
+  CLERK_AUTO_PROVISION?: string;
+  CLERK_TEST_MODE?: string;
+  CLERK_TEST_PRIVATE_KEY?: string;
+}
+export interface ExternalIdentity {
+  subject: string;
+  sessionId: string;
+  issuedAt: number;
+}
+export interface ExternalIdentityVerifier {
+  verifySessionToken(token: string): Promise<ExternalIdentity>;
+  fetchProfile(subject: string): Promise<{ email: string | null }>;
 }
 
 export type Locale = 'en' | 'zh-CN';
