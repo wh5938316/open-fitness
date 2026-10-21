@@ -6,9 +6,9 @@
 
 - **ExerciseDB** (`source: "exercisedb"`): `name`, `bodyPart`, `equipment`, `target`, `secondaryMuscles`, and English `instructions` from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) commit `7455efae41b330c265e7cd4b78dfa848e7ce5ebd` (MIT). Media fields are dropped.
 - **openGym structure** (`source: "opengym"`, plus movement category and `muscleMap` on ExerciseDB rows): ids, names, body part, equipment, muscles, movement category, and muscle-region ids from [openGym](https://github.com/DuarteSantos8/openGym) commit `e348fc17c42c7e9a211c5972e573ad3698190ee2`. No openGym code, `i18n` files, or media.
-- **Wording**: openGym descriptions and instruction lists are not copied. A row is stored only when a fresh rewrite passes a phrase-distance check. Otherwise `description` is null, `instructions` is empty, and `needsRewrite` is true.
+- **Wording**: openGym descriptions and instruction lists are not copied. A fresh rewrite is stored only when it passes a phrase-distance check. The current seed has a rewrite for every openGym row, so `needsRewrite` is false. ExerciseDB rows keep the MIT English steps and a null English description.
 - **Variants**: catalogue files that only point at another id become rows with `variantOf`. They reuse the base movement's text and pick `diagram.gender` from the female/male link. They do not add images.
-- **Chinese names**: `exercise-i18n.zh-CN.json` is a separate table seed. Names there are written for this project. Empty instructions mean the Chinese wording can be filled later.
+- **Chinese**: `exercise-i18n.zh-CN.json` has a zh-CN name, description, and instruction list for every catalogue id. The wording is written for this project. Variants reuse the base exercise's Chinese entry. `taxonomy.json` has zh-CN labels for body parts, equipment, muscles (including the 17 diagram regions), and movement categories.
 
 `taxonomy.json` holds English and Chinese labels for body parts, equipment, muscles, and movement categories. Search text and `list_exercise_taxonomy` both read it.
 
@@ -45,4 +45,4 @@ pnpm catalog:seed:remote
 
 Both seed commands run `wrangler d1 execute DB` from `apps/server` against the database in `wrangler.jsonc`. `--remote` updates the deployed D1 database. The script upserts `catalog_exercises`, `catalog_exercise_i18n`, and `catalog_meta` only. Owner documents, revisions, and snapshots are untouched.
 
-To add Chinese names, edit `exercise-i18n.zh-CN.json` and run the seed again. Each entry needs `name` and/or `aliases`, plus `provenance` (`method`, `reviewed`, optional `tool`).
+Chinese wording is regenerated with `node apps/server/scripts/catalog-apply-wording.mjs --write`. The seed upserts `name`, `aliases`, `description`, `instructions`, and `provenance` for each `catalog_exercise_i18n` row. Search matches the Chinese name, aliases, description, and instructions.

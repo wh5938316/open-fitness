@@ -74,7 +74,10 @@ describe('exercise catalogue', () => {
       limit: 20,
       source: 'catalog',
     })) as { items: Entity<Exercise>[] };
-    expect(pullups.items.some((item) => item.id === 'cat-0652')).toBe(true);
+    const pullup = pullups.items.find((item) => item.id === 'cat-0652');
+    expect(pullup?.data.name).toBe('引体向上');
+    expect(pullup?.data.description).toContain('背阔肌');
+    expect(pullup?.data.instructions).toMatch(/^1\. /);
     await env.DB.prepare(
       `UPDATE catalog_exercise_i18n SET description = ? WHERE exercise_id = 'cat-0025'`,
     )
@@ -195,7 +198,7 @@ describe('exercise catalogue', () => {
     expect(seen.has(saved.id)).toBe(true);
   });
 
-  it('adopts once, rejects forged catalogue writes, and keeps a pending description empty', async () => {
+  it('adopts once, rejects forged catalogue writes, and keeps rewritten wording', async () => {
     const firstId = op();
     const first = (await service().execute('adopt_exercise', {
       operationId: firstId,
@@ -231,12 +234,12 @@ describe('exercise catalogue', () => {
         data: { name: 'Nope', source: { kind: 'catalog', origin: 'exercisedb' } },
       }),
     ).rejects.toMatchObject({ code: 'CATALOG_SOURCE_RESERVED' });
-    const pending = (await service().execute('get_exercise', {
+    const boat = (await service().execute('get_exercise', {
       id: 'cat-0136',
     })) as Entity<Exercise>;
-    expect(pending.data.needsRewrite).toBe(true);
-    expect(pending.data.description).toBeNull();
-    expect(pending.data.instructions).toBe('');
+    expect(boat.data.needsRewrite).toBe(false);
+    expect(boat.data.description?.toLowerCase()).toContain('midsection');
+    expect(boat.data.instructions).toMatch(/^1\. /);
     const squat = (await service().execute('get_exercise', { id: 'cat-1197' })) as Entity<Exercise>;
     expect(squat.data.needsRewrite).toBe(false);
     expect(squat.data.description).toContain('hips');

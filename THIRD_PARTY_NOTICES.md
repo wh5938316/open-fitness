@@ -69,7 +69,7 @@ Included from that catalogue: exercise id, name, body part, equipment, target, s
 
 Not included: openGym source code, `zh.json` and other translations, original descriptions or instruction sentences, SVG/body-path geometry, and every image, GIF, or video.
 
-Where a fresh description was written for this project, `needsRewrite` is false. Where it was not, `description` is null and `needsRewrite` is true. Adopted owner copies are ordinary OpenFitness documents and are not updated when the catalogue changes.
+Every openGym row in the current seed has a description and instruction list written for this project, so `needsRewrite` is false. ExerciseDB rows keep the MIT English steps and do not add an English description. zh-CN names, descriptions, and instructions are in `catalog_exercise_i18n` and were written for this project; openGym's `zh.json` and `zh-TW.json` are not included. Adopted owner copies are ordinary OpenFitness documents and are not updated when the catalogue changes.
 
 ## MuscleMap vector diagrams
 

@@ -202,7 +202,7 @@ pnpm db:migrate:remote
 pnpm catalog:seed:remote
 ```
 
-`catalog:seed:remote` runs `wrangler d1 execute DB --remote` in chunks. Re-running it upserts catalogue rows only. Chinese names are optional rows in `catalog_exercise_i18n`; the seed file `apps/server/catalog/exercise-i18n.zh-CN.json` currently covers a few common lifts, and more names can be added there before seeding again.
+`catalog:seed:remote` runs `wrangler d1 execute DB --remote` in chunks. Re-running it upserts catalogue rows only. `catalog_exercise_i18n` stores zh-CN names, descriptions, and instructions for every exercise. Searching a Chinese name such as `卧推` matches the catalogue through those rows.
 
 Native clients pin `planVersion` when starting cached training and `recipeVersion` when logging a displayed recipe. The server resolves the owner's immutable revision, so a later template edit cannot silently change an offline session or the portion the user chose. Omitting these optional selectors uses the current template.
 
@@ -297,7 +297,7 @@ On macOS with Xcode 26+, use `pnpm apple:generate`, `pnpm apple:test`, `pnpm app
 
 Code is licensed under [MIT](LICENSE). Third-party food data and media retain their own terms and provenance. Open Food Facts data is provided under ODbL; the code license does not relicense that data. Only save images you have permission to use.
 
-- [openGym](https://github.com/DuarteSantos8/openGym) contributed structured catalogue fields and muscle-region ids. Its code, translations, descriptions, and media are not bundled. Rewritten coaching text is marked in the catalogue; rows that still need wording have `needsRewrite: true`. See [third-party notices](THIRD_PARTY_NOTICES.md).
+- [openGym](https://github.com/DuarteSantos8/openGym) contributed structured catalogue fields and muscle-region ids. Its code, translations, descriptions, and media are not bundled. Coaching text in this catalogue is rewritten. See [third-party notices](THIRD_PARTY_NOTICES.md).
 - [Hono](https://hono.dev/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Cloudflare OAuth Provider](https://github.com/cloudflare/workers-oauth-provider)

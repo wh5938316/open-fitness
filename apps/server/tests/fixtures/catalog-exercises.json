@@ -18,13 +18,24 @@
         "instructions": "1. Lie flat on your back with your knees bent and feet flat on the ground.\n2. Place your hands behind your head with your elbows pointing outwards.\n3. Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.\n4. Pause for a moment at the top, then slowly lower your upper body back down to the starting position.\n5. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["abs", "hip flexors", "lower back"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "abs",
+          "hip flexors",
+          "lower back"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["hip flexors", "lower back"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "hip flexors",
+          "lower back"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "exercisedb": "0001",
@@ -41,11 +52,13 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         }
       },
-      "searchText": "3/4 sit-up waist body weight abs hip flexors lower back calisthenics waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 hip flexors 髋屈肌 lower back 下背"
+      "searchText": "3/4 sit-up waist body weight abs hip flexors lower back calisthenics 四分之三仰卧起坐 四分之三仰卧起坐是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，髋屈肌和下背协助。 1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。 waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 hip flexors 髋屈肌 lower back 下背"
     },
     {
       "id": "cat-0002",
@@ -65,13 +78,22 @@
         "instructions": "1. Stand with your feet shoulder-width apart and your arms extended straight down by your sides.\n2. Keeping your back straight and your core engaged, slowly bend your torso to one side, lowering your hand towards your knee.\n3. Pause for a moment at the bottom, then slowly return to the starting position.\n4. Repeat on the other side.\n5. Continue alternating sides for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["abs", "obliques"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "abs",
+          "obliques"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["obliques"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "obliques"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0002",
@@ -88,11 +110,13 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         }
       },
-      "searchText": "45° side bend waist body weight abs obliques strength waist 腰腹 body weight 自重 abs 腹肌 strength 力量 obliques 腹斜肌"
+      "searchText": "45° side bend waist body weight abs obliques strength 45度侧屈 45度侧屈按这个名称对应的轨迹完成每次重复。主要练腹肌，腹斜肌协助。 1. 先把身体摆到起始姿势。\n2. 让腹肌在用力的那段路程里保持紧张。\n3. 再沿原路回到起点，重复到计划次数。 waist 腰腹 body weight 自重 abs 腹肌 strength 力量 obliques 腹斜肌"
     },
     {
       "id": "cat-0004",
@@ -112,13 +136,24 @@
         "instructions": "1. Lie supine, knees lifted off the floor.\n2. Rest the hands behind the head.\n3. Raise the shoulders and rotate toward one knee.\n4. Come back, then rotate toward the other knee.\n5. Move slowly and keep the low back on the floor.",
         "description": "With both legs suspended, twist through each crunch to train the abs and the obliques.",
         "needsRewrite": false,
-        "muscleGroups": ["abs", "obliques", "hip flexors"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "abs",
+          "obliques",
+          "hip flexors"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["obliques", "hip flexors"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "obliques",
+          "hip flexors"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "opengym": "0004"
@@ -133,12 +168,14 @@
         },
         "diagram": {
           "gender": "female",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         },
         "variantOf": "cat-5266"
       },
-      "searchText": "air twisting crunch waist body weight abs obliques hip flexors calisthenics waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 obliques 腹斜肌 hip flexors 髋屈肌"
+      "searchText": "air twisting crunch waist body weight abs obliques hip flexors calisthenics 徒手扭转卷腹 徒手扭转卷腹是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，腹斜肌和髋屈肌协助。 1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。 waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 obliques 腹斜肌 hip flexors 髋屈肌"
     },
     {
       "id": "cat-0007",
@@ -158,13 +195,24 @@
         "instructions": "1. Sit on the cable machine with your back straight and feet flat on the ground.\n2. Grasp the handles with an overhand grip, slightly wider than shoulder-width apart.\n3. Lean back slightly and pull the handles towards your chest, squeezing your shoulder blades together.\n4. Pause for a moment at the peak of the movement, then slowly release the handles back to the starting position.\n5. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["lats", "biceps", "rhomboids"],
-        "equipment": ["cable"],
+        "muscleGroups": [
+          "lats",
+          "biceps",
+          "rhomboids"
+        ],
+        "equipment": [
+          "cable"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "back",
-        "primaryMuscles": ["lats"],
-        "secondaryMuscles": ["biceps", "rhomboids"],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "secondaryMuscles": [
+          "biceps",
+          "rhomboids"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0007",
@@ -181,12 +229,29 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["back"],
-          "regions": ["upper-back", "biceps", "deltoids", "forearm", "trapezius", "triceps"]
+          "views": [
+            "back"
+          ],
+          "regions": [
+            "upper-back",
+            "biceps",
+            "deltoids",
+            "forearm",
+            "trapezius",
+            "triceps"
+          ]
         },
         "muscleMap": {
-          "primaries": ["upper-back"],
-          "secondaries": ["biceps", "deltoids", "forearm", "trapezius", "triceps"],
+          "primaries": [
+            "upper-back"
+          ],
+          "secondaries": [
+            "biceps",
+            "deltoids",
+            "forearm",
+            "trapezius",
+            "triceps"
+          ],
           "weights": {
             "upper-back": 1,
             "biceps": 0.4,
@@ -197,7 +262,7 @@
           }
         }
       },
-      "searchText": "alternate lateral pulldown back cable lats biceps rhomboids strength back 背部 cable 绳索 lats 背阔肌 strength 力量 biceps 肱二头肌 rhomboids 菱形肌"
+      "searchText": "alternate lateral pulldown back cable lats biceps rhomboids strength 交替侧下拉 交替侧下拉是把横杆或把手从高处拉向锁骨或胸口。主要练背阔肌，肱二头肌和菱形肌协助。 1. 坐稳，把横杆或把手握在肩宽附近。\n2. 把把手拉向锁骨或上胸，肘朝身体两侧。\n3. 再让手臂回到头顶上方，肩不要完全松掉。 back 背部 cable 绳索 lats 背阔肌 strength 力量 biceps 肱二头肌 rhomboids 菱形肌"
     },
     {
       "id": "cat-0009",
@@ -217,13 +282,24 @@
         "instructions": "1. Adjust the machine to your desired height and secure your knees on the pad.\n2. Grasp the handles with your palms facing down and your arms fully extended.\n3. Lower your body by bending your elbows until your upper arms are parallel to the floor.\n4. Pause for a moment, then push yourself back up to the starting position.\n5. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["pectorals", "triceps", "shoulders"],
-        "equipment": ["leverage machine"],
+        "muscleGroups": [
+          "pectorals",
+          "triceps",
+          "shoulders"
+        ],
+        "equipment": [
+          "leverage machine"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "chest",
-        "primaryMuscles": ["pectorals"],
-        "secondaryMuscles": ["triceps", "shoulders"],
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "secondaryMuscles": [
+          "triceps",
+          "shoulders"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0009",
@@ -240,15 +316,26 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
-          "regions": ["chest", "triceps", "deltoids"]
+          "views": [
+            "front"
+          ],
+          "regions": [
+            "chest",
+            "triceps",
+            "deltoids"
+          ]
         },
         "muscleMap": {
-          "primaries": ["chest"],
-          "secondaries": ["triceps", "deltoids"]
+          "primaries": [
+            "chest"
+          ],
+          "secondaries": [
+            "triceps",
+            "deltoids"
+          ]
         }
       },
-      "searchText": "assisted chest dip (kneeling) chest leverage machine pectorals triceps shoulders strength chest 胸肌 leverage machine 杠杆器械 pectorals 胸大肌 strength 力量 triceps 肱三头肌 shoulders 肩部"
+      "searchText": "assisted chest dip (kneeling) chest leverage machine pectorals triceps shoulders strength 辅助双杠臂屈伸跪姿 辅助双杠臂屈伸跪姿是撑在双杠或凳上屈肘下降，再把身体推起。主要练胸大肌，肱三头肌和肩部协助。 1. 双手撑在双杠或凳上，肩沉下来。\n2. 屈肘把身体降下，肩不要顶到耳朵。\n3. 再把身体推起，肘接近伸直。 chest 胸肌 leverage machine 杠杆器械 pectorals 胸大肌 strength 力量 triceps 肱三头肌 shoulders 肩部"
     },
     {
       "id": "cat-0015",
@@ -268,13 +355,24 @@
         "instructions": "1. Adjust the machine to your desired weight and height.\n2. Place your hands on the parallel bars with a close grip, palms facing each other.\n3. Hang from the bars with your arms fully extended and your feet off the ground.\n4. Engage your back muscles and pull your body up towards the bars, keeping your elbows close to your body.\n5. Continue pulling until your chin is above the bars.\n6. Pause for a moment at the top, then slowly lower your body back down to the starting position.\n7. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["lats", "biceps", "forearms"],
-        "equipment": ["leverage machine"],
+        "muscleGroups": [
+          "lats",
+          "biceps",
+          "forearms"
+        ],
+        "equipment": [
+          "leverage machine"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "back",
-        "primaryMuscles": ["lats"],
-        "secondaryMuscles": ["biceps", "forearms"],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "secondaryMuscles": [
+          "biceps",
+          "forearms"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0015",
@@ -291,12 +389,25 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["back"],
-          "regions": ["upper-back", "biceps", "deltoids", "forearm"]
+          "views": [
+            "back"
+          ],
+          "regions": [
+            "upper-back",
+            "biceps",
+            "deltoids",
+            "forearm"
+          ]
         },
         "muscleMap": {
-          "primaries": ["upper-back"],
-          "secondaries": ["biceps", "deltoids", "forearm"],
+          "primaries": [
+            "upper-back"
+          ],
+          "secondaries": [
+            "biceps",
+            "deltoids",
+            "forearm"
+          ],
           "weights": {
             "upper-back": 1,
             "biceps": 0.4,
@@ -306,7 +417,7 @@
           }
         }
       },
-      "searchText": "assisted parallel close grip pull-up back leverage machine lats biceps forearms strength back 背部 leverage machine 杠杆器械 lats 背阔肌 strength 力量 biceps 肱二头肌 forearms 前臂"
+      "searchText": "assisted parallel close grip pull-up back leverage machine lats biceps forearms strength 辅助平行窄握引体向上 辅助平行窄握引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。 1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。 back 背部 leverage machine 杠杆器械 lats 背阔肌 strength 力量 biceps 肱二头肌 forearms 前臂"
     },
     {
       "id": "cat-0017",
@@ -326,13 +437,24 @@
         "instructions": "1. Adjust the machine to your desired weight and height settings.\n2. Grasp the handles with an overhand grip, slightly wider than shoulder-width apart.\n3. Hang with your arms fully extended and your feet off the ground.\n4. Engage your back muscles and pull your body up towards the handles, keeping your elbows close to your body.\n5. Continue pulling until your chin is above the handles.\n6. Pause for a moment at the top, then slowly lower your body back down to the starting position.\n7. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["lats", "biceps", "forearms"],
-        "equipment": ["leverage machine"],
+        "muscleGroups": [
+          "lats",
+          "biceps",
+          "forearms"
+        ],
+        "equipment": [
+          "leverage machine"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "back",
-        "primaryMuscles": ["lats"],
-        "secondaryMuscles": ["biceps", "forearms"],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "secondaryMuscles": [
+          "biceps",
+          "forearms"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0017",
@@ -349,12 +471,25 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["back"],
-          "regions": ["upper-back", "biceps", "deltoids", "forearm"]
+          "views": [
+            "back"
+          ],
+          "regions": [
+            "upper-back",
+            "biceps",
+            "deltoids",
+            "forearm"
+          ]
         },
         "muscleMap": {
-          "primaries": ["upper-back"],
-          "secondaries": ["biceps", "deltoids", "forearm"],
+          "primaries": [
+            "upper-back"
+          ],
+          "secondaries": [
+            "biceps",
+            "deltoids",
+            "forearm"
+          ],
           "weights": {
             "upper-back": 1,
             "biceps": 0.4,
@@ -364,7 +499,7 @@
           }
         }
       },
-      "searchText": "assisted pull-up back leverage machine lats biceps forearms strength back 背部 leverage machine 杠杆器械 lats 背阔肌 strength 力量 biceps 肱二头肌 forearms 前臂"
+      "searchText": "assisted pull-up back leverage machine lats biceps forearms strength 辅助引体向上 辅助引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。 1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。 back 背部 leverage machine 杠杆器械 lats 背阔肌 strength 力量 biceps 肱二头肌 forearms 前臂"
     },
     {
       "id": "cat-0025",
@@ -384,13 +519,24 @@
         "instructions": "1. Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.\n2. Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.\n3. Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.\n4. Lower the barbell slowly towards your chest, keeping your elbows tucked in.\n5. Pause for a moment when the barbell touches your chest.\n6. Push the barbell back up to the starting position by extending your arms.\n7. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["pectorals", "triceps", "shoulders"],
-        "equipment": ["barbell"],
+        "muscleGroups": [
+          "pectorals",
+          "triceps",
+          "shoulders"
+        ],
+        "equipment": [
+          "barbell"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "chest",
-        "primaryMuscles": ["pectorals"],
-        "secondaryMuscles": ["triceps", "shoulders"],
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "secondaryMuscles": [
+          "triceps",
+          "shoulders"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0025",
@@ -407,12 +553,25 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
-          "regions": ["chest", "triceps", "deltoids", "biceps"]
+          "views": [
+            "front"
+          ],
+          "regions": [
+            "chest",
+            "triceps",
+            "deltoids",
+            "biceps"
+          ]
         },
         "muscleMap": {
-          "primaries": ["chest"],
-          "secondaries": ["triceps", "deltoids", "biceps"],
+          "primaries": [
+            "chest"
+          ],
+          "secondaries": [
+            "triceps",
+            "deltoids",
+            "biceps"
+          ],
           "weights": {
             "chest": 1,
             "deltoids": 0.4,
@@ -421,7 +580,7 @@
           }
         }
       },
-      "searchText": "barbell bench press chest barbell pectorals triceps shoulders strength 杠铃卧推 卧推 chest 胸肌 barbell 杠铃 pectorals 胸大肌 strength 力量 triceps 肱三头肌 shoulders 肩部"
+      "searchText": "barbell bench press chest barbell pectorals triceps shoulders strength 杠铃卧推 杠铃卧推是仰卧在凳上，把杠铃从胸前向上推起再落下。主要练胸大肌，肱三头肌和肩部协助。 1. 先拿稳杠铃，摆到起始姿势。\n2. 把杠铃从胸前向上推起，前臂大致垂直。\n3. 控制落回胸口上方，不要在底部弹起。 卧推 chest 胸肌 barbell 杠铃 pectorals 胸大肌 strength 力量 triceps 肱三头肌 shoulders 肩部"
     },
     {
       "id": "cat-0026",
@@ -441,13 +600,26 @@
         "instructions": "1. Set up a barbell on a squat rack at chest height.\n2. Stand facing away from the rack, with your feet shoulder-width apart.\n3. Bend your knees and lower your body down into a squat position, keeping your back straight and chest up.\n4. Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.\n5. Lift the barbell off the rack and step back, ensuring your feet are still shoulder-width apart.\n6. Lower your body down into a squat, keeping your knees in line with your toes.\n7. Pause for a moment at the bottom, then push through your heels to return to the starting position.\n8. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["quads", "glutes", "hamstrings", "calves"],
-        "equipment": ["barbell"],
+        "muscleGroups": [
+          "quads",
+          "glutes",
+          "hamstrings",
+          "calves"
+        ],
+        "equipment": [
+          "barbell"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "upper legs",
-        "primaryMuscles": ["quads"],
-        "secondaryMuscles": ["glutes", "hamstrings", "calves"],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "secondaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "calves"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0026",
@@ -464,11 +636,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "barbell bench squat upper legs barbell quads glutes hamstrings calves strength upper legs 大腿 barbell 杠铃 quads 股四头肌 strength 力量 glutes 臀肌 hamstrings 腘绳肌 calves 小腿"
+      "searchText": "barbell bench squat upper legs barbell quads glutes hamstrings calves strength 杠铃凳上深蹲 杠铃凳上深蹲是屈髋屈膝下蹲，再蹬地站起。主要练股四头肌，臀肌和腘绳肌协助。 1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。 upper legs 大腿 barbell 杠铃 quads 股四头肌 strength 力量 glutes 臀肌 hamstrings 腘绳肌 calves 小腿"
     },
     {
       "id": "cat-0032",
@@ -488,13 +663,24 @@
         "instructions": "1. Stand with your feet shoulder-width apart and the barbell on the ground in front of you.\n2. Bend your knees and hinge at the hips to lower your torso and grip the barbell with an overhand grip, hands slightly wider than shoulder-width apart.\n3. Keep your back straight and chest lifted as you drive through your heels to lift the barbell off the ground, extending your hips and knees.\n4. As you stand up straight, squeeze your glutes and keep your core engaged.\n5. Lower the barbell back down to the ground by bending at the hips and knees, keeping your back straight.\n6. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["glutes", "hamstrings", "lower back"],
-        "equipment": ["barbell"],
+        "muscleGroups": [
+          "glutes",
+          "hamstrings",
+          "lower back"
+        ],
+        "equipment": [
+          "barbell"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "upper legs",
-        "primaryMuscles": ["glutes"],
-        "secondaryMuscles": ["hamstrings", "lower back"],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "secondaryMuscles": [
+          "hamstrings",
+          "lower back"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0032",
@@ -511,7 +697,9 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["back"],
+          "views": [
+            "back"
+          ],
           "regions": [
             "gluteal",
             "hamstring",
@@ -524,12 +712,22 @@
           ]
         },
         "muscleMap": {
-          "primaries": ["gluteal", "hamstring", "lower-back"],
-          "secondaries": ["quadriceps", "adductors", "calves", "abs", "obliques"],
+          "primaries": [
+            "gluteal",
+            "hamstring",
+            "lower-back"
+          ],
+          "secondaries": [
+            "quadriceps",
+            "adductors",
+            "calves",
+            "abs",
+            "obliques"
+          ],
           "bodyPart": "full body"
         }
       },
-      "searchText": "barbell deadlift upper legs barbell glutes hamstrings lower back strength 杠铃硬拉 硬拉 upper legs 大腿 barbell 杠铃 glutes 臀肌 strength 力量 hamstrings 腘绳肌 lower back 下背"
+      "searchText": "barbell deadlift upper legs barbell glutes hamstrings lower back strength 杠铃硬拉 杠铃硬拉是髋部后移再伸髋站直，用后链提起杠铃。主要练臀肌，腘绳肌和下背协助。 1. 先拿稳杠铃，摆到起始姿势。\n2. 髋部向后坐，背部保持中立，膝只微屈。\n3. 用髋把身体拉回直立，不要靠腰甩。 硬拉 upper legs 大腿 barbell 杠铃 glutes 臀肌 strength 力量 hamstrings 腘绳肌 lower back 下背"
     },
     {
       "id": "cat-0043",
@@ -549,13 +747,28 @@
         "instructions": "1. Stand with your feet shoulder-width apart, toes slightly turned out.\n2. Hold the barbell across your upper back, resting it on your traps or rear delts.\n3. Engage your core and keep your chest up as you begin to lower your body down.\n4. Bend at the knees and hips, pushing your hips back and down as if sitting into a chair.\n5. Lower yourself until your thighs are parallel to the ground or slightly below.\n6. Keep your knees in line with your toes and your weight in your heels.\n7. Drive through your heels to stand back up, extending your hips and knees.\n8. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["glutes", "quadriceps", "hamstrings", "calves", "core"],
-        "equipment": ["barbell"],
+        "muscleGroups": [
+          "glutes",
+          "quadriceps",
+          "hamstrings",
+          "calves",
+          "core"
+        ],
+        "equipment": [
+          "barbell"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "upper legs",
-        "primaryMuscles": ["glutes"],
-        "secondaryMuscles": ["quadriceps", "hamstrings", "calves", "core"],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "secondaryMuscles": [
+          "quadriceps",
+          "hamstrings",
+          "calves",
+          "core"
+        ],
         "movementCategory": "strength",
         "externalIds": {
           "exercisedb": "0043",
@@ -572,7 +785,10 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": [
             "quadriceps",
             "gluteal",
@@ -585,18 +801,28 @@
           ]
         },
         "muscleMap": {
-          "primaries": ["quadriceps", "gluteal", "adductors"],
-          "secondaries": ["hamstring", "calves", "lower-back", "abs", "obliques"]
+          "primaries": [
+            "quadriceps",
+            "gluteal",
+            "adductors"
+          ],
+          "secondaries": [
+            "hamstring",
+            "calves",
+            "lower-back",
+            "abs",
+            "obliques"
+          ]
         }
       },
-      "searchText": "barbell full squat upper legs barbell glutes quadriceps hamstrings calves core strength 杠铃深蹲 深蹲 upper legs 大腿 barbell 杠铃 glutes 臀肌 strength 力量 quadriceps 股四头肌 hamstrings 腘绳肌 calves 小腿 core 核心"
+      "searchText": "barbell full squat upper legs barbell glutes quadriceps hamstrings calves core strength 杠铃深蹲 杠铃深蹲是屈髋屈膝下蹲，再蹬地站起。主要练臀肌，股四头肌和腘绳肌协助。 1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。 深蹲 upper legs 大腿 barbell 杠铃 glutes 臀肌 strength 力量 quadriceps 股四头肌 hamstrings 腘绳肌 calves 小腿 core 核心"
     },
     {
       "id": "cat-0136",
       "externalId": "0136",
       "source": "opengym",
       "catalogVersion": 1,
-      "needsRewrite": true,
+      "needsRewrite": false,
       "bodyPart": "waist",
       "equipment": "body weight",
       "target": "abs",
@@ -606,16 +832,29 @@
         "name": "boat yoga pose",
         "aliases": [],
         "category": "strength",
-        "instructions": "",
-        "description": null,
-        "needsRewrite": true,
-        "muscleGroups": ["abs", "hip flexors", "lower back", "quadriceps"],
-        "equipment": ["body weight"],
+        "instructions": "1. Set body mass alone so the posture can start from a steady position.\n2. Perform the posture and keep the midsection under tension.\n3. Change direction before the joints bang, then retrace the route.\n4. Stop when the midsection are what give out.",
+        "description": "Arrange the body in this shape and keep the breath moving. Work stays on the midsection; the hip lifters plus low back assist.",
+        "needsRewrite": false,
+        "muscleGroups": [
+          "abs",
+          "hip flexors",
+          "lower back",
+          "quadriceps"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["hip flexors", "lower back", "quadriceps"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "hip flexors",
+          "lower back",
+          "quadriceps"
+        ],
         "movementCategory": "yoga",
         "externalIds": {
           "opengym": "0136"
@@ -626,15 +865,17 @@
           "catalogId": "cat-0136",
           "catalogVersion": 1,
           "attribution": "Structured fields and muscle-region ids from openGym (AGPL-3.0) @e348fc17. Description and instructions are original rewrites, or blank when needsRewrite is true. No openGym code, translations, or media.",
-          "needsRewrite": true
+          "needsRewrite": false
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         }
       },
-      "searchText": "boat yoga pose waist body weight abs hip flexors lower back quadriceps yoga waist 腰腹 body weight 自重 abs 腹肌 yoga 瑜伽 hip flexors 髋屈肌 lower back 下背 quadriceps 股四头肌"
+      "searchText": "boat yoga pose waist body weight abs hip flexors lower back quadriceps yoga 船式 船式是按该体式摆好身体，并稳住呼吸。主要练腹肌，髋屈肌和下背协助。 1. 按体式把关节放进能维持的位置。\n2. 呼吸保持均匀，不要憋气。\n3. 到点后按相反顺序退出。 waist 腰腹 body weight 自重 abs 腹肌 yoga 瑜伽 hip flexors 髋屈肌 lower back 下背 quadriceps 股四头肌"
     },
     {
       "id": "cat-0501",
@@ -663,12 +904,23 @@
           "triceps",
           "core"
         ],
-        "equipment": ["body weight"],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "cardio",
-        "primaryMuscles": ["cardiovascular system"],
-        "secondaryMuscles": ["quadriceps", "hamstrings", "calves", "shoulders", "triceps", "core"],
+        "primaryMuscles": [
+          "cardiovascular system"
+        ],
+        "secondaryMuscles": [
+          "quadriceps",
+          "hamstrings",
+          "calves",
+          "shoulders",
+          "triceps",
+          "core"
+        ],
         "movementCategory": "cardio",
         "externalIds": {
           "exercisedb": "0501",
@@ -685,11 +937,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "jack burpee cardio body weight cardiovascular system quadriceps hamstrings calves shoulders triceps core cardio 波比跳 伯皮 cardio 心肺 body weight 自重 cardiovascular system 循环系统 cardio 心肺 quadriceps 股四头肌 hamstrings 腘绳肌 calves 小腿 shoulders 肩部 triceps 肱三头肌 core 核心"
+      "searchText": "jack burpee cardio body weight cardiovascular system quadriceps hamstrings calves shoulders triceps core cardio 波比跳 波比跳是快速离地或变向，再尽量稳稳落地。主要练循环系统，股四头肌和腘绳肌协助。 1. 先用一个安静的预备姿势接住重心。\n2. 快速离地或变向，落地时用脚和髋接住。\n3. 站稳后再开始下一次。 伯皮 cardio 心肺 body weight 自重 cardiovascular system 循环系统 cardio 心肺 quadriceps 股四头肌 hamstrings 腘绳肌 calves 小腿 shoulders 肩部 triceps 肱三头肌 core 核心"
     },
     {
       "id": "cat-0652",
@@ -709,13 +964,24 @@
         "instructions": "1. Hang from a pull-up bar with your palms facing away from you and your arms fully extended.\n2. Engage your core and squeeze your shoulder blades together.\n3. Pull your body up towards the bar by bending your elbows and bringing your chest towards the bar.\n4. Pause at the top of the movement, then slowly lower your body back down to the starting position.\n5. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["lats", "biceps", "forearms"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "lats",
+          "biceps",
+          "forearms"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "back",
-        "primaryMuscles": ["lats"],
-        "secondaryMuscles": ["biceps", "forearms"],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "secondaryMuscles": [
+          "biceps",
+          "forearms"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "exercisedb": "0652",
@@ -732,12 +998,25 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["back"],
-          "regions": ["upper-back", "biceps", "deltoids", "forearm"]
+          "views": [
+            "back"
+          ],
+          "regions": [
+            "upper-back",
+            "biceps",
+            "deltoids",
+            "forearm"
+          ]
         },
         "muscleMap": {
-          "primaries": ["upper-back"],
-          "secondaries": ["biceps", "deltoids", "forearm"],
+          "primaries": [
+            "upper-back"
+          ],
+          "secondaries": [
+            "biceps",
+            "deltoids",
+            "forearm"
+          ],
           "weights": {
             "upper-back": 1,
             "biceps": 0.4,
@@ -747,7 +1026,7 @@
           }
         }
       },
-      "searchText": "pull-up back body weight lats biceps forearms calisthenics 引体向上 引体 back 背部 body weight 自重 lats 背阔肌 calisthenics 自重训练 biceps 肱二头肌 forearms 前臂"
+      "searchText": "pull-up back body weight lats biceps forearms calisthenics 引体向上 引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。 1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。 引体 back 背部 body weight 自重 lats 背阔肌 calisthenics 自重训练 biceps 肱二头肌 forearms 前臂"
     },
     {
       "id": "cat-0662",
@@ -767,13 +1046,26 @@
         "instructions": "1. Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.\n2. Engage your core and lower your body towards the ground by bending your elbows, keeping your body in a straight line.\n3. Pause for a moment when your chest is just above the ground, then push yourself back up to the starting position by straightening your arms.\n4. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["pectorals", "triceps", "deltoids", "core"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "pectorals",
+          "triceps",
+          "deltoids",
+          "core"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "chest",
-        "primaryMuscles": ["pectorals"],
-        "secondaryMuscles": ["triceps", "deltoids", "core"],
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "secondaryMuscles": [
+          "triceps",
+          "deltoids",
+          "core"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "exercisedb": "0662",
@@ -790,11 +1082,13 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         }
       },
-      "searchText": "push-up chest body weight pectorals triceps deltoids core calisthenics 俯卧撑 chest 胸肌 body weight 自重 pectorals 胸大肌 calisthenics 自重训练 triceps 肱三头肌 deltoids 三角肌 core 核心"
+      "searchText": "push-up chest body weight pectorals triceps deltoids core calisthenics 俯卧撑 俯卧撑是撑地屈肘让胸口下降，再把身体推离地面。主要练胸大肌，肱三头肌和三角肌协助。 1. 双手撑在肩下方，身体从肩到脚成一条线。\n2. 屈肘让胸口靠近地面。\n3. 再把身体推离地面，髋不要塌。 chest 胸肌 body weight 自重 pectorals 胸大肌 calisthenics 自重训练 triceps 肱三头肌 deltoids 三角肌 core 核心"
     },
     {
       "id": "cat-10003",
@@ -814,13 +1108,26 @@
         "instructions": "1. Sit with the legs long and place the band across one forefoot.\n2. Grip the ends or fix them, keeping the pull light.\n3. Draw the toes up toward the shin.\n4. Pause, then ease back.\n5. Finish every rep, then change feet.",
         "description": "Seated, draw the toes toward the shin against a band. The muscles along the shin get stronger.",
         "needsRewrite": false,
-        "muscleGroups": ["calves", "shins", "ankles", "feet"],
-        "equipment": ["resistance band"],
+        "muscleGroups": [
+          "calves",
+          "shins",
+          "ankles",
+          "feet"
+        ],
+        "equipment": [
+          "resistance band"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "lower legs",
-        "primaryMuscles": ["calves"],
-        "secondaryMuscles": ["shins", "ankles", "feet"],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "secondaryMuscles": [
+          "shins",
+          "ankles",
+          "feet"
+        ],
         "movementCategory": "rehab",
         "externalIds": {
           "opengym": "10003"
@@ -835,11 +1142,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "resistance band sitting floor ankle dorsi flexion lower legs resistance band calves shins ankles feet rehab lower legs 小腿 resistance band 阻力带 calves 小腿 rehab 康复 shins 胫前 ankles 踝 feet 足"
+      "searchText": "resistance band sitting floor ankle dorsi flexion lower legs resistance band calves shins ankles feet rehab 阻力带坐姿地面踝背屈 阻力带坐姿地面踝背屈是小幅度、可控制地活动目标部位。主要练小腿，胫前和踝协助。 1. 幅度只做到没有刺痛的范围。\n2. 动作放慢，目标部位出力。\n3. 如果出现锐痛就停。 lower legs 小腿 resistance band 阻力带 calves 小腿 rehab 康复 shins 胫前 ankles 踝 feet 足"
     },
     {
       "id": "cat-10534",
@@ -859,13 +1169,24 @@
         "instructions": "1. Sit, both feet on the floor.\n2. Drag one heel beneath the seat so the knee flexes.\n3. Stop where the range ends.\n4. Slide the foot forward again.\n5. Repeat, then use the other leg.",
         "description": "From a chair, slide the heel backward to bend one knee. Knee motion and hamstring control improve without much load.",
         "needsRewrite": false,
-        "muscleGroups": ["hamstrings", "calves", "glutes"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "hamstrings",
+          "calves",
+          "glutes"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "upper legs",
-        "primaryMuscles": ["hamstrings"],
-        "secondaryMuscles": ["calves", "glutes"],
+        "primaryMuscles": [
+          "hamstrings"
+        ],
+        "secondaryMuscles": [
+          "calves",
+          "glutes"
+        ],
         "movementCategory": "rehab",
         "externalIds": {
           "opengym": "10534"
@@ -880,11 +1201,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "seated single leg knee flexion upper legs body weight hamstrings calves glutes rehab upper legs 大腿 body weight 自重 hamstrings 腘绳肌 rehab 康复 calves 小腿 glutes 臀肌"
+      "searchText": "seated single leg knee flexion upper legs body weight hamstrings calves glutes rehab 坐姿单腿膝屈曲 坐姿单腿膝屈曲是小幅度、可控制地活动目标部位。主要练腘绳肌，小腿和臀肌协助。 1. 幅度只做到没有刺痛的范围。\n2. 动作放慢，目标部位出力。\n3. 如果出现锐痛就停。 upper legs 大腿 body weight 自重 hamstrings 腘绳肌 rehab 康复 calves 小腿 glutes 臀肌"
     },
     {
       "id": "cat-1197",
@@ -904,13 +1228,26 @@
         "instructions": "1. Set a shoulder-wide stance and angle the toes outward a little.\n2. Reach the hips backward as the knees bend and the torso lowers.\n3. Stop at the deepest position you can control, with the heels down and the chest up.\n4. Push the floor away until you are standing tall again.\n5. Let the knees travel in the same direction as the toes.",
         "description": "From a standing start, sit the hips backward and bend the knees, then return to tall. The thighs and glutes take the load while you rehearse a steady lower-body shape.",
         "needsRewrite": false,
-        "muscleGroups": ["quads", "glutes", "hamstrings", "core"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "quads",
+          "glutes",
+          "hamstrings",
+          "core"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "upper legs",
-        "primaryMuscles": ["quads"],
-        "secondaryMuscles": ["glutes", "hamstrings", "core"],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "secondaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "core"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "opengym": "1197"
@@ -925,11 +1262,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "squat upper legs body weight quads glutes hamstrings core calisthenics 徒手深蹲 深蹲 upper legs 大腿 body weight 自重 quads 股四头肌 calisthenics 自重训练 glutes 臀肌 hamstrings 腘绳肌 core 核心"
+      "searchText": "squat upper legs body weight quads glutes hamstrings core calisthenics 徒手深蹲 徒手深蹲是屈髋屈膝下蹲，再蹬地站起。主要练股四头肌，臀肌和腘绳肌协助。 1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。 深蹲 upper legs 大腿 body weight 自重 quads 股四头肌 calisthenics 自重训练 glutes 臀肌 hamstrings 腘绳肌 core 核心"
     },
     {
       "id": "cat-2476",
@@ -949,13 +1289,24 @@
         "instructions": "1. Lie flat on your back with your knees bent and feet flat on the ground.\n2. Place your hands behind your head with your elbows pointing outwards.\n3. Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.\n4. Pause for a moment at the top, then slowly lower your upper body back down to the starting position.\n5. Repeat for the desired number of repetitions.",
         "description": null,
         "needsRewrite": false,
-        "muscleGroups": ["abs", "hip flexors", "lower back"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "abs",
+          "hip flexors",
+          "lower back"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["hip flexors", "lower back"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "hip flexors",
+          "lower back"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "exercisedb": "0001",
@@ -972,12 +1323,14 @@
         },
         "diagram": {
           "gender": "female",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         },
         "variantOf": "cat-0001"
       },
-      "searchText": "3/4 sit-up waist body weight abs hip flexors lower back calisthenics waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 hip flexors 髋屈肌 lower back 下背"
+      "searchText": "3/4 sit-up waist body weight abs hip flexors lower back calisthenics 四分之三仰卧起坐 四分之三仰卧起坐是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，髋屈肌和下背协助。 1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。 waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 hip flexors 髋屈肌 lower back 下背"
     },
     {
       "id": "cat-3094",
@@ -997,13 +1350,28 @@
         "instructions": "1. Stand with feet together and arms at the sides.\n2. Jump the feet apart while the arms sweep overhead.\n3. Spring the feet back together into the start.\n4. Land quietly on the forefeet.\n5. Hold a steady cadence.\n6. Go for thirty to sixty seconds.",
         "description": "The familiar jump that opens the arms and legs, then brings them home. It is an easy whole-body primer that lifts heart rate quickly.",
         "needsRewrite": false,
-        "muscleGroups": ["cardiovascular system", "calves", "shoulders", "glutes", "hip flexors"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "cardiovascular system",
+          "calves",
+          "shoulders",
+          "glutes",
+          "hip flexors"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "cardio",
-        "primaryMuscles": ["cardiovascular system"],
-        "secondaryMuscles": ["calves", "shoulders", "glutes", "hip flexors"],
+        "primaryMuscles": [
+          "cardiovascular system"
+        ],
+        "secondaryMuscles": [
+          "calves",
+          "shoulders",
+          "glutes",
+          "hip flexors"
+        ],
         "movementCategory": "cardio",
         "externalIds": {
           "opengym": "3094"
@@ -1018,11 +1386,14 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front", "back"],
+          "views": [
+            "front",
+            "back"
+          ],
           "regions": []
         }
       },
-      "searchText": "jumping jack cardio body weight cardiovascular system calves shoulders glutes hip flexors cardio 开合跳 cardio 心肺 body weight 自重 cardiovascular system 循环系统 cardio 心肺 calves 小腿 shoulders 肩部 glutes 臀肌 hip flexors 髋屈肌"
+      "searchText": "jumping jack cardio body weight cardiovascular system calves shoulders glutes hip flexors cardio 开合跳 开合跳是快速离地或变向，再尽量稳稳落地。主要练循环系统，小腿和肩部协助。 1. 先用一个安静的预备姿势接住重心。\n2. 快速离地或变向，落地时用脚和髋接住。\n3. 站稳后再开始下一次。 cardio 心肺 body weight 自重 cardiovascular system 循环系统 cardio 心肺 calves 小腿 shoulders 肩部 glutes 臀肌 hip flexors 髋屈肌"
     },
     {
       "id": "cat-5266",
@@ -1042,13 +1413,24 @@
         "instructions": "1. Lie supine, knees lifted off the floor.\n2. Rest the hands behind the head.\n3. Raise the shoulders and rotate toward one knee.\n4. Come back, then rotate toward the other knee.\n5. Move slowly and keep the low back on the floor.",
         "description": "With both legs suspended, twist through each crunch to train the abs and the obliques.",
         "needsRewrite": false,
-        "muscleGroups": ["abs", "obliques", "hip flexors"],
-        "equipment": ["body weight"],
+        "muscleGroups": [
+          "abs",
+          "obliques",
+          "hip flexors"
+        ],
+        "equipment": [
+          "body weight"
+        ],
         "mediaAssetIds": [],
         "notes": "",
         "bodyPart": "waist",
-        "primaryMuscles": ["abs"],
-        "secondaryMuscles": ["obliques", "hip flexors"],
+        "primaryMuscles": [
+          "abs"
+        ],
+        "secondaryMuscles": [
+          "obliques",
+          "hip flexors"
+        ],
         "movementCategory": "calisthenics",
         "externalIds": {
           "opengym": "5266"
@@ -1063,72 +1445,193 @@
         },
         "diagram": {
           "gender": "male",
-          "views": ["front"],
+          "views": [
+            "front"
+          ],
           "regions": []
         }
       },
-      "searchText": "air twisting crunch waist body weight abs obliques hip flexors calisthenics waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 obliques 腹斜肌 hip flexors 髋屈肌"
+      "searchText": "air twisting crunch waist body weight abs obliques hip flexors calisthenics 徒手扭转卷腹 徒手扭转卷腹是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，腹斜肌和髋屈肌协助。 1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。 waist 腰腹 body weight 自重 abs 腹肌 calisthenics 自重训练 obliques 腹斜肌 hip flexors 髋屈肌"
     }
   ],
   "i18n": [
     {
+      "exerciseId": "cat-0001",
+      "locale": "zh-CN",
+      "name": "四分之三仰卧起坐",
+      "aliases": [],
+      "description": "四分之三仰卧起坐是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，髋屈肌和下背协助。",
+      "instructions": "1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0002",
+      "locale": "zh-CN",
+      "name": "45度侧屈",
+      "aliases": [],
+      "description": "45度侧屈按这个名称对应的轨迹完成每次重复。主要练腹肌，腹斜肌协助。",
+      "instructions": "1. 先把身体摆到起始姿势。\n2. 让腹肌在用力的那段路程里保持紧张。\n3. 再沿原路回到起点，重复到计划次数。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0004",
+      "locale": "zh-CN",
+      "name": "徒手扭转卷腹",
+      "aliases": [],
+      "description": "徒手扭转卷腹是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，腹斜肌和髋屈肌协助。",
+      "instructions": "1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0007",
+      "locale": "zh-CN",
+      "name": "交替侧下拉",
+      "aliases": [],
+      "description": "交替侧下拉是把横杆或把手从高处拉向锁骨或胸口。主要练背阔肌，肱二头肌和菱形肌协助。",
+      "instructions": "1. 坐稳，把横杆或把手握在肩宽附近。\n2. 把把手拉向锁骨或上胸，肘朝身体两侧。\n3. 再让手臂回到头顶上方，肩不要完全松掉。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0009",
+      "locale": "zh-CN",
+      "name": "辅助双杠臂屈伸跪姿",
+      "aliases": [],
+      "description": "辅助双杠臂屈伸跪姿是撑在双杠或凳上屈肘下降，再把身体推起。主要练胸大肌，肱三头肌和肩部协助。",
+      "instructions": "1. 双手撑在双杠或凳上，肩沉下来。\n2. 屈肘把身体降下，肩不要顶到耳朵。\n3. 再把身体推起，肘接近伸直。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0015",
+      "locale": "zh-CN",
+      "name": "辅助平行窄握引体向上",
+      "aliases": [],
+      "description": "辅助平行窄握引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。",
+      "instructions": "1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0017",
+      "locale": "zh-CN",
+      "name": "辅助引体向上",
+      "aliases": [],
+      "description": "辅助引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。",
+      "instructions": "1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
       "exerciseId": "cat-0025",
       "locale": "zh-CN",
       "name": "杠铃卧推",
-      "aliases": ["卧推"],
-      "instructions": null,
+      "aliases": [
+        "卧推"
+      ],
+      "description": "杠铃卧推是仰卧在凳上，把杠铃从胸前向上推起再落下。主要练胸大肌，肱三头肌和肩部协助。",
+      "instructions": "1. 先拿稳杠铃，摆到起始姿势。\n2. 把杠铃从胸前向上推起，前臂大致垂直。\n3. 控制落回胸口上方，不要在底部弹起。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0026",
+      "locale": "zh-CN",
+      "name": "杠铃凳上深蹲",
+      "aliases": [],
+      "description": "杠铃凳上深蹲是屈髋屈膝下蹲，再蹬地站起。主要练股四头肌，臀肌和腘绳肌协助。",
+      "instructions": "1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
       "exerciseId": "cat-0032",
       "locale": "zh-CN",
       "name": "杠铃硬拉",
-      "aliases": ["硬拉"],
-      "instructions": null,
+      "aliases": [
+        "硬拉"
+      ],
+      "description": "杠铃硬拉是髋部后移再伸髋站直，用后链提起杠铃。主要练臀肌，腘绳肌和下背协助。",
+      "instructions": "1. 先拿稳杠铃，摆到起始姿势。\n2. 髋部向后坐，背部保持中立，膝只微屈。\n3. 用髋把身体拉回直立，不要靠腰甩。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
       "exerciseId": "cat-0043",
       "locale": "zh-CN",
       "name": "杠铃深蹲",
-      "aliases": ["深蹲"],
-      "instructions": null,
+      "aliases": [
+        "深蹲"
+      ],
+      "description": "杠铃深蹲是屈髋屈膝下蹲，再蹬地站起。主要练臀肌，股四头肌和腘绳肌协助。",
+      "instructions": "1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
       "exerciseId": "cat-0501",
       "locale": "zh-CN",
       "name": "波比跳",
-      "aliases": ["伯皮"],
-      "instructions": null,
+      "aliases": [
+        "伯皮"
+      ],
+      "description": "波比跳是快速离地或变向，再尽量稳稳落地。主要练循环系统，股四头肌和腘绳肌协助。",
+      "instructions": "1. 先用一个安静的预备姿势接住重心。\n2. 快速离地或变向，落地时用脚和髋接住。\n3. 站稳后再开始下一次。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
       "exerciseId": "cat-0652",
       "locale": "zh-CN",
       "name": "引体向上",
-      "aliases": ["引体"],
-      "instructions": null,
+      "aliases": [
+        "引体"
+      ],
+      "description": "引体向上是双手悬垂，把身体向上拉过握点再放下。主要练背阔肌，肱二头肌和前臂协助。",
+      "instructions": "1. 双手握住上方的杠，肩先沉下来。\n2. 把胸口拉向握点，下到手臂接近伸直。\n3. 不要用甩腿来凑次数。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
@@ -1136,23 +1639,79 @@
       "locale": "zh-CN",
       "name": "俯卧撑",
       "aliases": [],
-      "instructions": null,
+      "description": "俯卧撑是撑地屈肘让胸口下降，再把身体推离地面。主要练胸大肌，肱三头肌和三角肌协助。",
+      "instructions": "1. 双手撑在肩下方，身体从肩到脚成一条线。\n2. 屈肘让胸口靠近地面。\n3. 再把身体推离地面，髋不要塌。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-10003",
+      "locale": "zh-CN",
+      "name": "阻力带坐姿地面踝背屈",
+      "aliases": [],
+      "description": "阻力带坐姿地面踝背屈是小幅度、可控制地活动目标部位。主要练小腿，胫前和踝协助。",
+      "instructions": "1. 幅度只做到没有刺痛的范围。\n2. 动作放慢，目标部位出力。\n3. 如果出现锐痛就停。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-10534",
+      "locale": "zh-CN",
+      "name": "坐姿单腿膝屈曲",
+      "aliases": [],
+      "description": "坐姿单腿膝屈曲是小幅度、可控制地活动目标部位。主要练腘绳肌，小腿和臀肌协助。",
+      "instructions": "1. 幅度只做到没有刺痛的范围。\n2. 动作放慢，目标部位出力。\n3. 如果出现锐痛就停。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-0136",
+      "locale": "zh-CN",
+      "name": "船式",
+      "aliases": [],
+      "description": "船式是按该体式摆好身体，并稳住呼吸。主要练腹肌，髋屈肌和下背协助。",
+      "instructions": "1. 按体式把关节放进能维持的位置。\n2. 呼吸保持均匀，不要憋气。\n3. 到点后按相反顺序退出。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
       "exerciseId": "cat-1197",
       "locale": "zh-CN",
       "name": "徒手深蹲",
-      "aliases": ["深蹲"],
-      "instructions": null,
+      "aliases": [
+        "深蹲"
+      ],
+      "description": "徒手深蹲是屈髋屈膝下蹲，再蹬地站起。主要练股四头肌，臀肌和腘绳肌协助。",
+      "instructions": "1. 双脚踩稳，核心先收住。\n2. 髋和膝一起弯曲下蹲，膝盖大致朝脚尖。\n3. 整脚蹬地站起，再进行下一次。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-2476",
+      "locale": "zh-CN",
+      "name": "四分之三仰卧起坐",
+      "aliases": [],
+      "description": "四分之三仰卧起坐是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，髋屈肌和下背协助。",
+      "instructions": "1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
       }
     },
     {
@@ -1160,11 +1719,25 @@
       "locale": "zh-CN",
       "name": "开合跳",
       "aliases": [],
-      "instructions": null,
+      "description": "开合跳是快速离地或变向，再尽量稳稳落地。主要练循环系统，小腿和肩部协助。",
+      "instructions": "1. 先用一个安静的预备姿势接住重心。\n2. 快速离地或变向，落地时用脚和髋接住。\n3. 站稳后再开始下一次。",
       "provenance": {
-        "method": "human",
+        "method": "machine",
         "reviewed": false,
-        "tool": "OpenFitness contributor"
+        "tool": "OpenFitness catalog wording"
+      }
+    },
+    {
+      "exerciseId": "cat-5266",
+      "locale": "zh-CN",
+      "name": "徒手扭转卷腹",
+      "aliases": [],
+      "description": "徒手扭转卷腹是把胸廓卷向骨盆，缩短腹部后再展开。主要练腹肌，腹斜肌和髋屈肌协助。",
+      "instructions": "1. 仰卧，下背轻贴地面。\n2. 把胸口卷向骨盆，下背不要整段抬空。\n3. 再慢慢展开。",
+      "provenance": {
+        "method": "machine",
+        "reviewed": false,
+        "tool": "OpenFitness catalog wording"
       }
     }
   ]

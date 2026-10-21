@@ -77,6 +77,41 @@ for (const row of catalog.exercises) {
 }
 assert(pending === catalog.counts.pending, 'pending count drifted');
 assert(rewritten === catalog.counts.rewritten, 'rewritten count drifted');
+assert(pending === 0, `descriptions still pending: ${pending}`);
+
+const translations = JSON.parse(
+  readFileSync(join(serverRoot, 'catalog/exercise-i18n.zh-CN.json'), 'utf8'),
+);
+const taxonomy = JSON.parse(readFileSync(join(serverRoot, 'catalog/taxonomy.json'), 'utf8'));
+const han = /\p{Script=Han}/u;
+let zhNames = 0;
+let zhDescriptions = 0;
+let zhInstructions = 0;
+for (const row of catalog.exercises) {
+  const entry = translations[row.externalId];
+  assert(entry, `${row.id} is missing zh-CN`);
+  assert(typeof entry.name === 'string' && han.test(entry.name), `${row.id} zh name`);
+  assert(
+    typeof entry.description === 'string' && han.test(entry.description),
+    `${row.id} zh description`,
+  );
+  assert(
+    typeof entry.instructions === 'string' && han.test(entry.instructions),
+    `${row.id} zh instructions`,
+  );
+  zhNames += 1;
+  zhDescriptions += 1;
+  zhInstructions += 1;
+}
+assert(Object.keys(translations).length === catalog.exercises.length, 'zh-CN row count drifted');
+const labeled = (group) => Object.values(group).every((entry) => entry.en && entry['zh-CN']);
+assert(labeled(taxonomy.bodyPart), 'body part labels');
+assert(labeled(taxonomy.equipment), 'equipment labels');
+assert(labeled(taxonomy.movementCategory), 'movement category labels');
+assert(labeled(taxonomy.muscle), 'muscle labels');
+for (const region of taxonomy.diagramRegions) {
+  assert(taxonomy.muscle[region]?.['zh-CN'], `diagram region ${region} has no zh-CN label`);
+}
 
 const musclemap = join(serverRoot, 'public/musclemap');
 const requiredSvgs = ['male-front.svg', 'male-back.svg', 'female-front.svg', 'female-back.svg'];
@@ -102,5 +137,5 @@ for (const name of readdirSync(catalogDir)) {
   assert(!/\.(gif|png|jpe?g|webp|mp4)$/i.test(name), `binary file in catalog/: ${name}`);
 }
 console.log(
-  `catalog ok: ${catalog.counts.rows} rows, exercisedb ${catalog.counts.exercisedb}, opengym ${catalog.counts.opengym}, rewritten ${rewritten}, pending ${pending}`,
+  `catalog ok: ${catalog.counts.rows} rows, exercisedb ${catalog.counts.exercisedb}, opengym ${catalog.counts.opengym}, rewritten ${rewritten}, pending ${pending}, zh-CN names ${zhNames}, descriptions ${zhDescriptions}, instructions ${zhInstructions}`,
 );
