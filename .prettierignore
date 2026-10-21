@@ -1,4 +1,6 @@
 pnpm-lock.yaml
+apps/server/catalog/exercises.normalized.json
+apps/server/public/musclemap/*.svg
 **/dist/
 **/.wrangler/
 **/public/auth.js

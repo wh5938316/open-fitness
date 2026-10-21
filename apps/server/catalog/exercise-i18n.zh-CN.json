@@ -1,0 +1,42 @@
+{
+  "0025": {
+    "name": "杠铃卧推",
+    "aliases": ["卧推"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "0032": {
+    "name": "杠铃硬拉",
+    "aliases": ["硬拉"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "0043": {
+    "name": "杠铃深蹲",
+    "aliases": ["深蹲"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "0501": {
+    "name": "波比跳",
+    "aliases": ["伯皮"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "0652": {
+    "name": "引体向上",
+    "aliases": ["引体"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "0662": {
+    "name": "俯卧撑",
+    "aliases": [],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "1197": {
+    "name": "徒手深蹲",
+    "aliases": ["深蹲"],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  },
+  "3094": {
+    "name": "开合跳",
+    "aliases": [],
+    "provenance": { "method": "human", "reviewed": false, "tool": "OpenFitness contributor" }
+  }
+}

@@ -141,15 +141,117 @@ export const setMetrics = {
   notes,
 };
 export const setSchema = z.object(setMetrics);
+export const bodyPartValues = [
+  'back',
+  'cardio',
+  'chest',
+  'full body',
+  'lower arms',
+  'lower legs',
+  'neck',
+  'shoulders',
+  'upper arms',
+  'upper legs',
+  'waist',
+] as const;
+export const movementCategoryValues = [
+  'strength',
+  'stretching',
+  'mobility',
+  'plyometrics',
+  'cardio',
+  'olympic',
+  'calisthenics',
+  'pilates',
+  'yoga',
+  'combat',
+  'isometric',
+  'rehab',
+] as const;
+export const muscleMapSchema = z.object({
+  primaries: z.array(z.string().max(80)).max(20).optional(),
+  secondaries: z.array(z.string().max(80)).max(20).optional(),
+  weights: z.record(z.string().max(80), z.number().finite().nonnegative().max(1)).optional(),
+  bodyPart: z.string().max(80).optional(),
+});
+export const exerciseTranslationSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  aliases: z.array(z.string().max(200)).max(30).optional(),
+  instructions: z.string().max(20000).optional(),
+  provenance: z.object({
+    method: z.enum(['machine', 'human']),
+    reviewed: z.boolean(),
+    tool: z.string().max(200).optional(),
+  }),
+});
 export const exerciseSchema = z.object({
   name: z.string().min(1).max(200),
   aliases: z.array(z.string().max(200)).default([]),
   category: z.enum(['strength', 'duration', 'distance', 'mixed']).default('strength'),
   instructions: z.string().max(20000).default(''),
+  description: z.string().max(20000).nullable().optional(),
+  needsRewrite: z.boolean().optional(),
   muscleGroups: z.array(z.string().max(100)).max(30).default([]),
   equipment: z.array(z.string().max(100)).max(30).default([]),
   mediaAssetIds: z.array(id).max(10).default([]),
   notes,
+  bodyPart: z.enum(bodyPartValues).optional(),
+  primaryMuscles: z.array(z.string().max(100)).max(30).optional(),
+  secondaryMuscles: z.array(z.string().max(100)).max(30).optional(),
+  movementCategory: z.enum(movementCategoryValues).nullable().optional(),
+  muscleMap: muscleMapSchema.optional(),
+  externalIds: z
+    .object({
+      exercisedb: z.string().max(32).optional(),
+      opengym: z.string().max(32).optional(),
+    })
+    .optional(),
+  source: z
+    .object({
+      kind: z.enum(['user', 'catalog']),
+      origin: z.enum(['exercisedb', 'opengym']).optional(),
+      catalogId: z.string().max(64).optional(),
+      catalogVersion: z.number().int().positive().optional(),
+      license: z.literal('MIT').optional(),
+      attribution: z.string().max(500).optional(),
+      needsRewrite: z.boolean().optional(),
+    })
+    .optional(),
+  i18n: z.object({ 'zh-CN': exerciseTranslationSchema.optional() }).optional(),
+  diagram: z
+    .object({
+      gender: z.enum(['male', 'female']),
+      views: z
+        .array(z.enum(['front', 'back']))
+        .min(1)
+        .max(2),
+      regions: z.array(z.string().max(40)).max(20).default([]),
+      hrefs: z
+        .array(
+          z.object({
+            gender: z.enum(['male', 'female']),
+            view: z.enum(['front', 'back']),
+            href: z.string().max(200),
+          }),
+        )
+        .max(4)
+        .optional(),
+      highlights: z
+        .array(
+          z.object({
+            region: z.string().max(40),
+            role: z.enum(['primary', 'secondary']),
+            weight: z.number().finite().nonnegative().max(1).optional(),
+            groups: z.array(z.string().max(40)).max(8),
+            surfaces: z.array(z.string().max(40)).max(20),
+            matched: z.boolean(),
+          }),
+        )
+        .max(20)
+        .optional(),
+    })
+    .optional(),
+  variantOf: id.optional(),
 });
 export const planSchema = z.object({
   name: z.string().min(1).max(200),
