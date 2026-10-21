@@ -68,6 +68,47 @@ test('registers and signs in with passkeys, authorizes an agent, uses private me
     await page.getByRole('button', { name: 'Sign in with a passkey', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Connected assistants' })).toBeVisible();
     await page.screenshot({ path: 'test-results/admin-en.png', fullPage: true });
+    await page.getByRole('link', { name: 'Foods', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Foods', exact: true })).toBeVisible();
+    await page.getByLabel('Name').fill('明治无糖低脂纯牛奶');
+    await page.getByLabel('Aliases').fill('明治低脂奶');
+    await page.getByLabel('Basis quantity').fill('100');
+    await page.getByLabel('Basis unit').selectOption('ml');
+    await page.getByLabel('Serving quantity').fill('200');
+    await page.getByLabel('Serving unit').selectOption('ml');
+    await page.getByLabel('Energy (kcal)').fill('47');
+    await page.getByLabel('Protein (g)').fill('3.5');
+    await page.getByLabel('Carbohydrate (g)').fill('5');
+    await page.getByLabel('Fat (g)').fill('1.4');
+    await page.getByLabel('Sodium (mg)').fill('60');
+    await page.getByLabel('Calcium (mg)').fill('115');
+    await page.getByLabel('Source note').fill('Label per 100 ml: 196 kJ (47 kcal).');
+    await page.locator('#food-cover').setInputFiles({
+      name: 'meiji.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP9sAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    });
+    await page.getByRole('button', { name: 'Save food', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('Food saved.');
+    const card = page.locator('.food-card', { hasText: '明治无糖低脂纯牛奶' });
+    await expect(card).toBeVisible();
+    await expect
+      .poll(() => card.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth))
+      .toBe(1);
+    await expect(card.locator('input.portion')).toHaveValue('200');
+    await expect(card.locator('select.portion-unit')).toHaveValue('ml');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(card.locator('img')).toBeVisible();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await card.getByRole('button', { name: 'Log portion', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('Meal logged. 94 kcal');
+    await expect(page.locator('#meal-list')).toContainText('明治无糖低脂纯牛奶 200 ml');
+    await expect(page.locator('#meal-list')).toContainText('94 kcal');
+    await page.screenshot({ path: 'test-results/foods-en.png', fullPage: true });
+    await page.goto('/admin');
     await page.getByRole('button', { name: '简体中文', exact: true }).click();
     await expect(page.getByRole('heading', { name: '已连接的助手' })).toBeVisible();
     await page.screenshot({ path: 'test-results/admin-zh-CN.png', fullPage: true });

@@ -86,31 +86,31 @@ Client display names are supplied by clients; a name such as “Grok” is not p
 
 ### Assistant working protocol
 
-- Read existing plans, exercises, recipes, and history before creating duplicates.
+- Read existing plans, exercises, foods, recipes, and history before creating duplicates.
 - Keep intended training targets separate from actual performed sets. Log actual results and effort after user feedback.
-- Reuse a saved restaurant meal or recipe when its portion is applicable. Ask for missing weights or conversion information.
+- Reuse a saved food or recipe when its portion is applicable. Ask for missing weights or conversion information. Identify a packaged food and its nutrition label yourself, then store that result with `save_food`. OpenFitness does not recognize photos or labels.
 - Preserve user names and notes verbatim, in any language. Code and protocol identifiers remain English.
 - Label estimated nutrition with `source.kind = "bot_estimate"` and a meaningful `source.basis`.
 - Generate one `operationId` for a logical write and reuse it for retries. Read the current `version` and send `expectedVersion` when changing a record. Use a new operation ID for a different action.
 - Treat a one-time portion change as a meal correction. Change the recipe only when the standard future serving changes.
-- Use the assistant's image tools for background removal, centering, and visual cleanup before saving a recipe cover.
+- Use the assistant's image tools for background removal, centering, and visual cleanup before saving a food or recipe cover. Food covers should be square 1:1 product photos.
 - Report `awaiting_device` honestly. The server does not currently write into HealthKit.
 
 ## Operations and REST API
 
 The complete English OpenAPI document is served at `/openapi.json`. MCP tools are generated from the same operation registry and schemas.
 
-| Capability                | Representative tools                                                                         | REST resources                                                         |
-| ------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Identity and preferences  | `get_agent_context`, `set_preferences`                                                       | `/api/v1/agent-context`, `/api/v1/preferences`                         |
-| Exercises                 | `search_exercises`, `save_exercise`, `get_exercise_history`                                  | `/api/v1/exercises`                                                    |
-| Plans                     | `save_training_plan`, `list_training_plans`                                                  | `/api/v1/training-plans`                                               |
-| Training                  | `start_workout`, `log_workout_set`, `revise_workout_set`, `finish_workout`, `cancel_workout` | `/api/v1/workouts`                                                     |
-| Food and calculation      | `lookup_food`, `search_food_catalog`, `save_food`, `calculate_nutrition`                     | `/api/v1/foods`, `/api/v1/food-catalog`, `/api/v1/nutrition/calculate` |
-| Recipes                   | `search_recipes`, `save_recipe`                                                              | `/api/v1/recipes`                                                      |
-| Meals                     | `log_meal`, `log_meal_from_recipe`, `revise_meal`, `get_daily_nutrition`                     | `/api/v1/meals`, `/api/v1/nutrition/daily/{day}`                       |
-| Media                     | `create_media_upload`, `complete_media_upload`, `import_recipe_image`, `attach_recipe_image` | `/api/v1/media`                                                        |
-| Export status and history | `list_health_exports`, `get_record_revisions`                                                | `/api/v1/health/exports`, `/api/v1/history/{kind}/{id}`                |
+| Capability                | Representative tools                                                                                              | REST resources                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Identity and preferences  | `get_agent_context`, `set_preferences`                                                                            | `/api/v1/agent-context`, `/api/v1/preferences`                         |
+| Exercises                 | `search_exercises`, `save_exercise`, `get_exercise_history`                                                       | `/api/v1/exercises`                                                    |
+| Plans                     | `save_training_plan`, `list_training_plans`                                                                       | `/api/v1/training-plans`                                               |
+| Training                  | `start_workout`, `log_workout_set`, `revise_workout_set`, `finish_workout`, `cancel_workout`                      | `/api/v1/workouts`                                                     |
+| Food and calculation      | `lookup_food`, `search_food_catalog`, `save_food`, `search_foods`, `attach_food_image`, `calculate_nutrition`     | `/api/v1/foods`, `/api/v1/food-catalog`, `/api/v1/nutrition/calculate` |
+| Recipes                   | `search_recipes`, `save_recipe`                                                                                   | `/api/v1/recipes`                                                      |
+| Meals                     | `log_meal`, `log_meal_from_recipe`, `revise_meal`, `get_daily_nutrition`                                          | `/api/v1/meals`, `/api/v1/nutrition/daily/{day}`                       |
+| Media                     | `create_media_upload`, `complete_media_upload`, `import_recipe_image`, `attach_food_image`, `attach_recipe_image` | `/api/v1/media`, `/api/v1/foods/{id}/cover`                            |
+| Export status and history | `list_health_exports`, `get_record_revisions`                                                                     | `/api/v1/health/exports`, `/api/v1/history/{kind}/{id}`                |
 
 Save operations use POST for both creation and explicit versioned updates; include `id` and `expectedVersion` to update. Meals and sets have dedicated PUT correction endpoints. List endpoints accept `query`, `limit` (1–100), and `cursor`. Store and replay the cursor as an opaque value. HTTP results use `{ "data": ... }`; business failures use `{ "error": { "code": "...", "message": "...", "details": ... } }`. MCP tool results expose the same envelope as structured content and text.
 
@@ -118,7 +118,40 @@ REST accepts the agent's OAuth bearer token. A signed-in owner's browser may als
 
 ### Nutrition snapshots and portions
 
-A food declares nutrients for an explicit basis, such as 100 g, 100 ml, or one serving. Supported nutrient fields are `energyKcal`, `proteinG`, `carbohydrateG`, `fatG`, and `fiberG`. Unknown nutrients remain `null`, including in totals that depend on them; they are never silently replaced with zero. The service uses supplied energy values rather than inventing missing calories from partial macros.
+A food declares nutrients for an explicit basis, such as 100 g, 100 ml, or one serving. Supported nutrient fields are `energyKcal`, `proteinG`, `carbohydrateG`, `fatG`, `fiberG`, `sodiumMg`, and `calciumMg`. Unknown nutrients remain `null`, including in totals that depend on them; they are never silently replaced with zero. Older saved foods that omit sodium or calcium are treated as unknown. The service uses supplied energy values rather than inventing missing calories from partial macros. Store kilocalories in `energyKcal`. When a label prints kilojoules only, the assistant converts with `kcal = kJ / 4.184` and can record the label text in `source.basis`.
+
+Saved foods are reusable templates. `save_food` accepts the name, aliases, nutrients, basis, serving size, source note, and an optional `coverAssetId`. The owner can enter the same fields by hand at `/foods`, then pick a saved food and adjust the portion while logging. `search_foods` and `get_food` return `coverAssetId` when a product photo is attached. Updating a food does not rewrite meals that already copied it.
+
+OpenFitness does not recognize photos or nutrition labels. The connected assistant does that work, then writes the structured result. No Workers AI binding is required.
+
+Example `save_food` body for a packaged milk, using the label values rather than a server-side guess:
+
+```json
+{
+  "operationId": "food-meiji-milk-0001",
+  "data": {
+    "name": "明治无糖低脂纯牛奶",
+    "aliases": ["明治低脂奶"],
+    "basis": { "quantity": 100, "unit": "ml" },
+    "servingSize": { "quantity": 200, "unit": "ml" },
+    "nutrients": {
+      "energyKcal": 47,
+      "proteinG": 3.5,
+      "carbohydrateG": 5,
+      "fatG": 1.4,
+      "sodiumMg": 60,
+      "calciumMg": 115
+    },
+    "source": {
+      "kind": "user",
+      "basis": "Label per 100 ml: 196 kJ (47 kcal), protein 3.5 g, fat 1.4 g, carbohydrate 5.0 g, sodium 60 mg, calcium 115 mg."
+    },
+    "coverAssetId": "ready-asset-id-from-create-media-upload"
+  }
+}
+```
+
+Log one 200 ml glass with `log_meal` and `ingredients: [{ "foodId": "<saved food id>", "quantity": 200, "unit": "ml" }]`, or `quantity: 1, unit: "serving"` when `servingSize` is 200 ml. To attach a photo after creation, upload with `create_media_upload` (`role: "food_cover"`), PUT the bytes, call `complete_media_upload`, then `attach_food_image` or `save_food`. Image bytes are read at `/api/v1/media/{coverAssetId}/content`.
 
 Grams and milliliters require an explicit density when conversion is needed. “One serving” requires a declared serving size unless the food's nutrition basis is already a serving. Store raw/cooked/as-sold preparation and explain estimates. Image beautification never recalculates nutrition.
 
@@ -187,7 +220,7 @@ The server accepts JPEG, PNG, and WebP up to 10 MiB by default. It checks file s
 
 - `import_recipe_image` fetches a public HTTPS image, rejects redirects/private address literals, and relies on Workers' `global_fetch_strictly_public` compatibility flag to block private-network resolution. Source query strings are not retained in media provenance.
 - `create_media_upload` returns a ten-minute, single-use PUT URL. Upload binary bytes using that URL, then use `complete_media_upload` to check readiness. The URL writes through Hono to the R2 binding, so no S3 credential is required. Connection revocation and owner recovery also invalidate pending upload capabilities; uploads retain the creating actor's identity.
-- Attach ready assets as a recipe cover or meal photo. A recipe can include a main cover and an optional separately uploaded thumbnail: pass `thumbnailAssetId` to `attach_recipe_image`. Recipe metadata exposes `coverAssetId` and `coverThumbnailAssetId`. Historical workout and meal snapshots retain media references they still use.
+- Attach ready assets as a food cover, recipe cover, or meal photo. Use `role: "food_cover"` for a square food product photo and pass the ready asset as `coverAssetId` on `save_food`, or call `attach_food_image`. A recipe can include a main cover and an optional separately uploaded thumbnail: pass `thumbnailAssetId` to `attach_recipe_image` or `attach_food_image`. Food and recipe metadata expose `coverAssetId` and `coverThumbnailAssetId`. Historical meal snapshots retain media references they still use.
 - Read through `/api/v1/media/{id}/content` with authentication. R2 public access is not enabled.
 - Unused assets and abandoned uploads receive a 24-hour grace period before cleanup. An R2 sweep also removes old untracked objects left by interrupted writes. Do not treat unreferenced uploads as permanent storage.
 

@@ -16,7 +16,7 @@ import { cleanupMedia, MediaService } from './media';
 import { handleMcp } from './mcp';
 import { createCloudflarePlatform } from './platform';
 import type { Actor, AuthProps, Env } from './types';
-import { adminPage, consentPage, loginPage } from './web/pages';
+import { adminPage, consentPage, foodsPage, loginPage } from './web/pages';
 import { sha256 } from './crypto';
 
 function createServices(env: Env, actor: Actor, origin: string) {
@@ -185,7 +185,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     c.header('Cache-Control', 'no-store');
     c.header(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     );
     const length = Number(c.req.header('Content-Length') || 0);
     if (length > 2097152 && !c.req.path.startsWith('/uploads/'))
@@ -286,6 +286,11 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       "SELECT id,name,created_at FROM bots WHERE status='active' ORDER BY created_at DESC",
     ).all<{ id: string; name: string; created_at: string }>();
     return c.html(adminPage(await locale(c.req.raw), bots.results, session.owner.time_zone));
+  });
+  app.get('/foods', async (c) => {
+    const session = await auth.session(c.req.raw);
+    if (!session) return c.redirect('/sign-in?returnTo=%2Ffoods');
+    return c.html(foodsPage(await locale(c.req.raw), session.owner.time_zone));
   });
   app.post('/admin/bots/:id/revoke', async (c) => {
     requireOrigin(c.req.raw, auth.origin);

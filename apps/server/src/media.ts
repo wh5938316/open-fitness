@@ -13,7 +13,7 @@ export interface Asset {
   width?: number;
   height?: number;
   sha256?: string;
-  role: 'recipe_cover' | 'meal_photo' | 'thumbnail';
+  role: 'recipe_cover' | 'meal_photo' | 'thumbnail' | 'food_cover';
   processing: string;
   source?: string;
   createdBy: string;
@@ -171,13 +171,15 @@ export class MediaService {
   register(): void {
     const fields = {
       operationId,
-      role: z.enum(['recipe_cover', 'meal_photo', 'thumbnail']).default('recipe_cover'),
+      role: z
+        .enum(['recipe_cover', 'meal_photo', 'thumbnail', 'food_cover'])
+        .default('recipe_cover'),
       processing: z.string().max(4000).default('Agent-provided processed image'),
     };
     this.service.add({
       name: 'create_media_upload',
       description:
-        'Create a private image asset and a single-use upload URL valid for ten minutes. Upload the image bytes with HTTP PUT, then check complete_media_upload.',
+        'Create a private image asset and a single-use upload URL valid for ten minutes. Upload the image bytes with HTTP PUT, then call complete_media_upload. Use role food_cover for a square 1:1 food product photo, recipe_cover for a recipe, meal_photo for a meal, or thumbnail for an optional preview. OpenFitness does not recognize or analyze the image; process it with your own tools first.',
       schema: z.object({ ...fields, contentType: z.enum(imageTypes) }),
       readOnly: false,
       method: 'POST',
@@ -222,7 +224,7 @@ export class MediaService {
     this.service.add({
       name: 'complete_media_upload',
       description:
-        'Check that an uploaded asset passed validation and is ready to attach to a recipe or meal.',
+        'Check that an uploaded asset passed validation and is ready to attach to a food, recipe, or meal. Returns the asset and its content URL.',
       schema: z.object({ assetId: id }),
       readOnly: true,
       method: 'GET',
@@ -236,7 +238,7 @@ export class MediaService {
     this.service.add({
       name: 'import_recipe_image',
       description:
-        'Import a processed image from a public HTTPS URL into private storage. Redirects and private-network targets are rejected. Attach the returned asset ID to a recipe.',
+        'Import a processed image from a public HTTPS URL into private storage. Redirects and private-network targets are rejected. Attach the returned asset id to a food with save_food or attach_food_image, or to a recipe. This does not identify the food or read a nutrition label. Set role to food_cover for a food product photo.',
       schema: z.object({ ...fields, sourceUrl: z.url().max(4000) }),
       readOnly: false,
       method: 'POST',
@@ -309,6 +311,36 @@ export class MediaService {
             { assetId: args.assetId, targetKind: 'recipe', targetId: recipe.id, slot: 'cover' },
           ],
         });
+      },
+    });
+    this.service.add({
+      name: 'attach_food_image',
+      description:
+        'Replace the cover of a saved food without changing its nutrients, basis, or serving size. The asset must already be ready: create_media_upload with role food_cover, then PUT the bytes and call complete_media_upload, or use import_recipe_image. expectedVersion comes from get_food. Optional thumbnailAssetId is a separate ready thumbnail. This does not recognize the image. Use save_food instead when nutrition also changes.',
+      schema: z.object({
+        operationId,
+        foodId: id,
+        assetId: id,
+        thumbnailAssetId: id.nullable().optional(),
+        expectedVersion: z.number().int().positive(),
+      }),
+      readOnly: false,
+      method: 'PUT',
+      path: '/foods/:foodId/cover',
+      run: async (args) => {
+        await this.service.readyAsset(args.assetId);
+        await this.service.readyAsset(args.thumbnailAssetId);
+        const food = await this.service.require<any>('food', args.foodId);
+        const doc = await this.service.save(
+          'food',
+          {
+            ...food.data,
+            coverAssetId: args.assetId,
+            coverThumbnailAssetId: args.thumbnailAssetId ?? null,
+          },
+          { id: food.id, expectedVersion: args.expectedVersion },
+        );
+        return this.service.prepared(doc, args.expectedVersion);
       },
     });
   }

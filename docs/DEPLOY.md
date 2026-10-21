@@ -18,6 +18,8 @@ Create these in the target account, or let `pnpm run deploy` create them by name
 
 Schema lives in numbered files under `apps/server/migrations/`. Remote apply is part of `pnpm run deploy`.
 
+Custom food covers do not add a migration or a Workers AI binding. Nutrition-label recognition stays in the connected assistant. `save_food` stores the assistant's or the owner's result, including an optional cover asset in the existing R2 bucket. Deploy with the usual `pnpm run deploy`; no new secret or binding is required.
+
 Placeholder D1 and KV IDs in `apps/server/wrangler.jsonc` are for local Miniflare only. The deploy script looks up or creates the named resources and writes real IDs into the working copy. Resource IDs are not secrets; you may commit them after the first provision.
 
 ## Secrets and variables

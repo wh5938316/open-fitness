@@ -428,6 +428,9 @@ describe('OAuth and official MCP client interoperability', () => {
     const schema = (await document.json()) as any;
     expect(schema.paths['/api/v1/meals/from-recipe'].post.operationId).toBe('log_meal_from_recipe');
     expect(schema.paths['/api/v1/recipes/{id}']).toBeDefined();
+    expect(schema.paths['/api/v1/foods'].post.operationId).toBe('save_food');
+    expect(schema.paths['/api/v1/foods/{foodId}/cover'].put.operationId).toBe('attach_food_image');
+    expect(schema.paths['/api/v1/foods'].post.description).toContain('does not recognize');
   });
   it('recovers the owner atomically, invalidates all identities, and preserves fitness records', async () => {
     const result = await grant();

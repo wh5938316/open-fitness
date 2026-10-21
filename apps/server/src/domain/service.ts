@@ -257,6 +257,8 @@ export class FitnessService {
           healthExport: 'awaiting_device',
           healthImport: false,
           imageProcessing: 'provided_by_agent',
+          foodRecognition: 'provided_by_agent',
+          customFoods: true,
         },
       }),
     });
@@ -324,7 +326,10 @@ export class FitnessService {
       const suffix = kind === 'plan' ? 'training_plan' : kind;
       this.add({
         name: `get_${suffix}`,
-        description: `Read one ${kind} and its current version.`,
+        description:
+          kind === 'food'
+            ? 'Read one saved food template, including its name, aliases, nutrients, basis, serving size, source, and coverAssetId when a product photo is attached. Image bytes are at /api/v1/media/{coverAssetId}/content.'
+            : `Read one ${kind} and its current version.`,
         schema: getSchema,
         readOnly: true,
         method: 'GET',
@@ -336,7 +341,10 @@ export class FitnessService {
           kind === 'recipe' || kind === 'food' || kind === 'exercise'
             ? `search_${suffix === 'exercise' ? 'exercises' : suffix + 's'}`
             : `list_${suffix}s`,
-        description: `List or search your ${plural} using cursor pagination.`,
+        description:
+          kind === 'food'
+            ? 'Search saved custom foods by name, alias, or other stored text. Each item includes nutrients, basis, serving size, and coverAssetId when a product photo is attached. Reuse a match when logging and pass the portion that was eaten; do not create a duplicate food for a one-off amount.'
+            : `List or search your ${plural} using cursor pagination.`,
         schema: listSchema,
         readOnly: true,
         method: 'GET',
@@ -346,7 +354,10 @@ export class FitnessService {
       if (kind !== 'asset')
         this.add({
           name: `delete_${suffix}`,
-          description: `Delete a ${kind} using its current version.`,
+          description:
+            kind === 'food'
+              ? 'Delete a saved food template after reading its current version. Meals that already copied the food keep their nutrition snapshots.'
+              : `Delete a ${kind} using its current version.`,
           schema: deleteSchema,
           readOnly: false,
           method: 'DELETE',
@@ -381,7 +392,10 @@ export class FitnessService {
     ] as const) {
       this.add({
         name: `save_${kind}`,
-        description: `Create or update a ${kind}. Supply expectedVersion when updating. Nutrition estimates must include their basis.`,
+        description:
+          kind === 'food'
+            ? 'Create or update a reusable food template. OpenFitness does not recognize photos or nutrition labels; you identify the food and its nutrition, then store the result here. Include data.name, data.aliases, data.nutrients, and data.basis (quantity plus g, ml, or serving). Nutrients are energyKcal, proteinG, carbohydrateG, fatG, fiberG, sodiumMg, and calciumMg for that basis; leave unknown values null and do not substitute zero. Store label kilocalories in energyKcal. When a label shows kilojoules only, convert with kcal = kJ / 4.184 and mention the label in data.source.basis. Optional data.servingSize is the gram or milliliter weight of one serving. data.source.kind is user, open_food_facts, or bot_estimate; bot_estimate requires a non-empty data.source.basis. Optional data.coverAssetId is a ready square 1:1 product photo: call create_media_upload with role food_cover, PUT the bytes, call complete_media_upload, then pass that asset id here or via attach_food_image. Pass coverAssetId null to clear it. Create with a new operationId and no id. Update with id and expectedVersion from get_food or search_foods. An update does not rewrite meals that already copied this food. Search before creating a duplicate.'
+            : `Create or update a ${kind}. Supply expectedVersion when updating. Nutrition estimates must include their basis.`,
         schema: z.object({ ...mutation, data: schema }),
         readOnly: false,
         method: 'POST',
@@ -389,6 +403,10 @@ export class FitnessService {
         run: async (args) => {
           if (kind === 'exercise')
             for (const assetId of args.data.mediaAssetIds) await this.readyAsset(assetId);
+          if (kind === 'food') {
+            await this.readyAsset(args.data.coverAssetId);
+            await this.readyAsset(args.data.coverThumbnailAssetId);
+          }
           const doc = await this.save(kind, args.data, args);
           return this.prepared(doc, args.expectedVersion);
         },
@@ -486,7 +504,7 @@ export class FitnessService {
     this.add({
       name: 'log_meal',
       description:
-        'Record an actual meal from ingredient quantities and save an immutable nutrition snapshot.',
+        'Record an actual meal from ingredient quantities and save an immutable nutrition snapshot. Prefer ingredients[].foodId from search_foods, with quantity and unit set to the portion eaten (g, ml, or serving). A one-off portion changes this meal only. Inline food objects are copied onto the meal and are not saved as reusable templates; use save_food for a template. Optional imageAssetId is a ready meal photo, separate from the food cover.',
       schema: z.object({
         operationId,
         occurredAt: isoDateTime,
