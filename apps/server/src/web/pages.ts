@@ -12,7 +12,7 @@ export function escapeHtml(value: unknown): string {
 }
 export function page(
   locale: Locale,
-  mode: 'setup' | 'login' | 'admin' | 'consent' | 'clerk-complete' | 'clerk-sign-out',
+  mode: 'setup' | 'login' | 'admin' | 'consent' | 'clerk-complete' | 'clerk-sign-out' | 'account',
   content: string,
   returnTo = '/admin',
   attributes = '',
@@ -82,6 +82,34 @@ export function adminPage(
     locale,
     'admin',
     `<h1>${t(locale, 'connections')}</h1>${list}<section><h2>${t(locale, 'addPasskey')}</h2><form id="register-form"><label>${t(locale, 'passkeyName')}<input id="passkey-name" maxlength="100" value="${t(locale, 'defaultBackupPasskeyName')}"></label><button>${t(locale, 'addPasskey')}</button></form></section><form action="/auth/logout" method="post"><button class="secondary">${t(locale, 'signOut')}</button></form>`,
+  );
+}
+export function accountPage(
+  locale: Locale,
+  bots: { id: string; name: string; created_at: string }[],
+  timeZone: string,
+  clerkPublishableKey?: string,
+): string {
+  const format = new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone,
+  });
+  const list = bots.length
+    ? `<ul>${bots
+        .map(
+          (bot) =>
+            `<li><strong>${escapeHtml(bot.name)}</strong><br><small>${escapeHtml(format.format(new Date(bot.created_at)))}</small><form method="post" action="/admin/bots/${encodeURIComponent(bot.id)}/revoke"><button class="secondary">${t(locale, 'revoke')}</button></form></li>`,
+        )
+        .join('')}</ul>`
+    : `<p>${t(locale, 'noConnections')}</p>`;
+  const profile = clerkPublishableKey ? `<div id="clerk-profile"></div>` : '';
+  return page(
+    locale,
+    'account',
+    `<h1>${t(locale, 'accountTitle')}</h1>${profile}<section><h2>${t(locale, 'connections')}</h2>${list}</section><section><h2>${t(locale, 'timeZone')}</h2><form method="post" action="/account/time-zone"><label>${t(locale, 'timeZone')}<input name="timeZone" value="${escapeHtml(timeZone)}" maxlength="100" required></label><button>${t(locale, 'save')}</button></form></section><section><h2>${t(locale, 'signOutEverywhere')}</h2><p>${t(locale, 'signOutEverywhereHelp')}</p><form method="post" action="/account/sessions/revoke"><button class="secondary">${t(locale, 'signOutEverywhere')}</button></form></section><form action="/auth/logout" method="post"><button class="secondary">${t(locale, 'signOut')}</button></form>`,
+    '/account',
+    clerkPublishableKey ? `data-clerk-key="${escapeHtml(clerkPublishableKey)}"` : '',
   );
 }
 export function consentPage(

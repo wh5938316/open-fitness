@@ -63,13 +63,25 @@ void startClerk().catch(() => {
 async function startClerk(): Promise<void> {
   const key = root.dataset.clerkKey;
   const mode = root.dataset.mode;
-  if (!key || (mode !== 'login' && mode !== 'clerk-complete' && mode !== 'clerk-sign-out')) return;
+  if (
+    !key ||
+    (mode !== 'login' &&
+      mode !== 'clerk-complete' &&
+      mode !== 'clerk-sign-out' &&
+      mode !== 'account')
+  )
+    return;
   const [{ Clerk }, { zhCN }] = await Promise.all([
     import('@clerk/clerk-js'),
     import('@clerk/localizations'),
   ]);
   const clerk = new Clerk(key);
   await clerk.load({ localization: document.documentElement.lang === 'zh-CN' ? zhCN : undefined });
+  if (mode === 'account') {
+    const profile = document.querySelector<HTMLDivElement>('#clerk-profile');
+    if (profile) clerk.mountUserProfile(profile);
+    return;
+  }
   if (mode === 'clerk-sign-out') {
     await clerk.signOut();
     navigating = true;

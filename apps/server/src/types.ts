@@ -17,6 +17,7 @@ export interface Env {
   CLERK_AUTO_PROVISION?: string;
   CLERK_TEST_MODE?: string;
   CLERK_TEST_PRIVATE_KEY?: string;
+  CLERK_WEBHOOK_SECRET?: string;
 }
 export interface ExternalIdentity {
   subject: string;

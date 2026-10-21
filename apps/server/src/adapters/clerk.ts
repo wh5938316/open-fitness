@@ -27,6 +27,7 @@ export class ClerkIdentityVerifier implements ExternalIdentityVerifier {
     };
   }
   async fetchProfile(subject: string): Promise<{ email: string | null }> {
+    if (this.env.CLERK_TEST_MODE === '1') return { email: subject + '@example.test' };
     if (!this.env.CLERK_SECRET_KEY)
       throw new AppError(503, 'CLERK_NOT_CONFIGURED', 'internalError');
     const user = await createClerkClient({ secretKey: this.env.CLERK_SECRET_KEY }).users.getUser(

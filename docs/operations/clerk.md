@@ -48,3 +48,27 @@ deploys from this repository.
 
 Until that update is applied, Clerk sign-in cannot open the existing owner's data.
 The legacy passkey still can.
+
+## Auto-provisioning and webhooks
+
+Set `CLERK_AUTO_PROVISION=true` only after signup is restricted to the people who
+should receive an OpenFitness account. A new Clerk user is inserted once, keyed by
+`clerk_user_id`. The internal id is a random UUID, not the Clerk id.
+
+`CLERK_TEST_MODE=1` is only for local tests. It enables `POST /__test/clerk-token`
+on localhost and skips the Clerk Backend API when opening an account. Do not set it
+in production.
+
+`CLERK_WEBHOOK_SECRET` is the Svix signing secret for `POST /webhooks/clerk`.
+`user.deleted` disables that owner and increments only their session epoch.
+Business records stay. `user.updated` refreshes the display email.
+`session.revoked`, `session.ended`, and `session.removed` delete the matching
+local session.
+
+To sign one user out of every device without touching anyone else:
+
+```sh
+node scripts/recover-user.mjs --user <id> --local
+```
+
+Add `--remote` only as a deliberate production action. Do not run it from tests.

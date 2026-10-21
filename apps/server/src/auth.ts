@@ -505,12 +505,16 @@ export class AuthService implements IdentityProvider {
     if (input.returnTo !== undefined && safeReturn(input.returnTo) !== input.returnTo)
       throw new AppError(400, 'INVALID_RETURN_TO', 'invalidInput');
     const identity = await this.identities.verifySessionToken(token);
-    const owner = await this.env.DB.prepare(
+    let owner = await this.env.DB.prepare(
       `SELECT ${OWNER_COLUMNS} FROM owners WHERE clerk_user_id=?`,
     )
       .bind(identity.subject)
       .first<Owner>();
-    if (!owner) throw new AppError(403, 'ACCOUNT_NOT_PROVISIONED', 'accountNotProvisioned');
+    if (!owner) {
+      if (this.env.CLERK_AUTO_PROVISION !== 'true')
+        throw new AppError(403, 'ACCOUNT_NOT_PROVISIONED', 'accountNotProvisioned');
+      owner = await this.provisionOwner(identity.subject);
+    }
     if (owner.status !== 'active') throw new AppError(403, 'OWNER_DISABLED', 'forbidden');
     const sessionToken = randomToken();
     const now = Date.now();
@@ -540,6 +544,37 @@ export class AuthService implements IdentityProvider {
       cookie: this.cookie(this.sessionCookie, sessionToken, 604800),
       returnTo: safeReturn(input.returnTo),
     };
+  }
+  private async provisionOwner(subject: string): Promise<Owner> {
+    let profile: { email: string | null };
+    try {
+      profile = await this.identities.fetchProfile(subject);
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(503, 'CLERK_PROFILE_UNAVAILABLE', 'internalError');
+    }
+    const timeZone = this.env.DEFAULT_TIME_ZONE || 'America/New_York';
+    try {
+      new Intl.DateTimeFormat('en', { timeZone }).format();
+    } catch {
+      throw new AppError(503, 'INVALID_DEFAULT_TIME_ZONE', 'internalError');
+    }
+    const created = await this.env.DB.prepare(
+      `INSERT INTO owners(id,clerk_user_id,email,status,created_at,time_zone,setup_completed)
+       VALUES(?,?,?,'active',?,?,1)
+       ON CONFLICT(clerk_user_id) DO NOTHING
+       RETURNING ${OWNER_COLUMNS}`,
+    )
+      .bind(crypto.randomUUID(), subject, profile.email, Date.now(), timeZone)
+      .first<Owner>();
+    if (created) return created;
+    const existing = await this.env.DB.prepare(
+      `SELECT ${OWNER_COLUMNS} FROM owners WHERE clerk_user_id=?`,
+    )
+      .bind(subject)
+      .first<Owner>();
+    if (!existing) throw new AppError(503, 'ACCOUNT_NOT_PROVISIONED', 'internalError');
+    return existing;
   }
   async revokeBot(ownerId: string, botId: string): Promise<void> {
     await this.env.DB.prepare("UPDATE bots SET status='revoked' WHERE id=? AND owner_id=?")
