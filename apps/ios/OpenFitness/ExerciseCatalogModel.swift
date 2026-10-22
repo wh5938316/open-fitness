@@ -35,7 +35,7 @@ extension AppModel {
     guard isOnline else { return .init(items: []) }
     #if DEBUG
       if isPreview {
-        let items = PreviewExerciseCatalog.records.filter {
+        let items = PreviewExerciseCatalog.records.map { exerciseDetails[$0.id] ?? $0 }.filter {
           (query.source != "mine" || !$0.isCatalogOnly)
             && (query.source != "catalog" || $0.isCatalogOnly)
             && (query.text.isEmpty
@@ -55,6 +55,20 @@ extension AppModel {
       path: query.path(cursor: cursor, limit: limit, supportsCatalog: supportsExerciseCatalog))
     guard owner == accountKey else { throw APIError("ACCOUNT_MISMATCH") }
     return page
+  }
+
+  func recentExercisesURL() throws -> URL {
+    guard !accountKey.isEmpty else { throw APIError("AUTHENTICATION_REQUIRED", status: 401) }
+    return try DiskStore.directory().appendingPathComponent("recent-exercises-\(accountKey).json")
+  }
+
+  func rememberExercise(_ record: Record<Exercise>) {
+    var history = recentExerciseHistory
+    history.record(record)
+    do {
+      if !isPreview { try DiskStore.write(history, to: recentExercisesURL()) }
+      recentExerciseHistory = history
+    } catch { errorMessage = copy.error(error) }
   }
 
   func cacheExercise(_ value: Record<Exercise>) {

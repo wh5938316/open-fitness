@@ -63,6 +63,36 @@ import XCTest
     XCTAssertTrue(app.staticTexts["Catalogue plan"].waitForExistence(timeout: 5))
     attachScreenshot(app, name: "Catalogue plan in Simplified Chinese")
   }
+  func testUnplannedCatalogueExerciseCanLogMultipleSets() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Resume workout")).firstMatch
+      .tap()
+    let add = app.buttons["workout-add-exercise"]
+    app.swipeUp()
+    XCTAssertTrue(add.waitForExistence(timeout: 5))
+    add.tap()
+    let search = app.searchFields.firstMatch
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    search.tap()
+    search.typeText("bench")
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["select-exercise-detail"].tap()
+    for _ in 0..<2 {
+      let log = app.buttons["log-set-2"]
+      if !log.isHittable { app.swipeUp() }
+      XCTAssertTrue(log.waitForExistence(timeout: 5))
+      log.tap()
+      app.buttons["save-set"].tap()
+    }
+    XCTAssertEqual(
+      app.buttons.matching(
+        NSPredicate(
+          format: "identifier BEGINSWITH %@", "recorded-set-cat-preview-bench-"
+        )
+      ).count, 2)
+  }
   private func attachScreenshot(_ app: XCUIApplication, name: String) {
     let attachment = XCTAttachment(screenshot: app.screenshot())
     attachment.name = name

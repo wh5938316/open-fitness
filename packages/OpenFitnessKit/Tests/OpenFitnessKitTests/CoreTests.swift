@@ -333,3 +333,56 @@ private actor PublicArtworkTransport: HTTPTransport {
     }
   }
 }
+
+@Test func unplannedWorkoutSetsPersistTheirSnapshotAndLegacyCommandsStillDecode() throws {
+  let planned = Exercise(name: "Original plan squat")
+  let plan = Record(
+    id: "plan", kind: "plan",
+    data: TrainingPlan(
+      name: "Training", exercises: [.init(exerciseId: "squat", exercise: planned, sets: [])]))
+  let workout = Record(id: "session", kind: "workout", data: Workout(name: "Training", plan: plan))
+  let catalog = try catalogueFixtures()[0]
+  let command = try OfflineCommand.workoutSet(
+    accountKey: "owner", workout: workout, exerciseId: catalog.id,
+    metrics: .init(reps: 8), exercise: catalog.data)
+  #expect(command.exerciseSnapshot?.name == catalog.data.name)
+  var journal = CommandJournal()
+  try journal.enqueue(command, accountKey: "owner")
+  let restored = try JSONDecoder().decode(CommandJournal.self, from: JSONEncoder().encode(journal))
+  #expect(restored.commands[0].exerciseSnapshot?.name == catalog.data.name)
+  #expect(restored.commands[0].id == command.id)
+  #expect(throws: APIError.self) {
+    try OfflineCommand.workoutSet(
+      accountKey: "owner", workout: workout, exerciseId: "unknown", metrics: .init())
+  }
+  let plannedCommand = try OfflineCommand.workoutSet(
+    accountKey: "owner", workout: workout, exerciseId: "squat", metrics: .init(),
+    exercise: Exercise(name: "Updated template"))
+  #expect(plannedCommand.exerciseSnapshot?.name == "Original plan squat")
+  var old = try #require(
+    JSONSerialization.jsonObject(with: JSONEncoder().encode(command)) as? [String: Any])
+  old.removeValue(forKey: "exerciseSnapshot")
+  let legacy = try JSONDecoder().decode(
+    OfflineCommand.self, from: JSONSerialization.data(withJSONObject: old))
+  #expect(legacy.exerciseSnapshot == nil)
+  #expect(legacy.exerciseId == command.exerciseId)
+}
+@Test func recentExercisesAreBoundedDeduplicatedAndPersistedInUseOrder() throws {
+  var history = RecentExerciseHistory()
+  for index in 0..<25 {
+    history.record(
+      .init(id: "exercise-\(index)", kind: "exercise", data: .init(name: "Exercise \(index)")))
+  }
+  #expect(history.items.count == 20)
+  #expect(history.items.first?.id == "exercise-24")
+  let date = Date(timeIntervalSince1970: 1234)
+  history.record(
+    .init(id: "exercise-10", kind: "exercise", data: .init(name: "Selected again")), at: date)
+  #expect(history.items.first?.id == "exercise-10")
+  #expect(history.items.first?.usedAt == date)
+  #expect(Set(history.items.map(\.id)).count == 20)
+  let decoded = try JSONDecoder().decode(
+    RecentExerciseHistory.self, from: JSONEncoder().encode(history))
+  #expect(decoded.items.map(\.id) == history.items.map(\.id))
+  #expect(decoded.items.first?.record.data.name == "Selected again")
+}

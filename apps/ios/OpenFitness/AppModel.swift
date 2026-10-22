@@ -60,6 +60,7 @@ final class AppModel {
   @ObservationIgnored var muscleMapCache: [String: MuscleMapArtwork] = [:]
   @ObservationIgnored var taxonomyCache: [String: CachedExerciseTaxonomy] = [:]
   @ObservationIgnored var exerciseBackgroundedAt: Date?
+  var recentExerciseHistory = RecentExerciseHistory()
   var exerciseCatalogRevision = 0
   var supportsExerciseCatalog: Bool { context?.capabilities.exerciseCatalog == "shared_catalog" }
   var copy: Localizer { .init(language) }
@@ -80,7 +81,8 @@ final class AppModel {
       switch command.kind {
       case .logSet:
         if let id = command.exerciseId, let metrics = command.metrics,
-          let exercise = value.data.plan?.snapshot.exercises.first(where: { $0.exerciseId == id })?
+          let exercise = command.exerciseSnapshot
+            ?? value.data.plan?.snapshot.exercises.first(where: { $0.exerciseId == id })?
             .exerciseSnapshot
         {
           value.data.sets.append(
@@ -171,6 +173,10 @@ final class AppModel {
       taxonomyCache = [:]
     }
     context = value
+    recentExerciseHistory =
+      (try? recentExercisesURL()).flatMap {
+        DiskStore.read(RecentExerciseHistory.self, at: $0)
+      } ?? .init()
     isConnected = true
     try await api.enableMutationRecovery(accountKey: accountKey)
     healthEnabled = UserDefaults.standard.bool(forKey: "nutritionSyncEnabled.\(accountKey)")
@@ -309,18 +315,19 @@ final class AppModel {
       throw error
     }
   }
-  func logSet(exerciseId: String, metrics: SetMetrics, restSeconds: Double) throws {
+  func logSet(
+    exerciseId: String, metrics: SetMetrics, restSeconds: Double, exercise: Exercise? = nil
+  ) throws {
     guard let workout = activeWorkout else { return }
+    let command = try OfflineCommand.workoutSet(
+      accountKey: accountKey, workout: workout, exerciseId: exerciseId, metrics: metrics,
+      exercise: exercise)
     if isPreview {
-      let exercise = workout.data.plan!.snapshot.exercises.first { $0.exerciseId == exerciseId }!
-        .exerciseSnapshot
+      guard let snapshot = command.exerciseSnapshot else { throw APIError("EXERCISE_UNKNOWN") }
       self.workout?.data.sets.append(
-        .init(exerciseId: exerciseId, exercise: exercise, metrics: metrics))
+        .init(exerciseId: exerciseId, exercise: snapshot, metrics: metrics))
     } else {
-      try enqueue(
-        .init(
-          accountKey: accountKey, kind: .logSet, workoutReference: workout.id,
-          exerciseId: exerciseId, metrics: metrics))
+      try enqueue(command)
     }
     restUntil = Date().addingTimeInterval(restSeconds)
   }
@@ -699,6 +706,8 @@ final class AppModel {
     healthSummary = summary
   }
   func disconnect() async {
+    if let url = try? recentExercisesURL() { try? FileManager.default.removeItem(at: url) }
+    recentExerciseHistory = .init()
     await client?.disconnect()
     client = nil
     healthEnabled = false

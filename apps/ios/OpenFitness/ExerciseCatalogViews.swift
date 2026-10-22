@@ -54,6 +54,13 @@ struct ExercisePicker: View {
             }
           }.scrollIndicators(.hidden).listRowBackground(Color.clear)
         }
+        if query.text.isEmpty, !model.recentExerciseHistory.items.isEmpty {
+          Section(model.text(.recentExercises)) {
+            ForEach(model.recentExerciseHistory.items.prefix(20)) { recent in
+              recentRow(recent.record)
+            }
+          }
+        }
         exerciseRows
         if searching { ProgressView().frame(maxWidth: .infinity) }
         if let loadError {
@@ -144,8 +151,28 @@ struct ExercisePicker: View {
   }
 
   private func choose(_ record: Record<Exercise>) {
+    model.rememberExercise(record)
     selected?(record)
     dismiss()
+  }
+
+  private func recentRow(_ record: Record<Exercise>) -> some View {
+    Group {
+      if mode == .select {
+        Button {
+          choose(record)
+        } label: {
+          ExerciseRow(record: record, taxonomy: taxonomy)
+        }
+        .buttonStyle(.plain)
+      } else {
+        NavigationLink {
+          ExerciseDetailView(record: record)
+        } label: {
+          ExerciseRow(record: record, taxonomy: taxonomy)
+        }
+      }
+    }
   }
 
   private func filter(

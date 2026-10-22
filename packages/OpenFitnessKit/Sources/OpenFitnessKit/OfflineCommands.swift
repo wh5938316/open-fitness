@@ -21,6 +21,7 @@ public struct OfflineCommand: Codable, Sendable, Identifiable {
   public var planId: String?
   public var planVersion: Int?
   public var exerciseId: String?
+  public var exerciseSnapshot: Exercise?
   public var metrics: SetMetrics?
   public var createdAt: String
   public var source: String
@@ -30,7 +31,7 @@ public struct OfflineCommand: Codable, Sendable, Identifiable {
   public init(
     accountKey: String, kind: Kind, workoutReference: String, planId: String? = nil,
     exerciseId: String? = nil, metrics: SetMetrics? = nil, source: String = "ios",
-    planVersion: Int? = nil
+    planVersion: Int? = nil, exerciseSnapshot: Exercise? = nil
   ) {
     id = UUID().uuidString
     self.accountKey = accountKey
@@ -39,12 +40,27 @@ public struct OfflineCommand: Codable, Sendable, Identifiable {
     self.planId = planId
     self.planVersion = planVersion
     self.exerciseId = exerciseId
+    self.exerciseSnapshot = exerciseSnapshot
     self.metrics = metrics
     self.source = source
     createdAt = Date().iso8601
     retry = 0
   }
   public var operationId: String { id + (retry == 0 ? "" : ".retry\(retry)") }
+
+  public static func workoutSet(
+    accountKey: String, workout: Record<Workout>, exerciseId: String, metrics: SetMetrics,
+    exercise: Exercise? = nil
+  ) throws -> OfflineCommand {
+    guard
+      let snapshot = workout.data.plan?.snapshot.exercises.first(where: {
+        $0.exerciseId == exerciseId
+      })?.exerciseSnapshot ?? exercise
+    else { throw APIError("EXERCISE_UNKNOWN") }
+    return .init(
+      accountKey: accountKey, kind: .logSet, workoutReference: workout.id,
+      exerciseId: exerciseId, metrics: metrics, exerciseSnapshot: snapshot)
+  }
 }
 public struct CommandReceipt: Codable, Sendable {
   public var id: String
