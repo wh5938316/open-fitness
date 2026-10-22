@@ -19,6 +19,8 @@
     "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @openfitness/server db:migrate",
     "db:migrate:remote": "pnpm --filter @openfitness/server db:migrate:remote",
+    "catalog:seed": "pnpm --filter @openfitness/server catalog:seed",
+    "catalog:seed:remote": "pnpm --filter @openfitness/server catalog:seed:remote",
     "deploy": "pnpm --filter @openfitness/server deploy",
     "user:recover": "pnpm --filter @openfitness/server user:recover",
     "browser:install": "pnpm --filter @openfitness/server exec playwright install chromium",

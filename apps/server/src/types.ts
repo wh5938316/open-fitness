@@ -129,6 +129,23 @@ export interface Repository {
     kind: EntityKind,
     options?: ListOptions,
   ): Promise<Page<Entity<T>>>;
+  getAny<T = Record<string, unknown>>(
+    ownerId: string,
+    kind: EntityKind,
+    id: string,
+  ): Promise<Entity<T> | null>;
+  searchOwnedExercises<T = Record<string, unknown>>(
+    ownerId: string,
+    options: {
+      limit: number;
+      cursor?: { date: string; id: string };
+      query?: string;
+      bodyPart?: string;
+      equipment?: string;
+      target?: string;
+      movementCategory?: string;
+    },
+  ): Promise<{ items: Entity<T>[]; cursor: { date: string; id: string } | null }>;
   revisions(ownerId: string, kind: EntityKind, id: string): Promise<unknown[]>;
   replay(
     ownerId: string,

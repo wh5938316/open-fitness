@@ -104,7 +104,7 @@ The complete English OpenAPI document is served at `/openapi.json`. MCP tools ar
 | Capability                | Representative tools                                                                                                          | REST resources                                                                                             |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Identity and preferences  | `get_agent_context`, `set_preferences`                                                                                        | `/api/v1/agent-context`, `/api/v1/preferences`                                                             |
-| Exercises                 | `search_exercises`, `save_exercise`, `get_exercise_history`                                                                   | `/api/v1/exercises`                                                                                        |
+| Exercises                 | `search_exercises`, `adopt_exercise`, `save_exercise`, `get_exercise_history`, `list_exercise_taxonomy`                       | `/api/v1/exercises`, `/api/v1/exercise-taxonomy`                                                           |
 | Plans                     | `save_training_plan`, `list_training_plans`                                                                                   | `/api/v1/training-plans`                                                                                   |
 | Training                  | `start_workout`, `log_workout_set`, `revise_workout_set`, `finish_workout`, `cancel_workout`                                  | `/api/v1/workouts`                                                                                         |
 | Food and calculation      | `search_foods`, `import_food`, `refresh_food`, `lookup_food`, `save_food`, `calculate_nutrition`                              | `/api/v1/foods`, `/api/v1/foods/import`, `/api/v1/food-catalog`, `/api/v1/nutrition/calculate`             |
@@ -190,6 +190,20 @@ Editing nutrients, basis, or serving size of an Open Food Facts food changes `so
 
 Plans contain ordered exercises, target sets, rest periods, and optional group identifiers. Actual sets support reps, kilograms, seconds, meters, RPE/RIR, working/warmup/drop/rest-pause/failure types, and notes. A workout saves its plan and exercise snapshots; editing a plan does not rewrite an existing workout. Completed workouts permit explicit set corrections with version history. Plan generation, progression decisions, and movement analysis belong to the connected assistant.
 
+`search_exercises` returns this owner's exercises and the shared catalogue together. Catalogue rows use ids such as `cat-0025`, `version: 0`, and `source.kind: "catalog"`. Referencing that id from `save_training_plan` or `log_workout_set` adopts it into the owner's exercises in the same transaction. `adopt_exercise` does the same adoption on its own and is safe to repeat. A later catalogue import does not rewrite adopted exercises, plan snapshots, or workout snapshots. `muscleMap` lists region ids to highlight. `diagram.gender` and `diagram.views` choose the body outline, and `diagram.highlights` maps those regions onto MuscleMap surface ids. The flat SVGs are at `/musclemap/`. Hip flexors, serratus, and upper back are extra paths traced for this project. See `apps/server/public/musclemap/README.md`.
+
+Apply the schema, then load the catalogue, from the repository root. Remote commands write the deployment database and are not part of `pnpm check` or `pnpm test:e2e`:
+
+```sh
+pnpm db:migrate
+pnpm catalog:seed
+# After `wrangler` is logged in and `apps/server/wrangler.jsonc` points at the remote D1 database:
+pnpm db:migrate:remote
+pnpm catalog:seed:remote
+```
+
+`catalog:seed:remote` runs `wrangler d1 execute DB --remote` in chunks. Re-running it upserts catalogue rows only. `catalog_exercise_i18n` stores zh-CN names, descriptions, and instructions for every exercise. Searching a Chinese name such as `卧推` matches the catalogue through those rows.
+
 Native clients pin `planVersion` when starting cached training and `recipeVersion` when logging a displayed recipe. The server resolves the owner's immutable revision, so a later template edit cannot silently change an offline session or the portion the user chose. Omitting these optional selectors uses the current template.
 
 ### Private images
@@ -245,6 +259,7 @@ pnpm cf secret put CLERK_SECRET_KEY
 pnpm cf secret put CLERK_JWT_KEY
 pnpm cf secret put CLERK_WEBHOOK_SECRET
 pnpm db:migrate:remote
+pnpm catalog:seed:remote
 pnpm deploy
 ```
 
@@ -282,7 +297,7 @@ On macOS with Xcode 26+, use `pnpm apple:generate`, `pnpm apple:test`, `pnpm app
 
 Code is licensed under [MIT](LICENSE). Third-party food data and media retain their own terms and provenance. Open Food Facts data is provided under ODbL; the code license does not relicense that data. Only save images you have permission to use.
 
-- [openGym](https://github.com/DuarteSantos8/openGym) is a training-domain design reference; no openGym source code or exercise media is bundled.
+- [openGym](https://github.com/DuarteSantos8/openGym) contributed structured catalogue fields and muscle-region ids. Its code, translations, descriptions, and media are not bundled. Coaching text in this catalogue is rewritten. See [third-party notices](THIRD_PARTY_NOTICES.md).
 - [Hono](https://hono.dev/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Cloudflare OAuth Provider](https://github.com/cloudflare/workers-oauth-provider)

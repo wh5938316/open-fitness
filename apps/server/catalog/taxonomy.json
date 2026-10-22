@@ -1,0 +1,481 @@
+{
+  "bodyPart": {
+    "back": {
+      "en": "Back",
+      "zh-CN": "背部"
+    },
+    "cardio": {
+      "en": "Cardio",
+      "zh-CN": "心肺"
+    },
+    "chest": {
+      "en": "Chest",
+      "zh-CN": "胸部"
+    },
+    "full body": {
+      "en": "Full body",
+      "zh-CN": "全身"
+    },
+    "lower arms": {
+      "en": "Lower arms",
+      "zh-CN": "前臂"
+    },
+    "lower legs": {
+      "en": "Lower legs",
+      "zh-CN": "小腿"
+    },
+    "neck": {
+      "en": "Neck",
+      "zh-CN": "颈部"
+    },
+    "shoulders": {
+      "en": "Shoulders",
+      "zh-CN": "肩部"
+    },
+    "upper arms": {
+      "en": "Upper arms",
+      "zh-CN": "上臂"
+    },
+    "upper legs": {
+      "en": "Upper legs",
+      "zh-CN": "大腿"
+    },
+    "waist": {
+      "en": "Waist",
+      "zh-CN": "腰腹"
+    }
+  },
+  "equipment": {
+    "assisted": {
+      "en": "Assisted",
+      "zh-CN": "辅助"
+    },
+    "band": {
+      "en": "Band",
+      "zh-CN": "弹力带"
+    },
+    "barbell": {
+      "en": "Barbell",
+      "zh-CN": "杠铃"
+    },
+    "body weight": {
+      "en": "Body weight",
+      "zh-CN": "自重"
+    },
+    "bosu ball": {
+      "en": "BOSU ball",
+      "zh-CN": "BOSU球"
+    },
+    "cable": {
+      "en": "Cable",
+      "zh-CN": "绳索"
+    },
+    "dumbbell": {
+      "en": "Dumbbell",
+      "zh-CN": "哑铃"
+    },
+    "elliptical machine": {
+      "en": "Elliptical",
+      "zh-CN": "椭圆机"
+    },
+    "ez barbell": {
+      "en": "EZ barbell",
+      "zh-CN": "EZ曲杠"
+    },
+    "hammer": {
+      "en": "Hammer",
+      "zh-CN": "战锤"
+    },
+    "kettlebell": {
+      "en": "Kettlebell",
+      "zh-CN": "壶铃"
+    },
+    "landmine": {
+      "en": "Landmine",
+      "zh-CN": "地雷架"
+    },
+    "leverage machine": {
+      "en": "Leverage machine",
+      "zh-CN": "杠杆器械"
+    },
+    "macebell": {
+      "en": "Macebell",
+      "zh-CN": "狼牙棒"
+    },
+    "medicine ball": {
+      "en": "Medicine ball",
+      "zh-CN": "药球"
+    },
+    "olympic barbell": {
+      "en": "Olympic barbell",
+      "zh-CN": "奥林匹克杠铃"
+    },
+    "resistance band": {
+      "en": "Resistance band",
+      "zh-CN": "阻力带"
+    },
+    "roller": {
+      "en": "Roller",
+      "zh-CN": "泡沫轴"
+    },
+    "rope": {
+      "en": "Rope",
+      "zh-CN": "绳"
+    },
+    "sandbag": {
+      "en": "Sandbag",
+      "zh-CN": "沙袋"
+    },
+    "skierg machine": {
+      "en": "Ski ergometer",
+      "zh-CN": "滑雪机"
+    },
+    "sled machine": {
+      "en": "Sled",
+      "zh-CN": "雪橇机"
+    },
+    "smith machine": {
+      "en": "Smith machine",
+      "zh-CN": "史密斯机"
+    },
+    "stability ball": {
+      "en": "Stability ball",
+      "zh-CN": "稳定球"
+    },
+    "stationary bike": {
+      "en": "Stationary bike",
+      "zh-CN": "健身车"
+    },
+    "stepmill machine": {
+      "en": "Stair climber",
+      "zh-CN": "登山机"
+    },
+    "suspension trainer": {
+      "en": "Suspension trainer",
+      "zh-CN": "悬挂带"
+    },
+    "tire": {
+      "en": "Tire",
+      "zh-CN": "轮胎"
+    },
+    "trap bar": {
+      "en": "Trap bar",
+      "zh-CN": "六角杠"
+    },
+    "upper body ergometer": {
+      "en": "Upper-body ergometer",
+      "zh-CN": "上肢功率车"
+    },
+    "weight plate": {
+      "en": "Weight plate",
+      "zh-CN": "杠铃片"
+    },
+    "weighted": {
+      "en": "Weighted",
+      "zh-CN": "负重"
+    },
+    "wheel roller": {
+      "en": "Ab wheel",
+      "zh-CN": "健腹轮"
+    }
+  },
+  "movementCategory": {
+    "calisthenics": {
+      "en": "Calisthenics",
+      "zh-CN": "自重训练"
+    },
+    "cardio": {
+      "en": "Cardio",
+      "zh-CN": "有氧"
+    },
+    "combat": {
+      "en": "Combat",
+      "zh-CN": "格斗"
+    },
+    "isometric": {
+      "en": "Isometric",
+      "zh-CN": "等长"
+    },
+    "mobility": {
+      "en": "Mobility",
+      "zh-CN": "活动度"
+    },
+    "olympic": {
+      "en": "Olympic lifting",
+      "zh-CN": "奥林匹克举重"
+    },
+    "pilates": {
+      "en": "Pilates",
+      "zh-CN": "普拉提"
+    },
+    "plyometrics": {
+      "en": "Plyometrics",
+      "zh-CN": "增强式"
+    },
+    "rehab": {
+      "en": "Rehab",
+      "zh-CN": "康复"
+    },
+    "strength": {
+      "en": "Strength",
+      "zh-CN": "力量"
+    },
+    "stretching": {
+      "en": "Stretching",
+      "zh-CN": "拉伸"
+    },
+    "yoga": {
+      "en": "Yoga",
+      "zh-CN": "瑜伽"
+    }
+  },
+  "muscle": {
+    "abdominals": {
+      "en": "Abdominals",
+      "zh-CN": "腹部"
+    },
+    "abductors": {
+      "en": "Abductors",
+      "zh-CN": "髋外展肌"
+    },
+    "abs": {
+      "en": "Abs",
+      "zh-CN": "腹肌"
+    },
+    "adductors": {
+      "en": "Adductors",
+      "zh-CN": "内收肌"
+    },
+    "ankle stabilizers": {
+      "en": "Ankle stabilizers",
+      "zh-CN": "踝稳定肌"
+    },
+    "ankles": {
+      "en": "Ankles",
+      "zh-CN": "踝"
+    },
+    "back": {
+      "en": "Back",
+      "zh-CN": "背部"
+    },
+    "biceps": {
+      "en": "Biceps",
+      "zh-CN": "肱二头肌"
+    },
+    "brachialis": {
+      "en": "Brachialis",
+      "zh-CN": "肱肌"
+    },
+    "calves": {
+      "en": "Calves",
+      "zh-CN": "小腿"
+    },
+    "cardiovascular system": {
+      "en": "Cardiovascular system",
+      "zh-CN": "循环系统"
+    },
+    "chest": {
+      "en": "Chest",
+      "zh-CN": "胸肌"
+    },
+    "core": {
+      "en": "Core",
+      "zh-CN": "核心"
+    },
+    "deltoids": {
+      "en": "Deltoids",
+      "zh-CN": "三角肌"
+    },
+    "delts": {
+      "en": "Delts",
+      "zh-CN": "三角肌"
+    },
+    "feet": {
+      "en": "Feet",
+      "zh-CN": "足"
+    },
+    "forearm": {
+      "en": "Forearm",
+      "zh-CN": "前臂"
+    },
+    "forearms": {
+      "en": "Forearms",
+      "zh-CN": "前臂"
+    },
+    "gluteal": {
+      "en": "Glutes",
+      "zh-CN": "臀肌"
+    },
+    "glutes": {
+      "en": "Glutes",
+      "zh-CN": "臀肌"
+    },
+    "grip muscles": {
+      "en": "Grip muscles",
+      "zh-CN": "握力肌"
+    },
+    "groin": {
+      "en": "Groin",
+      "zh-CN": "腹股沟"
+    },
+    "hamstring": {
+      "en": "Hamstrings",
+      "zh-CN": "腘绳肌"
+    },
+    "hamstrings": {
+      "en": "Hamstrings",
+      "zh-CN": "腘绳肌"
+    },
+    "hands": {
+      "en": "Hands",
+      "zh-CN": "手"
+    },
+    "hip flexors": {
+      "en": "Hip flexors",
+      "zh-CN": "髋屈肌"
+    },
+    "hip-flexors": {
+      "en": "Hip flexors",
+      "zh-CN": "髋屈肌"
+    },
+    "inner thighs": {
+      "en": "Inner thighs",
+      "zh-CN": "大腿内侧"
+    },
+    "latissimus dorsi": {
+      "en": "Latissimus dorsi",
+      "zh-CN": "背阔肌"
+    },
+    "lats": {
+      "en": "Lats",
+      "zh-CN": "背阔肌"
+    },
+    "levator scapulae": {
+      "en": "Levator scapulae",
+      "zh-CN": "肩胛提肌"
+    },
+    "lower abs": {
+      "en": "Lower abs",
+      "zh-CN": "下腹"
+    },
+    "lower back": {
+      "en": "Lower back",
+      "zh-CN": "下背"
+    },
+    "lower-back": {
+      "en": "Lower back",
+      "zh-CN": "下背"
+    },
+    "obliques": {
+      "en": "Obliques",
+      "zh-CN": "腹斜肌"
+    },
+    "pectorals": {
+      "en": "Pectorals",
+      "zh-CN": "胸大肌"
+    },
+    "quadriceps": {
+      "en": "Quadriceps",
+      "zh-CN": "股四头肌"
+    },
+    "quads": {
+      "en": "Quads",
+      "zh-CN": "股四头肌"
+    },
+    "rear deltoids": {
+      "en": "Rear delts",
+      "zh-CN": "三角肌后束"
+    },
+    "rhomboids": {
+      "en": "Rhomboids",
+      "zh-CN": "菱形肌"
+    },
+    "rotator cuff": {
+      "en": "Rotator cuff",
+      "zh-CN": "肩袖"
+    },
+    "serratus": {
+      "en": "Serratus",
+      "zh-CN": "前锯肌"
+    },
+    "serratus anterior": {
+      "en": "Serratus anterior",
+      "zh-CN": "前锯肌"
+    },
+    "shins": {
+      "en": "Shins",
+      "zh-CN": "胫前"
+    },
+    "shoulders": {
+      "en": "Shoulders",
+      "zh-CN": "肩部"
+    },
+    "soleus": {
+      "en": "Soleus",
+      "zh-CN": "比目鱼肌"
+    },
+    "spine": {
+      "en": "Spine",
+      "zh-CN": "脊柱"
+    },
+    "sternocleidomastoid": {
+      "en": "Sternocleidomastoid",
+      "zh-CN": "胸锁乳突肌"
+    },
+    "trapezius": {
+      "en": "Trapezius",
+      "zh-CN": "斜方肌"
+    },
+    "traps": {
+      "en": "Traps",
+      "zh-CN": "斜方肌"
+    },
+    "triceps": {
+      "en": "Triceps",
+      "zh-CN": "肱三头肌"
+    },
+    "upper back": {
+      "en": "Upper back",
+      "zh-CN": "上背"
+    },
+    "upper chest": {
+      "en": "Upper chest",
+      "zh-CN": "上胸"
+    },
+    "upper-back": {
+      "en": "Upper back",
+      "zh-CN": "上背"
+    },
+    "wrist extensors": {
+      "en": "Wrist extensors",
+      "zh-CN": "腕伸肌"
+    },
+    "wrist flexors": {
+      "en": "Wrist flexors",
+      "zh-CN": "腕屈肌"
+    },
+    "wrists": {
+      "en": "Wrists",
+      "zh-CN": "腕"
+    }
+  },
+  "diagramRegions": [
+    "abs",
+    "adductors",
+    "biceps",
+    "calves",
+    "chest",
+    "deltoids",
+    "forearm",
+    "gluteal",
+    "hamstring",
+    "hip-flexors",
+    "lower-back",
+    "obliques",
+    "quadriceps",
+    "serratus",
+    "trapezius",
+    "triceps",
+    "upper-back"
+  ]
+}

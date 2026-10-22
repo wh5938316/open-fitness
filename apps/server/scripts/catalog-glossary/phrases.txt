@@ -1,0 +1,2660 @@
+barbell bench press|杠铃卧推
+smith bench press|史密斯卧推
+smith machine bench press|史密斯机卧推
+wide grip bench press|宽握卧推
+incline bench row|上斜凳划船
+decline bench row|下斜凳划船
+bench front squat|凳上前蹲
+bench squat|凳上深蹲
+bench dip|凳上臂屈伸
+on a bench|凳上
+on bench|凳上
+over a bench|凳上
+over bench|凳上
+from bench|离凳
+flat bench|平凳
+below bench|低于凳
+with bench support|凳上支撑
+# Multi-word gym phrases. Longer phrases win when they match.
+# Empty text drops the phrase.
+
+arms up|举臂
+back to wall|靠墙
+mountain climber jump|登山跳
+scapular slide|肩胛滑动
+to the wall|靠墙
+
+3 leg chaturanga pose|三腿四柱式
+3 leg dog pose|三腿下犬式
+45 degree hyperextension|45度背起
+ab wheel rollout|健腹轮
+ab rollout|健腹轮
+air bike|空中自行车
+air squat|徒手深蹲
+alternating dead hang|交替悬垂
+anjaneyasana|低弓步式
+animal resting yoga pose|兽息式
+archer push up|射手俯卧撑
+ardha matsyendrasana yoga pose|半鱼王式
+arm circle|绕臂
+arnold press|阿诺德推举
+assisted pull up|辅助引体向上
+atlas stones|阿特拉斯石球
+back extension|背起
+back lever|后水平
+back pov|背面
+back squat|后蹲
+back view|背面
+band pull apart|弹力带拉开
+battle rope|战绳
+battling rope|战绳
+battling ropes|战绳
+bench press|卧推
+bent knee|屈膝
+bent over row|俯身划船
+bent over|俯身
+bicep curl|弯举
+biceps curl|弯举
+bicycle crunch|自行车卷腹
+bird dog|鸟狗式
+bird of paradise pose svarga dvijasana|天堂鸟式
+board press|木板卧推
+boat yoga pose|船式
+body weight|自重
+bosu ball|BOSU球
+bow yoga pose|弓式
+box jump|跳箱
+box squat|箱式深蹲
+bradford press|布拉德福德推举
+bridge pose setu bandhasana|桥式
+bridge pose yoga stretch|桥式拉伸
+bridge pose|桥式
+broad jump|立定跳远
+bulgarian split squat|保加利亚分腿蹲
+butterfly yoga flaps|蝴蝶拍腿
+butterfly yoga pose|蝴蝶式
+butt kick|后踢臀
+cable crunch|绳索卷腹
+calf raise|提踵
+california press|加州推举
+camel pose ustrasana|骆驼式
+camel pose|骆驼式
+captains chair|悬垂举腿架
+cat cow|猫牛式
+cat pose|猫式
+chaturanga dandasana four limbed staff pose|四柱支撑
+chaturanga pose|四柱式
+chest dip|双杠臂屈伸
+chest expansion|扩胸
+chest fly|夹胸
+chest supported row|胸托划船
+chest supported|胸托
+child pose|婴儿式
+child to cobra pose|婴儿式接眼镜蛇式
+chin up|反手引体向上
+chinese plank|中式平板支撑
+clam shell|蚌式
+clean and jerk|挺举
+clean and press|高翻推举
+clean grip|高翻握距
+clean pull|高翻拉
+close grip|窄握
+cobra yoga pose|眼镜蛇式
+concentration curl|集中弯举
+corpse pose savasana|摊尸式
+cossack squat|哥萨克深蹲
+cow face yoga pose gomukhasana|牛面式
+cow face|牛面式
+cow yoga pose bitilasana|牛式
+crab pose|蟹式
+crane pose bakasana|鹤式
+crescent moon pose|新月式
+cross body|交叉
+cuban press|古巴推举
+curtsy lunge|屈膝礼弓步
+curtsey lunge|屈膝礼弓步
+dancer pose natarajasana|舞王式
+dead bug|死虫式
+dead hang|悬垂
+dead stop|停顿
+deadlift|硬拉
+deck squat|甲板深蹲
+decline bench press|下斜卧推
+decline push up|下斜俯卧撑
+deficit deadlift|赤字硬拉
+depth jump|跳深
+diamond push up|钻石俯卧撑
+donkey calf raise|驴式提踵
+donkey kick|驴踢
+double pigeon pose|双鸽式
+downward dog|下犬式
+downward facing dog adho mukha svanasana|下犬式
+dragon flag|龙旗
+drag curl|拖拽弯举
+dumbbell row|哑铃划船
+eagle pose garudasana|鹰式
+ez bar|EZ杠
+ez barbell|EZ杠
+extended side angle yoga pose|伸展侧角式
+external rotation|外旋
+face pull|面拉
+farmer carry|农夫行走
+farmer walk|农夫行走
+farmers carry|农夫行走
+farmers walk|农夫行走
+finger curl|指弯举
+fire hydrant|消防栓式
+fish pose matsyasana|鱼式
+floor press|地板卧推
+flying lizard yoga pose utthan pristhasana|飞蜥式
+forearms stand yoga pose pincha mayurasana|前臂倒立
+form check|
+four limbed staff pose|四柱支撑
+frankenstein squat|科学怪人深蹲
+front lever|前水平
+front pov|正面
+front raise|前平举
+front squat|前蹲
+front view|正面
+frog pose mandukasana|蛙式
+full lotus yoga pose|全莲花式
+full squat|深蹲
+garland pose malasana|花环式
+glute bridge|臀桥
+glute kickback|臀后踢
+glute ham raise|臀腿举
+goblet squat|高脚杯深蹲
+good morning|早安式
+hack squat|哈克深蹲
+half boat pose ardha navasana|半船式
+half frog pose ardha bhekasana|半蛙式
+half moon pose ardha chandrasana|半月式
+hammer curl|锤式弯举
+hammer grip|锤式握
+handstand push up|倒立撑
+handstand walk|倒立行走
+hands to feet pada hastasana|手触脚式
+hang clean|悬垂高翻
+hang power clean|悬垂高翻
+hang snatch|悬垂抓举
+hanging leg raise|悬垂举腿
+hanging knee raise|悬垂抬膝
+happy baby pose|快乐婴儿式
+hawaiian squat|夏威夷深蹲
+hero pose virasana|英雄式
+high knee|高抬腿
+high knees|高抬腿
+hip abduction|髋外展
+hip adduction|髋内收
+hip bridge|臀桥
+hip thrust|臀推
+hindu push up|印度俯卧撑
+hollow body hold|空心保持
+hollow hold|空心保持
+humble warrior pose|谦卑战士式
+human flag|人体旗帜
+hyperextension|背起
+inch worm|寸虫
+inchworm|寸虫
+incline bench press|上斜卧推
+incline breeding|上斜飞鸟
+incline push up|上斜俯卧撑
+internal rotation|内旋
+inverted row|反向划船
+jack burpee|波比跳
+jackknife sit up|折刀仰卧起坐
+jefferson curl|杰斐逊体前屈
+jefferson deadlift|杰斐逊硬拉
+jefferson squat|杰斐逊深蹲
+jm bench press|JM卧推
+jump rope|跳绳
+jump squat|跳蹲
+jumping jack|开合跳
+kas glute bridge|凯斯臀桥
+kettlebell swing|壶铃摆荡
+knee raise|抬膝
+knee to chest|抱膝
+knee to elbow|膝触肘
+kneeling push up to child pose|跪姿俯卧撑接婴儿式
+korean dip|韩式臂屈伸
+kroc row|克罗克划船
+l sit|L坐
+landmine press|地雷杠推举
+landmine rotation|地雷杠旋转
+larsen press|拉森卧推
+lat pulldown|高位下拉
+lateral bound|侧向跳
+lateral lunge|侧弓步
+lateral raise|侧平举
+lateral walk|侧向走
+leg circle|绕腿
+leg curl|腿弯举
+leg extension|腿屈伸
+leg press|腿举
+leg raise|举腿
+legs up the wall yoga pose|靠墙倒箭式
+lizard pose|蜥蜴式
+locust yoga pose iron man pose|蝗虫式
+long spine|延展脊柱
+lotus pose breathing|莲花式呼吸
+lotus yoga pose padmasana|莲花式
+low bar|低杠位
+low lunge yoga pose anjaneyasana i|低弓步式
+lu raise|陆式平举
+lying leg curl|俯卧腿弯举
+lying leg raise|仰卧举腿
+mace swing|狼牙棒摆荡
+medicine ball|药球
+military press|实力推
+mountain climber|登山跑
+mountain pose|山式
+moving child pose|动态婴儿式
+muscle clean|力量翻
+muscle up|双力臂
+namaskarasana yoga pose|合掌式
+narrow grip|窄握
+neck stretch|颈部拉伸
+neutral grip|对握
+nordic curl|北欧腿弯举
+nordic hamstring|北欧腿弯举
+olympic barbell|奥杠
+on bosu ball|BOSU球
+on stability ball|稳定球
+one arm|单臂
+one leg|单腿
+one legged upward bow pose eka pada urdhva dhanurasana|单腿轮式
+overhead press|过头推举
+overhead squat|过头深蹲
+overhead triceps extension|颈后臂屈伸
+pallof press|帕洛夫抗旋
+pause squat|暂停深蹲
+paused squat|暂停深蹲
+pavanamuktasana yoga pose|风释式
+peacock pose mayurasana|孔雀式
+pec deck|蝴蝶机夹胸
+pec fly|夹胸
+pelvic lift|骨盆上抬
+pendlay row|潘德雷划船
+pilates machine arm circle|普拉提器械绕臂
+pilates machine chest expansion|普拉提器械扩胸
+pilates machine hundred|普拉提器械百次呼吸
+pilates machine long spine|普拉提器械延展脊柱
+pilates machine lying calf raise|普拉提器械仰卧提踵
+pilates machine lying frog and leg circle|普拉提器械仰卧蛙式绕腿
+pilates machine lying knee extension on heels|普拉提器械仰卧脚跟膝屈伸
+pilates machine lying knee extension on toes|普拉提器械仰卧脚尖膝屈伸
+pilates machine lying knee extension|普拉提器械仰卧膝屈伸
+pilates machine lying pelvic lift|普拉提器械仰卧骨盆上抬
+pilates machine lying running|普拉提器械仰卧跑动
+pilates machine overhead|普拉提器械过头屈伸
+pilates machine russian split|普拉提器械俄罗斯分腿
+pilates machine russian squat|普拉提器械俄罗斯深蹲
+pilates machine side split|普拉提器械侧分腿
+pilates machine|普拉提器械
+pistol squat|手枪深蹲
+plate loaded|片式配重
+plow yoga pose|犁式
+power clean|高翻
+power snatch|抓举
+prayer squat yoga pose|祈祷深蹲式
+preacher curl|牧师凳弯举
+prisoner squat|抱头深蹲
+pull apart|水平拉开
+pull through|拉通
+pull up|引体向上
+puppy pose|小狗式
+push down|下压
+push jerk|借力挺
+push press|借力推
+push up in child pose|婴儿式俯卧撑
+push up|俯卧撑
+pyramid pose|金字塔式
+rack pull|架上拉
+rdl|罗马尼亚硬拉
+rear delt fly|俯身飞鸟
+rear delt raise|俯身飞鸟
+rear delt|后束
+rear lunge|后撤弓步
+renegade row|平板支撑划船
+resistance band|阻力带
+reverse crunch|反向卷腹
+reverse curl|反手弯举
+reverse fly|反向飞鸟
+reverse grip|反握
+reverse hyperextension|反向背起
+reverse hyper|反向背起
+reverse lunge|反向弓步
+reverse plank|反向平板支撑
+reverse warrior pose|反战士式
+reverse wrist curl|反腕弯举
+revolved head to knee pose|头膝扭转式
+revolved side angle pose parivrtta parsvakonasana|扭转侧角式
+revolved side angle pose|扭转侧角式
+revolved triangle pose|扭转三角式
+ring dip|吊环臂屈伸
+ring muscle up|吊环双力臂
+romanian deadlift|罗马尼亚硬拉
+rowing boat yoga pose|划船式
+russian split|俄罗斯分腿
+russian squat|俄罗斯深蹲
+russian twist|俄罗斯转体
+safety bar|安全杠
+sage marichi i pose marichyasana|马里奇式
+seal row|海豹划船
+seated calf raise|坐姿提踵
+seated leg curl|坐姿腿弯举
+seated wide angle pose sequence|坐姿宽角式
+shoulder press|肩推
+shoulder stand yoga pose|肩倒立
+side bend|侧屈
+side lateral raise|侧平举
+side lunge|侧弓步
+side plank|侧平板支撑
+side pov|侧面
+side split|侧分腿
+side view|侧面
+single arm|单臂
+single leg squat pistol|手枪深蹲
+single leg|单腿
+sissy squat|西西深蹲
+sit up|仰卧起坐
+sitting yoga pose siddhasana|悉达坐
+skull crusher|仰卧臂屈伸
+skullcrusher|仰卧臂屈伸
+sled push|推雪橇
+sled pull|拉雪橇
+smith machine|史密斯机
+snatch balance|抓举平衡
+snatch grip|抓举握距
+snatch pull|抓举拉
+spider curl|蜘蛛弯举
+split jerk|分腿挺
+split squat|分腿蹲
+spread leg forward fold upavista konasana|宽腿前屈式
+squat clean|下蹲翻
+squat jump|蹲跳
+squat to press|深蹲推举
+stability ball|稳定球
+standing calf raise|站姿提踵
+standing figure four pose|站立四字式
+standing forward bend uttanasana|站立前屈
+standing pose form check front view|站立体式（正面）
+standing pose form check side view|站立体式（侧面）
+standing seal yoga pose|立海豹式
+step down|下台阶
+step up|登阶
+sternal chin|胸骨反手引体
+stiff leg deadlift|直腿硬拉
+stiff leg|直腿
+straight arm pulldown|直臂下拉
+straight arm|直臂
+straight bar|直杠
+straight leg|直腿
+suitcase carry|单侧农夫走
+sumo deadlift|相扑硬拉
+sun salutation|拜日式
+superman hold|超人保持
+supine spinal twist yoga pose|仰卧扭转式
+supported headstand yoga pose sirsasana|支撑头倒立
+svend press|斯文德推举
+swaying palm tree yoga pose|摇棕榈式
+t bar row|T杠划船
+t bar|T杠
+t raise|T字平举
+tate press|泰特卧推
+the eagle yoga pose|鹰式
+thread the needle pose|穿针式
+three quarter|四分之三
+tiger curl pose|虎式屈伸
+tiger yoga pose|虎式
+toes to bar|脚触杠
+trap bar|六角杠
+tree pose vrksasana|树式
+triangle pose trikonasana|三角式
+tricep extension|臂屈伸
+tricep kickback|俯身臂屈伸
+triceps extension|臂屈伸
+triceps kickback|俯身臂屈伸
+triceps pushdown|绳索下压
+turkish get up|土耳其起立
+twisted leg lunge pose|扭转弓步式
+two legged inverted staff pose dwi pada viparita dandasana|双腿反手杖式
+underhand grip|反握
+upward facing dog|上犬式
+upright row|直立划船
+v bar|V把
+v crunch|V字卷腹
+v sit|V字坐
+v up|V字两头起
+version 2|变式二
+version 3|变式三
+viking press|维京推举
+w raise|W字平举
+walking lunge|行走弓步
+wall ball|墙球
+wall sit|靠墙静蹲
+warrior ii yoga pose|战士二式
+warrior iii pose|战士三式
+warrior pose i virabhadrasana|战士一式
+warrior pose ii|战士二式
+warrior pose virabhadrasana v 2|战士式变式二
+warrior pose|战士式
+wheel pose urdhva dhanurasana|轮式
+wheel pose yoga pose|轮式
+wheel rollout|健腹轮
+wide grip|宽握
+wide legged forward bend prasarita padottanasana|宽站距前屈
+wood chop|伐木
+woodchopper|伐木
+wrist curl|腕弯举
+wrist roller|腕力器
+x band|X形弹力带
+y raise|Y字平举
+yoga vajrasana thunderbolt diamond pose|金刚坐
+yoke carry|牛轭行走
+yoke walk|牛轭行走
+z press|Z推
+zercher carry|泽奇搬运
+zercher deadlift|泽奇硬拉
+zercher squat|泽奇深蹲
+zottman curl|佐特曼弯举
+v 2|变式二
+v 3|变式三
+v 4|变式四
+b stance|B式错步
+low lunge|低弓步
+half kneeling|半跪
+tall kneeling|跪姿
+chest to bar|胸贴杠
+knees to elbow|膝触肘
+hip hinge|髋铰链
+good mornings|早安式
+split stance|前后站姿
+staggered stance|错步站姿
+bear crawl|熊爬
+crab walk|蟹步
+duck walk|鸭步
+farmer hold|农夫保持
+waiter walk|托盘行走
+bottoms up|壶底朝上
+arm blaster|臂托
+head harness|头套
+parallel bars|双杠
+rope attachment|绳索配件
+straight legs|直腿
+straight arms|直臂
+bent arm|屈臂
+bent leg|屈腿
+bent legs|屈腿
+single arms|单臂
+both arms|双臂
+one legged|单腿
+two legged|双腿
+face down|俯卧
+face up|仰卧
+palms up|掌心向上
+palms down|掌心向下
+palms in|掌心相对
+thumbs up|拇指向上
+elbows in|肘贴身
+elbows out|肘外展
+feet elevated|垫高双脚
+hands elevated|垫高双手
+hip external rotation|髋外旋
+hip internal rotation|髋内旋
+shoulder external rotation|肩外旋
+shoulder internal rotation|肩内旋
+scapular retraction|肩胛后缩
+scapular protraction|肩胛前伸
+wrist extension|腕伸
+wrist flexion|腕屈
+ankle dorsiflexion|踝背屈
+ankle plantar flexion|踝跖屈
+plantar flexion|跖屈
+dorsi flexion|背屈
+foot eversion|足外翻
+foot inversion|足内翻
+neck retraction|收下巴
+neck flexion|颈屈
+neck extension|颈伸
+side bend stretch|侧屈拉伸
+worlds greatest stretch|世界上最伟大的拉伸
+world s greatest stretch|世界上最伟大的拉伸
+cat camel|猫驼式
+open book|翻书式
+thread the needle|穿针式
+figure four|四字式
+pigeon stretch|鸽子式拉伸
+hip flexor stretch|髋屈肌拉伸
+hamstring stretch|腘绳肌拉伸
+quad stretch|股四头肌拉伸
+chest stretch|胸部拉伸
+shoulder stretch|肩部拉伸
+lat stretch|背阔肌拉伸
+calf stretch|小腿拉伸
+triceps stretch|肱三头肌拉伸
+biceps stretch|肱二头肌拉伸
+forearm stretch|前臂拉伸
+groin stretch|腹股沟拉伸
+adductor stretch|内收肌拉伸
+abductor stretch|外展肌拉伸
+piriformis stretch|梨状肌拉伸
+spine twist|脊柱扭转
+spinal twist|脊柱扭转
+lying spinal twist|仰卧脊柱扭转
+seated twist|坐姿转体
+standing twist|站姿转体
+russian twists|俄罗斯转体
+mountain climbers|登山跑
+burpees|波比跳
+jumping jacks|开合跳
+high knees|高抬腿
+butt kicks|后踢臀
+box step up|箱式登阶
+lateral step|侧向踏步
+speed step|速度踏步
+squat thrust|蹲撑推
+sprawl|趴撑
+muscle snatch|力量抓
+hang power snatch|悬垂高翻抓
+squat snatch|下蹲抓
+power jerk|借力挺
+split snatch|分腿抓
+snatch deadlift|抓举硬拉
+clean deadlift|高翻硬拉
+romanian|罗马尼亚
+stiff legged deadlift|直腿硬拉
+snatch grip deadlift|宽握硬拉
+deficit pull|赤字拉
+block pull|垫块拉
+paused deadlift|暂停硬拉
+pause deadlift|暂停硬拉
+touch and go|触地即起
+sumo squat|相扑蹲
+plie squat|普拉提深蹲
+hindu squat|印度深蹲
+shrimp squat|虾式深蹲
+dragon squat|龙蹲
+pistol|手枪
+sissy|西西
+zercher|泽奇
+anderson squat|安德森深蹲
+hatfield squat|哈特菲尔德深蹲
+safety bar squat|安全杠深蹲
+front foot elevated|前脚垫高
+rear foot elevated|后脚垫高
+bulgarian|保加利亚
+clock lunge|时钟弓步
+curtsy|屈膝礼
+reverse step lunge|后撤弓步
+forward lunge|前弓步
+side step|侧步
+monster walk|怪兽步
+sumo walk|相扑步
+glute bridge march|臀桥踏步
+hip thrust march|臀推踏步
+single leg hip thrust|单腿臀推
+single leg glute bridge|单腿臀桥
+frog pump|蛙式臀推
+cable pull through|绳索拉通
+back extension|背起
+reverse hyper extension|反向背起
+glute ham|臀腿举
+nordic|北欧
+lying hamstring curl|俯卧腿弯举
+seated hamstring curl|坐姿腿弯举
+standing leg curl|站姿腿弯举
+donkey calf|驴式提踵
+seated calf|坐姿提踵
+standing calf|站姿提踵
+tibialis raise|胫前上抬
+hip airplane|髋飞机
+clamshell|蚌式
+fire hydrant|消防栓式
+bird dog|鸟狗式
+dead bug|死虫式
+pallof|帕洛夫抗旋
+chop|伐木
+lift chop|上拉伐木
+wood chop|伐木
+half kneeling chop|半跪伐木
+ab wheel|健腹轮
+barbell rollout|杠铃前滚
+wheel rollerout|健腹轮
+rollerout|健腹轮
+roll out|前滚
+hanging windshield wiper|悬垂雨刷
+windshield wiper|雨刷
+toes to bar|脚触杠
+knees to chest|抱膝
+lying knee tuck|仰卧收膝
+reverse crunch|反向卷腹
+cable woodchop|绳索伐木
+oblique crunch|侧向卷腹
+bicycle|自行车
+scissor kick|剪刀踢
+flutter kick|交替踢腿
+v up|V字两头起
+hollow rock|空心摇
+arch hold|反弓保持
+superman|超人
+prone y|俯卧Y字
+prone t|俯卧T字
+prone w|俯卧W字
+y to t|Y字到T字
+t to y|T字到Y字
+w to y|W字到Y字
+face pull|面拉
+band pull apart|弹力带拉开
+rear delt|后束
+lateral raise|侧平举
+front raise|前平举
+arnold|阿诺德
+cuban rotation|古巴旋转
+bus driver|方向盘旋转
+scarecrow|稻草人
+upright row|直立划船
+high pull|高拉
+shrug|耸肩
+behind the neck|颈后
+bradford|布拉德福德
+landmine|地雷杠
+half kneeling press|半跪推举
+bottoms up press|壶底朝上推举
+seesaw press|跷跷板推举
+z press|Z推
+single arm press|单臂推举
+alternating press|交替推举
+neutral grip press|对握推举
+close grip press|窄握推举
+wide grip press|宽握推举
+floor press|地板卧推
+pin press|销钉卧推
+board press|木板卧推
+larsen|拉森
+jm press|JM卧推
+svend|斯文德
+squeeze press|对握夹推
+hex press|对握夹推
+dumbbell fly|哑铃飞鸟
+cable fly|绳索飞鸟
+pec deck fly|蝴蝶机夹胸
+incline fly|上斜飞鸟
+decline fly|下斜飞鸟
+pullover|仰卧臂上拉
+straight arm pullover|直臂仰卧上拉
+skull crusher|仰卧臂屈伸
+nose breaker|仰卧臂屈伸
+overhead extension|颈后臂屈伸
+kickback|后摆
+pushdown|下压
+triceps dip|三头臂屈伸
+bench dip|凳上臂屈伸
+chest dip|双杠臂屈伸
+ring row|吊环划船
+inverted row|反向划船
+australian pull up|澳式引体
+feet elevated row|垫脚划船
+single arm row|单臂划船
+chest supported|胸托
+seal row|海豹划船
+pendlay|潘德雷
+kroc|克罗克
+meadows row|梅多斯划船
+helms row|海尔姆斯划船
+cable row|绳索划船
+seated row|坐姿划船
+bent over|俯身
+one arm row|单臂划船
+renegade|雷内加德
+gorilla row|猩猩划船
+deadstop row|停顿划船
+snatch grip row|宽握划船
+pronated row|正握划船
+supinated row|反握划船
+hammer strength|锤式器械
+lat prayer|背阔肌祈祷
+straight arm pull|直臂下拉
+kneeling pulldown|跪姿下拉
+single arm pulldown|单臂下拉
+close grip pulldown|窄握下拉
+wide grip pulldown|宽握下拉
+reverse grip pulldown|反握下拉
+neutral grip pulldown|对握下拉
+assisted pull up|辅助引体向上
+weighted pull up|负重引体向上
+kipping pull up|借力引体向上
+strict pull up|严式引体向上
+chest to bar pull up|胸贴杠引体
+archer pull up|射手引体向上
+typewriter pull up|打字机引体
+commando pull up|突击引体
+towel pull up|毛巾引体向上
+muscle up|双力臂
+bar muscle up|单杠双力臂
+ring muscle up|吊环双力臂
+dip|臂屈伸
+korean dips|韩式臂屈伸
+ring dips|吊环臂屈伸
+bench dips|凳上臂屈伸
+straight bar dip|直杠臂屈伸
+l sit pull up|L坐引体
+front lever|前水平
+back lever|后水平
+planche lean|水平支撑前倾
+pseudo planche|伪水平支撑
+handstand hold|倒立保持
+wall handstand|靠墙倒立
+freestanding handstand|自由倒立
+handstand shoulder tap|倒立拍肩
+pike push up|折刀俯卧撑
+deficit pike|垫高折刀
+wall walk|靠墙爬
+bear complex|熊式复合
+devil press|魔鬼推举
+devils press|魔鬼推举
+man maker|男人制造者
+clean and jerk|挺举
+squat clean|下蹲翻
+power clean|高翻
+hang clean|悬垂高翻
+muscle snatch|力量抓
+power snatch|高抓
+squat snatch|下蹲抓
+split jerk|分腿挺
+push jerk|借力挺
+thruster|深蹲推举
+cluster|复合组
+wall ball|墙球
+ball slam|砸球
+med ball|药球
+kettlebell clean|壶铃高翻
+kettlebell snatch|壶铃抓举
+american swing|美式摆荡
+russian swing|俄式摆荡
+goblet|高脚杯
+bottoms up|壶底朝上
+halo|绕头
+windmill|风车
+turkish get up|土耳其起立
+farmers walk|农夫行走
+suitcase|行李箱
+sandbag carry|沙袋搬运
+zercher|泽奇
+yoke|牛轭
+atlas stone|阿特拉斯石球
+tire flip|翻轮胎
+sled drag|拉雪橇
+prowler push|推雪橇
+battle ropes|战绳
+double under|双摇
+single under|单摇
+jumping lunge|跳弓步
+broad jump|立定跳远
+box jump over|跳箱越过
+depth drop|跳深下落
+skater hop|滑冰跳
+lateral bound|侧向跳
+tuck jump|团身跳
+star jump|星形跳
+squat jump|蹲跳
+burpee broad jump|波比跳远
+burpee pull up|波比引体
+burpee box jump|波比跳箱
+jackknife|折刀
+v up|V字两头起
+sit through|穿凳
+crocodile crawl|鳄鱼爬
+spiderman crawl|蜘蛛爬
+inchworm|寸虫
+worlds greatest|世界上最伟大的拉伸
+open the book|翻书式
+windshield wipers|雨刷
+hanging leg raise|悬垂举腿
+captain chair|悬垂举腿架
+dragon flag|龙旗
+human flag|人体旗帜
+skin the cat|过杆
+german hang|德式悬垂
+scap pull|肩胛引体
+active hang|主动悬垂
+passive hang|被动悬垂
+dead hang|悬垂
+arch body|反弓
+hollow body|空心
+superman|超人
+bird dog|鸟狗式
+deadbug|死虫式
+paloff press|帕洛夫抗旋
+copenhagen plank|哥本哈根侧桥
+side plank|侧平板支撑
+reverse plank|反向平板支撑
+rkc plank|RKC平板支撑
+long lever plank|长杠杆平板
+ab rollout|健腹轮
+barbell ab rollout|杠铃健腹轮
+stability ball rollout|稳定球前滚
+body saw|身体锯
+stir the pot|搅拌锅
+swiss ball pike|稳定球折刀
+jackknife on ball|稳定球折刀
+glute bridge|臀桥
+hip thrust|臀推
+frog pump|蛙式臀推
+kas bridge|凯斯臀桥
+single leg rdl|单腿罗马尼亚硬拉
+b stance rdl|B式错步罗马尼亚硬拉
+kickstand rdl|踢腿站罗马尼亚硬拉
+stiff leg rdl|直腿罗马尼亚硬拉
+good morning|早安式
+seated good morning|坐姿早安式
+back extension|山羊挺身
+45 degree back extension|45度背起
+reverse hyper|反向背起
+glute ham raise|GHR臀腿举
+nordic curl|北欧腿弯举
+slider curl|滑盘腿弯举
+lying leg curl|俯卧腿弯举
+seated leg curl|坐姿腿弯举
+leg extension|腿屈伸
+sissy squat|西西深蹲
+hack squat|哈克深蹲
+pendulum squat|钟摆深蹲
+belt squat|腰带深蹲
+goblet squat|高脚杯深蹲
+front squat|前蹲
+back squat|后蹲
+overhead squat|过头深蹲
+zercher squat|泽奇深蹲
+anderson squat|安德森深蹲
+jefferson squat|杰斐逊深蹲
+cossack squat|哥萨克深蹲
+pistol squat|手枪深蹲
+shrimp squat|虾式深蹲
+hindu squat|印度深蹲
+jump squat|跳蹲
+pause squat|暂停深蹲
+tempo squat|节奏深蹲
+1 1 2 squat|1又1/2深蹲
+box squat|箱式深蹲
+pin squat|销钉深蹲
+hatfield squat|哈特菲尔德深蹲
+safety squat|安全杠深蹲
+ssb squat|安全杠深蹲
+cambered bar squat|曲杠深蹲
+low bar squat|低杠深蹲
+high bar squat|高杠深蹲
+heels elevated squat|垫脚跟深蹲
+atg squat|全幅度深蹲
+air squat|徒手深蹲
+bodyweight squat|徒手深蹲
+prisoner squat|抱头深蹲
+sumo squat|相扑蹲
+plie|普拉提式深蹲
+split squat|分腿蹲
+bulgarian split squat|保加利亚分腿蹲
+rear foot elevated split squat|后脚垫高分腿蹲
+rfess|后脚垫高分腿蹲
+walking lunge|行走弓步
+reverse lunge|反向弓步
+forward lunge|前弓步
+lateral lunge|侧弓步
+curtsy lunge|屈膝礼弓步
+clock lunge|时钟弓步
+jump lunge|跳弓步
+step up|登阶
+step down|下台阶
+lateral step up|侧向登阶
+crossover step up|交叉登阶
+poliquin step up|波利昆登阶
+peterson step|彼得森登阶
+patrick step|帕特里克登阶
+hip abduction|髋外展
+hip adduction|髋内收
+machine abduction|器械髋外展
+machine adduction|器械髋内收
+seated abduction|坐姿髋外展
+seated adduction|坐姿髋内收
+standing abduction|站姿髋外展
+cable abduction|绳索髋外展
+cable adduction|绳索髋内收
+clamshell|蚌式
+lateral band walk|弹力带侧向走
+monster walk|怪兽步
+fire hydrant|消防栓式
+donkey kick|驴踢
+glute kickback|臀后踢
+standing kickback|站姿后踢
+quadruped kickback|四点支撑后踢
+calf raise|提踵
+seated calf raise|坐姿提踵
+standing calf raise|站姿提踵
+donkey calf raise|驴式提踵
+single leg calf raise|单腿提踵
+tib raise|胫前上抬
+ankle circle|绕踝
+wrist curl|腕弯举
+reverse wrist curl|反腕弯举
+wrist roller|腕力器
+finger curl|指弯举
+plate pinch|捏片
+gripper|握力器
+farmers hold|农夫保持
+dead hang|悬垂
+towel hang|毛巾悬垂
+one arm hang|单臂悬垂
+scapular pull up|肩胛引体
+face pull|面拉
+band pull apart|弹力带拉开
+external rotation|外旋
+internal rotation|内旋
+cuban press|古巴推举
+powell raise|鲍威尔平举
+poliquin raise|波利昆平举
+lu raise|陆式平举
+y raise|Y字平举
+t raise|T字平举
+w raise|W字平举
+prone trap raise|俯卧斜方肌上抬
+wall slide|靠墙滑臂
+wall angel|靠墙天使
+floor angel|地面天使
+blackburn|布莱克本
+push up plus|俯卧撑加强
+scap push up|肩胛俯卧撑
+dive bomber|俯冲俯卧撑
+hindu push up|印度俯卧撑
+pike push up|折刀俯卧撑
+diamond push up|钻石俯卧撑
+archer push up|射手俯卧撑
+pseudo planche push up|伪水平俯卧撑
+decline push up|下斜俯卧撑
+incline push up|上斜俯卧撑
+clap push up|击掌俯卧撑
+plyo push up|爆发俯卧撑
+spiderman push up|蜘蛛俯卧撑
+shoulder tap push up|拍肩俯卧撑
+close grip push up|窄距俯卧撑
+wide push up|宽距俯卧撑
+knee push up|跪姿俯卧撑
+elevated push up|垫高俯卧撑
+deficit push up|垫高俯卧撑
+ring push up|吊环俯卧撑
+feet elevated push up|垫脚俯卧撑
+typewriter push up|打字机俯卧撑
+sphinx push up|狮身俯卧撑
+grasshopper push up|蚱蜢俯卧撑
+staggered push up|错手俯卧撑
+cobra push up|眼镜蛇俯卧撑
+pull up|引体向上
+chin up|反手引体向上
+neutral grip pull up|对握引体向上
+wide grip pull up|宽握引体向上
+close grip pull up|窄握引体向上
+mixed grip pull up|正反握引体向上
+weighted chin up|负重反手引体
+assisted chin up|辅助反手引体
+negative pull up|离心引体向上
+jumping pull up|跳跃引体向上
+kipping|借力
+butterfly pull up|蝶式引体
+chest to bar|胸贴杠
+muscle up|双力臂
+bar dip|双杠臂屈伸
+ring dip|吊环臂屈伸
+straight bar dip|直杠臂屈伸
+korean dip|韩式臂屈伸
+bench dip|凳上臂屈伸
+weighted dip|负重臂屈伸
+assisted dip|辅助臂屈伸
+l sit|L坐
+v sit|V字坐
+tuck planche|团身水平支撑
+advanced tuck planche|高团身水平支撑
+straddle planche|分腿水平支撑
+full planche|全水平支撑
+tuck front lever|团身前水平
+straddle front lever|分腿前水平
+full front lever|全前水平
+back lever|后水平
+human flag|人体旗帜
+dragon flag|龙旗
+skin the cat|过杆
+german hang|德式悬垂
+handstand|倒立
+headstand|头倒立
+forearm stand|前臂倒立
+crow pose|乌鸦式
+crane pose|鹤式
+peacock pose|孔雀式
+elbow lever|肘水平
+maltese|马耳他
+iron cross|铁十字
+victorian|维多利亚
+one arm pull up|单臂引体向上
+one arm chin up|单臂反手引体
+one arm push up|单臂俯卧撑
+one arm handstand|单臂倒立
+pistol|手枪深蹲
+shrimp squat|虾式深蹲
+dragon pistol|龙式手枪蹲
+cossack|哥萨克
+sissy squat|西西深蹲
+nordic|北欧腿弯举
+natural leg curl|北欧腿弯举
+glute ham|臀腿举
+reverse nordic|反向北欧
+sissy|西西
+atg split squat|全幅度分腿蹲
+cyclist squat|骑行深蹲
+heels elevated|垫脚跟
+poliquin step|波利昆登阶
+slant board squat|斜板深蹲
+tib bar|胫骨杠
+cobra|眼镜蛇式
+up dog|上犬式
+down dog|下犬式
+puppy|小狗式
+childs pose|婴儿式
+child pose|婴儿式
+cat cow|猫牛式
+thread needle|穿针式
+pigeon|鸽子式
+figure 4|四字式
+lizard|蜥蜴式
+frog pose|蛙式
+happy baby|快乐婴儿式
+supine twist|仰卧扭转
+spinal wave|脊柱波浪
+segmental cat|分段猫式
+open book|翻书式
+world greatest stretch|世界上最伟大的拉伸
+couch stretch|沙发拉伸
+hip flexor|髋屈肌
+hamstring|腘绳肌
+quadricep|股四头肌
+adductor|内收肌
+abductor|外展肌
+piriformis|梨状肌
+calf|小腿
+soleus|比目鱼肌
+gastroc|腓肠肌
+tibialis|胫骨前肌
+peroneal|腓骨肌
+wrist flexor|腕屈肌
+wrist extensor|腕伸肌
+biceps|肱二头肌
+triceps|肱三头肌
+forearm|前臂
+lat|背阔肌
+pec|胸肌
+delt|三角肌
+rear delt|后束
+front delt|前束
+side delt|中束
+upper trap|上斜方
+mid trap|中斜方
+lower trap|下斜方
+rhomboid|菱形肌
+rotator cuff|肩袖
+serratus|前锯肌
+oblique|腹斜肌
+lower ab|下腹
+upper ab|上腹
+glute med|臀中肌
+glute max|臀大肌
+hip external|髋外旋
+hip internal|髋内旋
+ankle|踝
+knee|膝
+elbow|肘
+shoulder|肩
+wrist|腕
+neck|颈
+spine|脊柱
+thoracic|胸椎
+lumbar|腰椎
+cervical|颈椎
+scapula|肩胛
+pelvis|骨盆
+rib cage|胸廓
+sternum|胸骨
+clavicle|锁骨
+sit bone|坐骨
+heel|脚跟
+toe|脚趾
+palm|手掌
+knuckle|指节
+thumb|拇指
+finger|手指
+chest|胸部
+back|背部
+core|核心
+abs|腹肌
+glute|臀
+quad|股四头
+ham|腘绳
+trap|斜方肌
+latissimus|背阔肌
+pectoral|胸大肌
+deltoid|三角肌
+trapezius|斜方肌
+rhomboids|菱形肌
+obliques|腹斜肌
+quads|股四头肌
+hamstrings|腘绳肌
+glutes|臀肌
+calves|小腿
+forearms|前臂
+biceps|肱二头肌
+triceps|肱三头肌
+shoulders|肩
+lats|背阔肌
+pectorals|胸大肌
+abdominals|腹肌
+adductors|内收肌
+abductors|外展肌
+hip flexors|髋屈肌
+lower back|下背
+upper back|上背
+mid back|中背
+full body|全身
+upper body|上肢
+lower body|下肢
+single leg|单腿
+single arm|单臂
+double leg|双腿
+double arm|双臂
+alternating|交替
+alternate|交替
+unilateral|单侧
+bilateral|双侧
+isometric|等长
+isotonic|等张
+eccentric|离心
+concentric|向心
+paused|暂停
+tempo|节奏
+explosive|爆发
+slow|慢速
+partial|部分幅度
+full range|全幅度
+half rep|半次
+one and a half|1又1/2
+cluster set|复合组
+drop set|递减组
+rest pause|休息暂停
+amrap|力竭
+emom|每分钟
+e2mom|每两分钟
+tabata|塔巴塔
+circuit|循环
+superset|超级组
+complex|复合
+finisher|收尾
+warmup|热身
+cool down|放松
+mobility|活动度
+stretching|拉伸
+yoga|瑜伽
+pilates|普拉提
+cardio|有氧
+plyometric|增强式
+plyo|增强式
+strength|力量
+power|爆发力
+hypertrophy|肌肥大
+endurance|耐力
+rehab|康复
+prehab|预康复
+activation|激活
+stability|稳定
+balance|平衡
+coordination|协调
+agility|敏捷
+speed|速度
+conditioning|体能
+strongman|大力士
+olympic lifting|奥林匹克举重
+weightlifting|举重
+powerlifting|力量举
+bodybuilding|健美
+calisthenics|自重训练
+gymnastics|体操
+crossfit|综合体能
+kettlebell sport|壶铃运动
+battle rope|战绳
+jump rope|跳绳
+rowing|划船
+assault bike|风扇车
+echo bike|风扇车
+ski erg|滑雪机
+rower|划船机
+treadmill|跑步机
+elliptical|椭圆机
+stair climber|登山机
+stepmill|登山机
+stationary bike|健身车
+recumbent bike|卧式健身车
+air bike|风扇车
+sled|雪橇
+prowler|雪橇
+yoke|牛轭
+atlas stone|阿特拉斯石球
+sandbag|沙袋
+keg|酒桶
+log press|圆木推举
+axle press|粗杠推举
+circus dumbbell|杂技哑铃
+husafell stone|冰岛石
+farmers|农夫
+frame carry|框架搬运
+duck walk|鸭步
+conan wheel|柯南轮
+hercules hold|赫拉克勒斯保持
+fingal fingers|芬加尔手指
+viking press|维京推举
+keg toss|掷桶
+tire flip|翻轮胎
+truck pull|拉卡车
+rope climb|爬绳
+peg board|钉板
+sled push|推雪橇
+sled pull|拉雪橇
+backward sled|倒退拉雪橇
+forward sled|前推雪橇
+lateral sled|侧向拉雪橇
+hill sprint|冲坡
+shuttle run|折返跑
+suicide run|折返跑
+cone drill|标志桶练习
+ladder drill|绳梯练习
+agility ladder|敏捷梯
+dot drill|点阵练习
+x drill|X形敏捷
+ski erg|滑雪机
+row erg|划船机
+bike erg|功率车
+arm erg|上肢功率车
+jumping jack|开合跳
+seal jack|海豹开合跳
+star jack|星形开合跳
+plank jack|平板开合
+squat jack|深蹲开合
+burpee|波比跳
+sprawl|趴撑
+man maker|男人制造者
+devil press|魔鬼推举
+thruster|深蹲推举
+wall ball|墙球
+medball clean|药球高翻
+ball slam|砸球
+overhead slam|过头砸球
+rotational slam|转体砸球
+side slam|侧向砸球
+squat clean thruster|下蹲翻推举
+clean to thruster|高翻接深蹲推举
+snatch balance|抓举平衡
+snatch|抓举
+clean|高翻
+jerk|挺举
+press|推举
+push press|借力推
+push jerk|借力挺
+split jerk|分腿挺
+power jerk|借力挺
+squat jerk|下蹲挺
+hang snatch|悬垂抓举
+hang clean|悬垂高翻
+tall clean|高位高翻
+tall snatch|高位抓举
+muscle clean|力量翻
+muscle snatch|力量抓
+dip clean|下蹲接高翻
+no contact snatch|无接触抓举
+contact snatch|接触抓举
+3 position snatch|三位置抓举
+3 position clean|三位置高翻
+pull from blocks|垫块拉
+pull from deficit|赤字拉
+snatch pull|抓举拉
+clean pull|高翻拉
+snatch deadlift|抓举硬拉
+clean deadlift|高翻硬拉
+romanian deadlift|罗马尼亚硬拉
+stiff leg deadlift|直腿硬拉
+sumo deadlift|相扑硬拉
+conventional deadlift|传统硬拉
+trap bar deadlift|六角杠硬拉
+hex bar deadlift|六角杠硬拉
+deficit deadlift|赤字硬拉
+rack pull|架上拉
+block pull|垫块拉
+snatch grip deadlift|宽握硬拉
+paused deadlift|暂停硬拉
+speed deadlift|速度硬拉
+touch and go deadlift|触地即起硬拉
+jefferson deadlift|杰斐逊硬拉
+zercher deadlift|泽奇硬拉
+reeves deadlift|里夫斯硬拉
+behind the back deadlift|背后硬拉
+single leg deadlift|单腿硬拉
+kickstand deadlift|踢腿站硬拉
+b stance deadlift|B式错步硬拉
+suitcase deadlift|单侧硬拉
+landmine rdl|地雷杠罗马尼亚硬拉
+cable pull through|绳索拉通
+good morning|早安式
+seated good morning|坐姿早安式
+zercher good morning|泽奇早安式
+safety bar good morning|安全杠早安式
+banded good morning|弹力带早安式
+hyperextension|背起
+back raise|背起
+reverse hyperextension|反向背起
+glute ham raise|臀腿举
+nordic hamstring curl|北欧腿弯举
+slider leg curl|滑盘腿弯举
+swiss ball leg curl|稳定球腿弯举
+lying leg curl|俯卧腿弯举
+seated leg curl|坐姿腿弯举
+standing leg curl|站姿腿弯举
+leg extension|腿屈伸
+sissy squat|西西深蹲
+spanish squat|西班牙深蹲
+terminal knee extension|终端膝伸
+tke|终端膝伸
+poliquin step up|波利昆登阶
+peterson step up|彼得森登阶
+patrick step up|帕特里克登阶
+atg split squat|全幅度分腿蹲
+heel elevated split squat|垫脚跟分腿蹲
+front foot elevated|前脚垫高
+rear foot elevated|后脚垫高
+deficit reverse lunge|赤字反向弓步
+walking lunge|行走弓步
+reverse lunge|反向弓步
+forward lunge|前弓步
+lateral lunge|侧弓步
+curtsy lunge|屈膝礼弓步
+step up|登阶
+step down|下台阶
+box step up|箱式登阶
+lateral step up|侧向登阶
+crossover lunge|交叉弓步
+clock lunge|时钟弓步
+jump lunge|跳弓步
+split squat|分腿蹲
+bulgarian split squat|保加利亚分腿蹲
+rfess|后脚垫高分腿蹲
+hip thrust|臀推
+barbell hip thrust|杠铃臀推
+single leg hip thrust|单腿臀推
+glute bridge|臀桥
+single leg glute bridge|单腿臀桥
+frog pump|蛙式臀推
+kas glute bridge|凯斯臀桥
+marching bridge|臀桥踏步
+pull through|拉通
+cable kickback|绳索后踢
+donkey kick|驴踢
+fire hydrant|消防栓式
+clamshell|蚌式
+lateral walk|侧向走
+monster walk|怪兽步
+hip airplane|髋飞机
+90 90|90/90髋
+shin box|小腿盒式
+pigeon|鸽子式
+figure four|四字式
+couch stretch|沙发拉伸
+hip flexor stretch|髋屈肌拉伸
+hamstring stretch|腘绳肌拉伸
+quad stretch|股四头肌拉伸
+adductor stretch|内收肌拉伸
+abductor stretch|外展肌拉伸
+piriformis stretch|梨状肌拉伸
+calf stretch|小腿拉伸
+ankle stretch|踝拉伸
+wrist stretch|腕拉伸
+shoulder stretch|肩部拉伸
+chest stretch|胸部拉伸
+lat stretch|背阔肌拉伸
+triceps stretch|肱三头肌拉伸
+biceps stretch|肱二头肌拉伸
+forearm stretch|前臂拉伸
+neck stretch|颈部拉伸
+upper trap stretch|上斜方拉伸
+levator stretch|肩胛提肌拉伸
+pec stretch|胸肌拉伸
+doorway stretch|门框拉伸
+sleeper stretch|侧卧肩拉伸
+cross body stretch|交叉拉伸
+child pose|婴儿式
+puppy pose|小狗式
+down dog|下犬式
+up dog|上犬式
+cobra|眼镜蛇式
+sphinx|狮身人面式
+cat cow|猫牛式
+thread the needle|穿针式
+open book|翻书式
+worlds greatest stretch|世界上最伟大的拉伸
+spiderman stretch|蜘蛛拉伸
+world greatest stretch|世界上最伟大的拉伸
+inchworm|寸虫
+bear crawl|熊爬
+crab walk|蟹步
+duck walk|鸭步
+crocodile crawl|鳄鱼爬
+spiderman crawl|蜘蛛爬
+commando crawl|匍匐爬
+army crawl|军式爬
+lateral ape|侧向猿步
+squat walk|深蹲走
+lunge walk|弓步走
+farmer walk|农夫行走
+suitcase walk|单侧农夫走
+overhead walk|过头行走
+waiter walk|托盘行走
+bottoms up walk|壶底朝上行走
+zercher walk|泽奇行走
+yoke walk|牛轭行走
+sandbag bear hug|沙袋熊抱
+sandbag shouldering|沙袋上肩
+sandbag clean|沙袋高翻
+sandbag load|沙袋装载
+atlas stone|阿特拉斯石球
+stone to shoulder|石球上肩
+keg carry|酒桶搬运
+keg clean|酒桶高翻
+tire flip|翻轮胎
+sled push|推雪橇
+sled pull|拉雪橇
+rope climb|爬绳
+legless rope climb|无腿爬绳
+pegboard|钉板
+peg board|钉板
+hercules hold|赫拉克勒斯保持
+fingals fingers|芬加尔手指
+fingal fingers|芬加尔手指
+axle clean|粗杠高翻
+axle press|粗杠推举
+log clean|圆木高翻
+log press|圆木推举
+circus dumbbell|杂技哑铃
+husafell|冰岛石
+conan circle|柯南轮
+truck pull|拉卡车
+arm over arm|交替拉绳
+backward sled drag|倒退拉雪橇
+forward sled drag|前拉雪橇
+plate pinch carry|捏片搬运
+hub lift|轮毂拉起
+rolling thunder|滚雷握把
+blob|铁球
+apollons axle|阿波罗粗杠
+mas wrestling|棍上角力
+iceland cross|冰岛十字
+captains chair leg raise|悬垂举腿
+captain chair leg raise|悬垂举腿
+hanging windshield wiper|悬垂雨刷
+toes to bar|脚触杠
+knees to elbow|膝触肘
+knees to chest|抱膝
+l hanging|L悬垂
+tuck l|团身L
+hanging knee raise|悬垂抬膝
+hanging leg raise|悬垂举腿
+lying leg raise|仰卧举腿
+side lying leg raise|侧卧举腿
+scissor kick|剪刀踢
+flutter kick|交替踢腿
+bicycle crunch|自行车卷腹
+reverse crunch|反向卷腹
+cable crunch|绳索卷腹
+decline crunch|下斜卷腹
+oblique crunch|侧向卷腹
+russian twist|俄罗斯转体
+wood chop|伐木
+cable wood chop|绳索伐木
+landmine rotation|地雷杠旋转
+pallof press|帕洛夫抗旋
+dead bug|死虫式
+bird dog|鸟狗式
+plank|平板支撑
+side plank|侧平板支撑
+reverse plank|反向平板支撑
+copenhagen|哥本哈根侧桥
+ab wheel|健腹轮
+rollout|前滚
+body saw|身体锯
+stir the pot|搅拌锅
+v up|V字两头起
+jackknife|折刀
+hollow hold|空心保持
+hollow rock|空心摇
+arch hold|反弓保持
+superman|超人
+prone cobra|俯卧眼镜蛇
+ytw|YTW
+iyt|IYT
+wall slide|靠墙滑臂
+wall angel|靠墙天使
+floor slide|地面滑臂
+band pull apart|弹力带拉开
+face pull|面拉
+external rotation|外旋
+internal rotation|内旋
+cuban|古巴旋转
+powell raise|鲍威尔平举
+lu raise|陆式平举
+lateral raise|侧平举
+front raise|前平举
+rear delt fly|俯身飞鸟
+upright row|直立划船
+shrug|耸肩
+behind neck press|颈后推举
+bradford press|布拉德福德推举
+arnold press|阿诺德推举
+military press|实力推
+overhead press|过头推举
+push press|借力推
+z press|Z推
+landmine press|地雷杠推举
+single arm landmine press|单臂地雷杠推举
+half kneeling landmine press|半跪地雷杠推举
+bottoms up press|壶底朝上推举
+see saw press|跷跷板推举
+alternating dumbbell press|交替哑铃推举
+seated dumbbell press|坐姿哑铃推举
+standing dumbbell press|站姿哑铃推举
+arnold dumbbell press|阿诺德哑铃推举
+neutral press|对握推举
+floor press|地板卧推
+pin press|销钉卧推
+board press|木板卧推
+larsen press|拉森卧推
+jm press|JM卧推
+svend press|斯文德推举
+squeeze press|对握夹推
+hex press|对握夹推
+machine chest press|器械胸推
+incline press|上斜推举
+decline press|下斜推举
+flat press|平板推举
+fly|飞鸟
+cable crossover|绳索夹胸
+pec deck|蝴蝶机夹胸
+pullover|仰卧臂上拉
+skullcrusher|仰卧臂屈伸
+overhead tricep extension|颈后臂屈伸
+tricep kickback|俯身臂屈伸
+tricep pushdown|绳索下压
+rope pushdown|绳索下压
+bar pushdown|直杠下压
+reverse pushdown|反握下压
+single arm pushdown|单臂下压
+bench dip|凳上臂屈伸
+close grip push up|窄距俯卧撑
+diamond push up|钻石俯卧撑
+california press|加州推举
+tate press|泰特卧推
+bicep curl|弯举
+hammer curl|锤式弯举
+preacher curl|牧师凳弯举
+concentration curl|集中弯举
+incline curl|上斜弯举
+spider curl|蜘蛛弯举
+drag curl|拖拽弯举
+zottman curl|佐特曼弯举
+reverse curl|反手弯举
+wrist curl|腕弯举
+finger curl|指弯举
+cable curl|绳索弯举
+bayesian curl|贝叶斯弯举
+waiter curl|托盘弯举
+cross body curl|交叉弯举
+seated curl|坐姿弯举
+standing curl|站姿弯举
+alternating curl|交替弯举
+simultaneous curl|双臂弯举
+single arm curl|单臂弯举
+ez bar curl|EZ杠弯举
+barbell curl|杠铃弯举
+dumbbell curl|哑铃弯举
+machine curl|器械弯举
+lat pulldown|高位下拉
+straight arm pulldown|直臂下拉
+close grip pulldown|窄握下拉
+wide grip pulldown|宽握下拉
+reverse grip pulldown|反握下拉
+single arm pulldown|单臂下拉
+kneeling lat pulldown|跪姿高位下拉
+pull up|引体向上
+chin up|反手引体向上
+neutral pull up|对握引体向上
+assisted pull up|辅助引体向上
+weighted pull up|负重引体向上
+muscle up|双力臂
+inverted row|反向划船
+ring row|吊环划船
+seated cable row|坐姿绳索划船
+bent over row|俯身划船
+pendlay row|潘德雷划船
+single arm row|单臂划船
+chest supported row|胸托划船
+t bar row|T杠划船
+seal row|海豹划船
+kroc row|克罗克划船
+meadows row|梅多斯划船
+gorilla row|猩猩划船
+renegade row|平板支撑划船
+upright row|直立划船
+face pull|面拉
+shrug|耸肩
+deadlift|硬拉
+romanian deadlift|罗马尼亚硬拉
+stiff leg deadlift|直腿硬拉
+sumo deadlift|相扑硬拉
+trap bar deadlift|六角杠硬拉
+rack pull|架上拉
+good morning|早安式
+hip thrust|臀推
+glute bridge|臀桥
+back extension|背起
+squat|深蹲
+front squat|前蹲
+goblet squat|高脚杯深蹲
+hack squat|哈克深蹲
+leg press|腿举
+lunge|弓步
+split squat|分腿蹲
+step up|登阶
+calf raise|提踵
+leg curl|腿弯举
+leg extension|腿屈伸
+hip abduction|髋外展
+hip adduction|髋内收
+plank|平板支撑
+crunch|卷腹
+sit up|仰卧起坐
+russian twist|俄罗斯转体
+mountain climber|登山跑
+burpee|波比跳
+jumping jack|开合跳
+box jump|跳箱
+kettlebell swing|壶铃摆荡
+turkish get up|土耳其起立
+farmer walk|农夫行走
+snatch|抓举
+clean and jerk|挺举
+thruster|深蹲推举
+wall ball|墙球
+push up|俯卧撑
+dip|臂屈伸
+handstand push up|倒立撑
+pistol squat|手枪深蹲
+nordic curl|北欧腿弯举
+sissy squat|西西深蹲
+zercher squat|泽奇深蹲
+jefferson squat|杰斐逊深蹲
+cossack squat|哥萨克深蹲
+bulgarian split squat|保加利亚分腿蹲
+overhead squat|过头深蹲
+pause squat|暂停深蹲
+deficit deadlift|赤字硬拉
+snatch grip deadlift|宽握硬拉
+paused deadlift|暂停硬拉
+single leg rdl|单腿罗马尼亚硬拉
+b stance rdl|B式错步罗马尼亚硬拉
+landmine rdl|地雷杠罗马尼亚硬拉
+cable rdl|绳索罗马尼亚硬拉
+dumbbell rdl|哑铃罗马尼亚硬拉
+barbell rdl|杠铃罗马尼亚硬拉
+smith rdl|史密斯罗马尼亚硬拉
+trap bar rdl|六角杠罗马尼亚硬拉
+sumo rdl|相扑罗马尼亚硬拉
+stiff leg rdl|直腿罗马尼亚硬拉
+kickstand rdl|踢腿站罗马尼亚硬拉
+suitcase rdl|单侧罗马尼亚硬拉
+single leg deadlift|单腿硬拉
+single leg squat|单腿深蹲
+single leg press|单腿腿举
+single leg calf raise|单腿提踵
+single leg hip thrust|单腿臀推
+single leg glute bridge|单腿臀桥
+single arm row|单臂划船
+single arm press|单臂推举
+single arm curl|单臂弯举
+single arm pulldown|单臂下拉
+single arm lat pulldown|单臂高位下拉
+alternating curl|交替弯举
+alternating press|交替推举
+alternating row|交替划船
+alternating raise|交替平举
+seated row|坐姿划船
+seated press|坐姿推举
+seated curl|坐姿弯举
+seated calf raise|坐姿提踵
+seated leg curl|坐姿腿弯举
+seated hip abduction|坐姿髋外展
+standing calf raise|站姿提踵
+standing press|站姿推举
+standing curl|站姿弯举
+lying leg curl|俯卧腿弯举
+lying leg raise|仰卧举腿
+lying triceps extension|仰卧臂屈伸
+incline press|上斜推举
+incline curl|上斜弯举
+incline fly|上斜飞鸟
+decline press|下斜推举
+decline fly|下斜飞鸟
+decline crunch|下斜卷腹
+close grip bench press|窄握卧推
+wide grip pull up|宽握引体向上
+reverse grip curl|反手弯举
+neutral grip pull up|对握引体向上
+hammer curl|锤式弯举
+preacher curl|牧师凳弯举
+concentration curl|集中弯举
+zottman curl|佐特曼弯举
+wrist curl|腕弯举
+skull crusher|仰卧臂屈伸
+overhead triceps extension|颈后臂屈伸
+triceps pushdown|绳索下压
+triceps kickback|俯身臂屈伸
+lateral raise|侧平举
+front raise|前平举
+rear delt raise|俯身飞鸟
+face pull|面拉
+upright row|直立划船
+bent over row|俯身划船
+lat pulldown|高位下拉
+straight arm pulldown|直臂下拉
+pull up|引体向上
+chin up|反手引体向上
+push up|俯卧撑
+dip|臂屈伸
+muscle up|双力臂
+handstand|倒立
+l sit|L坐
+planche|水平支撑
+front lever|前水平
+human flag|人体旗帜
+dragon flag|龙旗
+toes to bar|脚触杠
+hanging leg raise|悬垂举腿
+plank|平板支撑
+side plank|侧平板支撑
+crunch|卷腹
+sit up|仰卧起坐
+leg raise|举腿
+russian twist|俄罗斯转体
+mountain climber|登山跑
+burpee|波比跳
+box jump|跳箱
+jump squat|跳蹲
+kettlebell swing|壶铃摆荡
+goblet squat|高脚杯深蹲
+front squat|前蹲
+back squat|后蹲
+overhead squat|过头深蹲
+romanian deadlift|罗马尼亚硬拉
+sumo deadlift|相扑硬拉
+hip thrust|臀推
+glute bridge|臀桥
+good morning|早安式
+calf raise|提踵
+leg press|腿举
+leg curl|腿弯举
+leg extension|腿屈伸
+hip abduction|髋外展
+hip adduction|髋内收
+farmer walk|农夫行走
+turkish get up|土耳其起立
+snatch|抓举
+clean|高翻
+jerk|挺举
+thruster|深蹲推举
+wall ball|墙球
+battle rope|战绳
+jump rope|跳绳
+sled push|推雪橇
+tire flip|翻轮胎
+atlas stone|阿特拉斯石球
+log press|圆木推举
+yoke walk|牛轭行走
+sandbag carry|沙袋搬运
+zercher squat|泽奇深蹲
+sissy squat|西西深蹲
+pistol squat|手枪深蹲
+cossack squat|哥萨克深蹲
+bulgarian split squat|保加利亚分腿蹲
+nordic curl|北欧腿弯举
+reverse hyper|反向背起
+back extension|背起
+pallof press|帕洛夫抗旋
+dead bug|死虫式
+bird dog|鸟狗式
+ab wheel|健腹轮
+face pull|面拉
+band pull apart|弹力带拉开
+external rotation|外旋
+cuban press|古巴推举
+arnold press|阿诺德推举
+military press|实力推
+push press|借力推
+z press|Z推
+landmine press|地雷杠推举
+floor press|地板卧推
+incline bench press|上斜卧推
+decline bench press|下斜卧推
+dumbbell fly|哑铃飞鸟
+cable fly|绳索飞鸟
+pullover|仰卧臂上拉
+skull crusher|仰卧臂屈伸
+preacher curl|牧师凳弯举
+hammer curl|锤式弯举
+concentration curl|集中弯举
+zottman curl|佐特曼弯举
+reverse curl|反手弯举
+wrist curl|腕弯举
+upright row|直立划船
+pendlay row|潘德雷划船
+seal row|海豹划船
+t bar row|T杠划船
+single arm dumbbell row|单臂哑铃划船
+chest supported row|胸托划船
+lat pulldown|高位下拉
+assisted pull up|辅助引体向上
+weighted pull up|负重引体向上
+inverted row|反向划船
+ring dip|吊环臂屈伸
+bench dip|凳上臂屈伸
+pike push up|折刀俯卧撑
+diamond push up|钻石俯卧撑
+archer push up|射手俯卧撑
+hindu push up|印度俯卧撑
+handstand push up|倒立撑
+one arm push up|单臂俯卧撑
+clap push up|击掌俯卧撑
+jumping pull up|跳跃引体向上
+kipping pull up|借力引体向上
+strict pull up|严式引体向上
+chest to bar pull up|胸贴杠引体
+muscle up|双力臂
+bar muscle up|单杠双力臂
+ring muscle up|吊环双力臂
+l sit|L坐
+v sit|V字坐
+tuck planche|团身水平支撑
+front lever|前水平
+back lever|后水平
+human flag|人体旗帜
+dragon flag|龙旗
+toes to bar|脚触杠
+hanging windshield wiper|悬垂雨刷
+hollow body|空心
+arch body|反弓
+superman hold|超人保持
+bird dog|鸟狗式
+dead bug|死虫式
+side plank|侧平板支撑
+copenhagen plank|哥本哈根侧桥
+ab rollout|健腹轮
+stir the pot|搅拌锅
+v up|V字两头起
+russian twist|俄罗斯转体
+wood chop|伐木
+pallof press|帕洛夫抗旋
+glute bridge|臀桥
+hip thrust|臀推
+frog pump|蛙式臀推
+single leg hip thrust|单腿臀推
+single leg glute bridge|单腿臀桥
+donkey kick|驴踢
+fire hydrant|消防栓式
+clamshell|蚌式
+monster walk|怪兽步
+lateral band walk|弹力带侧向走
+hip airplane|髋飞机
+calf raise|提踵
+seated calf raise|坐姿提踵
+standing calf raise|站姿提踵
+donkey calf raise|驴式提踵
+tibialis raise|胫前上抬
+leg curl|腿弯举
+leg extension|腿屈伸
+hack squat|哈克深蹲
+sissy squat|西西深蹲
+pendulum squat|钟摆深蹲
+belt squat|腰带深蹲
+leg press|腿举
+hip abduction machine|器械髋外展
+hip adduction machine|器械髋内收
+back extension|背起
+reverse hyperextension|反向背起
+glute ham raise|臀腿举
+nordic hamstring curl|北欧腿弯举
+good morning|早安式
+romanian deadlift|罗马尼亚硬拉
+stiff leg deadlift|直腿硬拉
+sumo deadlift|相扑硬拉
+conventional deadlift|传统硬拉
+trap bar deadlift|六角杠硬拉
+deficit deadlift|赤字硬拉
+rack pull|架上拉
+snatch grip deadlift|宽握硬拉
+jefferson deadlift|杰斐逊硬拉
+zercher deadlift|泽奇硬拉
+single leg romanian deadlift|单腿罗马尼亚硬拉
+b stance romanian deadlift|B式错步罗马尼亚硬拉
+kickstand romanian deadlift|踢腿站罗马尼亚硬拉
+suitcase deadlift|单侧硬拉
+front squat|前蹲
+back squat|后蹲
+overhead squat|过头深蹲
+goblet squat|高脚杯深蹲
+zercher squat|泽奇深蹲
+anderson squat|安德森深蹲
+cossack squat|哥萨克深蹲
+pistol squat|手枪深蹲
+pause squat|暂停深蹲
+box squat|箱式深蹲
+high bar squat|高杠深蹲
+low bar squat|低杠深蹲
+safety bar squat|安全杠深蹲
+air squat|徒手深蹲
+jump squat|跳蹲
+split squat|分腿蹲
+bulgarian split squat|保加利亚分腿蹲
+rear foot elevated split squat|后脚垫高分腿蹲
+walking lunge|行走弓步
+reverse lunge|反向弓步
+lateral lunge|侧弓步
+curtsy lunge|屈膝礼弓步
+step up|登阶
+step down|下台阶
+box jump|跳箱
+broad jump|立定跳远
+depth jump|跳深
+burpee|波比跳
+mountain climber|登山跑
+jumping jack|开合跳
+high knees|高抬腿
+butt kicks|后踢臀
+skater hop|滑冰跳
+tuck jump|团身跳
+star jump|星形跳
+jump rope|跳绳
+double under|双摇
+battle ropes|战绳
+wall ball|墙球
+ball slam|砸球
+kettlebell swing|壶铃摆荡
+kettlebell clean|壶铃高翻
+kettlebell snatch|壶铃抓举
+turkish get up|土耳其起立
+farmer carry|农夫行走
+suitcase carry|单侧农夫走
+yoke carry|牛轭行走
+sandbag carry|沙袋搬运
+atlas stone load|阿特拉斯石球
+tire flip|翻轮胎
+sled push|推雪橇
+sled pull|拉雪橇
+rope climb|爬绳
+log press|圆木推举
+axle press|粗杠推举
+viking press|维京推举
+hercules hold|赫拉克勒斯保持
+thruster|深蹲推举
+cluster|复合
+man maker|男人制造者
+devil press|魔鬼推举
+snatch|抓举
+power snatch|高抓
+hang snatch|悬垂抓举
+muscle snatch|力量抓
+squat snatch|下蹲抓
+clean and jerk|挺举
+power clean|高翻
+hang clean|悬垂高翻
+squat clean|下蹲翻
+muscle clean|力量翻
+push jerk|借力挺
+split jerk|分腿挺
+push press|借力推
+jerk|挺举
+clean|高翻
+press|推举
+bench press|卧推
+incline bench press|上斜卧推
+decline bench press|下斜卧推
+close grip bench press|窄握卧推
+dumbbell bench press|哑铃卧推
+overhead press|过头推举
+shoulder press|肩推
+arnold press|阿诺德推举
+military press|实力推
+lateral raise|侧平举
+front raise|前平举
+rear delt fly|俯身飞鸟
+upright row|直立划船
+face pull|面拉
+shrug|耸肩
+bent over row|俯身划船
+pendlay row|潘德雷划船
+seal row|海豹划船
+t bar row|T杠划船
+single arm row|单臂划船
+chest supported row|胸托划船
+lat pulldown|高位下拉
+straight arm pulldown|直臂下拉
+pull up|引体向上
+chin up|反手引体向上
+neutral grip chin up|对握反手引体
+inverted row|反向划船
+push up|俯卧撑
+diamond push up|钻石俯卧撑
+pike push up|折刀俯卧撑
+handstand push up|倒立撑
+dip|臂屈伸
+ring dip|吊环臂屈伸
+bench dip|凳上臂屈伸
+muscle up|双力臂
+biceps curl|弯举
+hammer curl|锤式弯举
+preacher curl|牧师凳弯举
+concentration curl|集中弯举
+incline dumbbell curl|上斜哑铃弯举
+zottman curl|佐特曼弯举
+reverse curl|反手弯举
+wrist curl|腕弯举
+triceps extension|臂屈伸
+overhead triceps extension|颈后臂屈伸
+skull crusher|仰卧臂屈伸
+triceps pushdown|绳索下压
+triceps kickback|俯身臂屈伸
+close grip push up|窄距俯卧撑
+fly|飞鸟
+cable crossover|绳索夹胸
+pec deck|蝴蝶机夹胸
+pullover|仰卧臂上拉
+deadlift|硬拉
+romanian deadlift|罗马尼亚硬拉
+sumo deadlift|相扑硬拉
+stiff leg deadlift|直腿硬拉
+trap bar deadlift|六角杠硬拉
+good morning|早安式
+hip thrust|臀推
+glute bridge|臀桥
+squat|深蹲
+front squat|前蹲
+goblet squat|高脚杯深蹲
+overhead squat|过头深蹲
+lunge|弓步
+split squat|分腿蹲
+bulgarian split squat|保加利亚分腿蹲
+step up|登阶
+leg press|腿举
+leg curl|腿弯举
+leg extension|腿屈伸
+calf raise|提踵
+hip abduction|髋外展
+hip adduction|髋内收
+back extension|背起
+nordic curl|北欧腿弯举
+sissy squat|西西深蹲
+pistol squat|手枪深蹲
+plank|平板支撑
+side plank|侧平板支撑
+crunch|卷腹
+sit up|仰卧起坐
+hanging leg raise|悬垂举腿
+russian twist|俄罗斯转体
+mountain climber|登山跑
+burpee|波比跳
+jumping jack|开合跳
+box jump|跳箱
+kettlebell swing|壶铃摆荡
+farmer walk|农夫行走
+snatch|抓举
+clean and jerk|挺举
+thruster|深蹲推举
+push press|借力推
+power clean|高翻
+hang clean|悬垂高翻
+turkish get up|土耳其起立
+face pull|面拉
+lat pulldown|高位下拉
+pull up|引体向上
+push up|俯卧撑
+bench press|卧推
+romanian deadlift|罗马尼亚硬拉
+barbell curl|杠铃弯举
+dumbbell curl|哑铃弯举
+dumbbell press|哑铃推举
+dumbbell row|哑铃划船
+dumbbell fly|哑铃飞鸟
+dumbbell lunge|哑铃弓步
+dumbbell squat|哑铃深蹲
+cable row|绳索划船
+cable fly|绳索飞鸟
+cable curl|绳索弯举
+cable crunch|绳索卷腹
+cable pull through|绳索拉通
+smith squat|史密斯深蹲
+smith press|史密斯推举
+lever row|杠杆划船
+lever press|杠杆推举
+lever fly|杠杆飞鸟
+band pull apart|弹力带拉开
+resistance band row|阻力带划船
+resistance band press|阻力带推举
+resistance band squat|阻力带深蹲
+kettlebell press|壶铃推举
+kettlebell row|壶铃划船
+kettlebell clean|壶铃高翻
+kettlebell snatch|壶铃抓举
+kettlebell swing|壶铃摆荡
+ez bar curl|EZ杠弯举
+ez bar skullcrusher|EZ杠仰卧臂屈伸
+trap bar deadlift|六角杠硬拉
+landmine press|地雷杠推举
+landmine row|地雷杠划船
+landmine squat|地雷杠深蹲
+medicine ball slam|砸药球
+medicine ball twist|药球转体
+stability ball crunch|稳定球卷腹
+stability ball pike|稳定球折刀
+bosu squat|BOSU深蹲
+bosu push up|BOSU俯卧撑
+suspension row|悬挂带划船
+suspension push up|悬挂带俯卧撑
+suspension squat|悬挂带深蹲
+ab wheel rollout|健腹轮
+foam roller|泡沫轴
+plate pinch|捏片
+wrist roller|腕力器
+sled push|推雪橇
+battle rope slam|战绳砸击
+jump rope|跳绳
+box jump|跳箱
+burpee|波比跳
+mountain climber|登山跑
+high knees|高抬腿
+jumping jack|开合跳
+skater jump|滑冰跳
+tuck jump|团身跳
+broad jump|立定跳远
+depth jump|跳深
+star jump|星形跳
+squat jump|蹲跳
+lunge jump|弓步跳
+split jump|分腿跳
+lateral jump|侧向跳
+single leg hop|单腿跳
+double leg hop|双腿跳
+pogo hop|弹性跳
+ankle hop|踝跳
+line hop|跨线跳
+cone hop|绕桶跳
+ladder drill|绳梯
+agility ladder|敏捷梯
+shuttle sprint|折返冲刺
+hill sprint|冲坡
+sprint|冲刺
+jog|慢跑
+run|跑
+walk|走
+march|踏步
+skip|跳步
+bound|跨步跳
+gallop|侧向跑
+carioca|卡里奥卡步
+grapevine|交叉步
+backpedal|倒退跑
+side shuffle|侧滑步
+defensive slide|防守滑步
+jumping jack|开合跳
+seal jack|海豹开合跳
+plank jack|平板开合跳
+squat jack|深蹲开合跳
+star jack|星形开合跳
+power jack|爆发开合跳
+half jack|半开合跳
+cross jack|交叉开合跳
+split jack|分腿开合跳
+rotational jack|转体开合跳
+clap jack|击掌开合跳
+inchworm|寸虫
+bear crawl|熊爬
+crab walk|蟹步
+duck walk|鸭步
+spiderman crawl|蜘蛛爬
+commando crawl|匍匐
+army crawl|军式爬
+lateral crawl|侧向爬
+forward crawl|向前爬
+backward crawl|向后爬
+animal flow|动物流
+sun salutation a|拜日式A
+sun salutation b|拜日式B
+sun salutation c|拜日式C
+vinyasa|流动串联
+chaturanga|四柱式
+upward dog|上犬式
+downward dog|下犬式
+three legged dog|三腿下犬式
+wild thing|野式
+side plank|侧平板
+crow|乌鸦式
+side crow|侧乌鸦
+eagle|鹰式
+tree|树式
+warrior 1|战士一式
+warrior 2|战士二式
+warrior 3|战士三式
+reverse warrior|反战士式
+humble warrior|谦卑战士式
+triangle|三角式
+revolved triangle|扭转三角式
+extended side angle|伸展侧角式
+revolved side angle|扭转侧角式
+half moon|半月式
+revolved half moon|扭转半月式
+chair|幻椅式
+revolved chair|扭转幻椅式
+standing forward fold|站立前屈
+wide leg forward fold|宽腿前屈
+pyramid|金字塔式
+revolved pyramid|扭转金字塔式
+low lunge|低弓步
+high lunge|高弓步
+crescent lunge|新月弓步
+twisted lunge|扭转弓步
+lizard|蜥蜴式
+twisted lizard|扭转蜥蜴式
+pigeon|鸽子式
+double pigeon|双鸽式
+king pigeon|王鸽式
+cow face|牛面式
+eagle arms|鹰式手臂
+garland|花环式
+malasana|花环式
+happy baby|快乐婴儿式
+supine pigeon|仰卧鸽子式
+bridge|桥式
+wheel|轮式
+camel|骆驼式
+bow|弓式
+locust|蝗虫式
+cobra|眼镜蛇式
+sphinx|狮身人面式
+fish|鱼式
+plow|犁式
+shoulder stand|肩倒立
+headstand|头倒立
+supported headstand|支撑头倒立
+forearm stand|前臂倒立
+scorpion|蝎式
+peacock|孔雀式
+crow pose|乌鸦式
+crane|鹤式
+firefly|萤火虫式
+eight angle|八角式
+compass|圆规式
+bird of paradise|天堂鸟式
+dancer|舞王式
+lord of the dance|舞王式
+tree pose|树式
+mountain|山式
+standing|站姿
+seated|坐姿
+supine|仰卧
+prone|俯卧
+kneeling|跪姿
+half kneeling|半跪
+tall kneeling|高跪
+quadruped|四点支撑
+all fours|四点支撑
+hook lying|屈膝仰卧
+long sitting|直腿坐
+cross legged|盘腿
+easy pose|安坐
+thunderbolt|金刚坐
+hero|英雄式
+staff|手杖式
+bound angle|束角式
+seated forward fold|坐姿前屈
+head to knee|头触膝
+revolved head to knee|头膝扭转式
+marichi|马里奇式
+half lord of the fishes|半鱼王式
+sage twist|智者扭转
+bharadvaja|巴拉瓦贾式
+cow face pose|牛面式
+boat|船式
+half boat|半船式
+full boat|全船式
+low boat|低船式
+navasana|船式
+plank pose|平板式
+chaturanga dandasana|四柱支撑
+upward facing dog|上犬式
+downward facing dog|下犬式
+three legged downward dog|三腿下犬式
+puppy pose|小狗式
+dolphin|海豚式
+dolphin plank|海豚平板
+forearm plank|前臂平板
+high plank|高手平板
+low plank|低平板
+reverse table|反向桌式
+table top|桌式
+bird dog|鸟狗式
+dead bug|死虫式
+glute bridge|臀桥
+happy baby|快乐婴儿式
+knees to chest|抱膝
+supine twist|仰卧扭转
+reclined butterfly|仰卧蝴蝶
+legs up the wall|靠墙倒箭式
+waterfall|瀑布式
+waterfall pose|瀑布式
+child|婴儿式
+extended child|延展婴儿式
+thread the needle|穿针式
+cat|猫式
+cow|牛式
+cat cow|猫牛式
+sphinx|狮身人面式
+cobra|眼镜蛇式
+up dog|上犬式
+locust|蝗虫式
+bow pose|弓式
+camel pose|骆驼式
+bridge pose|桥式
+wheel pose|轮式
+fish pose|鱼式
+plow pose|犁式
+shoulderstand|肩倒立
+headstand|头倒立
+crow|乌鸦式
+eagle|鹰式
+tree|树式
+warrior one|战士一式
+warrior two|战士二式
+warrior three|战士三式
+triangle pose|三角式
+chair pose|幻椅式
+forward fold|前屈
+wide fold|宽腿前屈
+pigeon pose|鸽子式
+lizard pose|蜥蜴式
+frog|蛙式
+half frog|半蛙式
+full frog|全蛙式
+sleeping pigeon|卧鸽式
+figure four stretch|四字拉伸
+ankle to knee|踝触膝
+reclined figure four|仰卧四字
+standing figure four|站立四字式
+dancers pose|舞王式
+half moon pose|半月式
+extended side angle pose|伸展侧角式
+revolved side angle|扭转侧角式
+revolved triangle|扭转三角式
+humble warrior|谦卑战士式
+reverse warrior|反战士式
+goddess|女神式
+horse stance|马步
+sumo stance|相扑站姿
+cossack|哥萨克
+skandasana|侧弓式
+monkey pose|猴式
+full split|全劈叉
+half split|半劈叉
+front split|前劈叉
+middle split|横叉
+hanuman|猴神式
+compass pose|圆规式
+bird of paradise pose|天堂鸟式
+side crow|侧乌鸦
+eight angle pose|八角式
+firefly pose|萤火虫式
+peacock pose|孔雀式
+scorpion pose|蝎式
+forearm scorpion|前臂蝎式
+chin stand|下巴倒立
+tripod headstand|三脚头倒立
+supported shoulder stand|支撑肩倒立
+plow|犁式
+ear pressure|耳压式
+fish|鱼式
+bridge|桥式
+wheel|轮式
+upward bow|轮式
+one leg wheel|单腿轮式
+camel|骆驼式
+rabbit|兔式
+child pose|婴儿式
+puppy|小狗式
+dolphin pose|海豚式
+down dog split|下犬分腿
+three leg dog|三腿下犬式
+wild thing pose|野式
+fallen triangle|坠落三角
+visvamitrasana|圣人平衡式
+flying pigeon|飞鸽式
+arm balance|手臂平衡
+handstand|倒立
+pincha|孔雀羽式
+forearm balance|前臂平衡
+headstand prep|头倒立准备
+dolphin kick|海豚踢
+crow to chaturanga|乌鸦接四柱
+jump through|跳穿
+jump back|跳回
+l sit lift|L坐上提
+tuck jump through|团身跳穿
+straddle sit|分腿坐
+straddle fold|分腿前屈
+pancake|薄饼拉伸
+middle split|横叉
+front split|前劈叉
+half split|半劈叉
+runner stretch|弓步拉伸
+low lunge stretch|低弓步拉伸
+high lunge arms up|高弓步举臂
+crescent pose|新月式
+warrior i|战士一式
+warrior ii|战士二式
+warrior iii|战士三式
+triangle|三角式
+extended triangle|伸展三角式
+revolved triangle pose|扭转三角式
+side angle|侧角式
+extended side angle|伸展侧角式
+half moon|半月式
+standing balance|站立平衡
+tree pose|树式
+eagle pose|鹰式
+dancer pose|舞王式
+warrior 3|战士三式
+half moon pose|半月式
+sugarcane|甘蔗式
+bird of paradise|天堂鸟式
+bound side angle|束角侧伸
+bound triangle|束三角
+cow face arms|牛面式手臂
+eagle wrap|鹰式缠臂
+garudasana|鹰式
+vrksasana|树式
+virabhadrasana|战士式
+trikonasana|三角式
+utkatasana|幻椅式
+uttanasana|站立前屈
+adho mukha svanasana|下犬式
+urdhva mukha svanasana|上犬式
+bhujangasana|眼镜蛇式
+salabhasana|蝗虫式
+dhanurasana|弓式
+ustrasana|骆驼式
+setu bandhasana|桥式
+urdhva dhanurasana|轮式
+matsyasana|鱼式
+halasana|犁式
+sarvangasana|肩倒立
+sirsasana|头倒立
+bakasana|乌鸦式
+pincha mayurasana|孔雀羽式
+navasana|船式
+paschimottanasana|坐姿前屈
+janu sirsasana|头触膝式
+ardha matsyendrasana|半鱼王式
+gomukhasana|牛面式
+baddha konasana|束角式
+upavistha konasana|宽角式
+malasana|花环式
+anjaneyasana|低弓步式
+ashwa sanchalanasana|骑马式
+virasana|英雄式
+vajrasana|金刚坐
+balasana|婴儿式
+bitilasana|牛式
+marjaryasana|猫式
+adho mukha|下犬
+urdhva mukha|上犬
+savasana|摊尸式
+supta baddha konasana|仰卧束角
+supta padangusthasana|仰卧抓趾
+ananda balasana|快乐婴儿式
+apanasana|抱膝式
+jathara parivartanasana|仰卧扭转
+parsva balasana|穿针式
+utthan pristhasana|飞蜥式
+eka pada rajakapotasana|鸽王式
+hanumanasana|猴神式
+natarajasana|舞王式
+ardha chandrasana|半月式
+parivrtta trikonasana|扭转三角式
+parsvakonasana|侧角式
+parivrtta parsvakonasana|扭转侧角式
+prasarita padottanasana|宽站距前屈
+utthita trikonasana|伸展三角式
+utthita parsvakonasana|伸展侧角式
+virabhadrasana i|战士一式
+virabhadrasana ii|战士二式
+virabhadrasana iii|战士三式
+vinyasa flow|流动串联
+sun a|拜日式A
+sun b|拜日式B
+chair pose utkatasana v 2|幻椅式变式二
+chair pose utkatasana|幻椅式
+default pose|基础站姿
+dolphin pose|海豚式
+half boat|半船式
+half frog|半蛙式
+happy baby pose|快乐婴儿式
+moving child pose|动态婴儿式
+straight angle yoga pose|直角式
+animal resting yoga pose|兽息式
+crocodile yoga pose|鳄鱼式
+rowing boat yoga pose|划船式
+standing seal yoga pose|立海豹式
+swaying palm tree yoga pose|摇棕榈式
+the eagle yoga pose|鹰式
+tiger yoga pose|虎式
+warrior ii yoga pose|战士二式
+warrior pose ii|战士二式
+warrior iii pose|战士三式
+low lunge yoga pose anjaneyasana i|低弓步式
+sitting yoga pose siddhasana|悉达坐
+supported headstand yoga pose sirsasana|支撑头倒立
+forearms stand yoga pose pincha mayurasana|前臂倒立
+cow yoga pose bitilasana|牛式
+cow face yoga pose gomukhasana|牛面式
+flying lizard yoga pose utthan pristhasana|飞蜥式
+yoga vajrasana thunderbolt diamond pose|金刚坐
+humble warrior pose|谦卑战士式
+reverse warrior pose|反战士式
+sage marichi i pose marichyasana|马里奇式
+bird of paradise pose svarga dvijasana|天堂鸟式
+wheel pose urdhva dhanurasana|轮式
+one legged upward bow pose eka pada urdhva dhanurasana|单腿轮式
+two legged inverted staff pose dwi pada viparita dandasana|双腿反手杖式
+dragonfly pose maksikanagasana|蜻蜓式
+pavanamuktasana yoga pose|风释式
+ardha matsyendrasana yoga pose|半鱼王式
+namaskarasana yoga pose|合掌式
+chaturanga dandasana four limbed staff pose|四柱支撑
+locust yoga pose iron man pose|蝗虫式
+supine spinal twist yoga pose|仰卧扭转式
+shoulder stand yoga pose|肩倒立
+plow yoga pose|犁式
+bow yoga pose|弓式
+cobra yoga pose|眼镜蛇式
+full lotus yoga pose|全莲花式
+butterfly yoga pose|蝴蝶式
+lotus yoga pose padmasana|莲花式
+fish pose matsyasana|鱼式
+garland pose malasana|花环式
+half moon pose ardha chandrasana|半月式
+hero pose virasana|英雄式
+tree pose vrksasana|树式
+triangle pose trikonasana|三角式
+warrior pose i virabhadrasana|战士一式
+warrior pose virabhadrasana v 2|战士式变式二
+downward facing dog adho mukha svanasana|下犬式
+hands to feet pada hastasana|手触脚式
+standing forward bend uttanasana|站立前屈
+wide legged forward bend prasarita padottanasana|宽站距前屈
+spread leg forward fold upavista konasana|宽腿前屈式
+revolved side angle pose parivrtta parsvakonasana|扭转侧角式
+crane pose bakasana|鹤式
+crescent moon pose|新月式
+boat yoga pose|船式
+cat pose|猫式
+child pose|婴儿式
+camel pose ustrasana|骆驼式
+camel pose|骆驼式
+bridge pose setu bandhasana|桥式
+frog pose mandukasana|蛙式
+peacock pose mayurasana|孔雀式
+half frog pose ardha bhekasana|半蛙式
+eagle pose garudasana|鹰式
+dancer pose natarajasana|舞王式
+corpse pose savasana|摊尸式
+mountain pose|山式
+puppy pose|小狗式
+pyramid pose|金字塔式
+lizard pose|蜥蜴式
+double pigeon pose|双鸽式
+happy baby pose|快乐婴儿式
+thread the needle pose|穿针式
+revolved triangle pose|扭转三角式
+revolved head to knee pose|头膝扭转式
+twisted leg lunge pose|扭转弓步式
+standing figure four pose|站立四字式
+3 leg dog pose|三腿下犬式
+3 leg chaturanga pose|三腿四柱式
+tiger curl pose|虎式屈伸
+child to cobra pose|婴儿式接眼镜蛇式
+push up in child pose|婴儿式俯卧撑
+kneeling push up to child pose|跪姿俯卧撑接婴儿式
+butterfly yoga flaps|蝴蝶拍腿
+crab pose|蟹式
+extended side angle yoga pose|伸展侧角式
+lotus pose breathing|莲花式呼吸
+legs up the wall yoga pose|靠墙倒箭式
+prayer squat yoga pose|祈祷深蹲式
+reclining big toe pose with rope|仰卧抓趾式
+seated wide angle pose sequence|坐姿宽角式
+standing pose form check front view|站立体式（正面）
+standing pose form check side view|站立体式（侧面）
+bridge pose yoga stretch|桥式拉伸
+wheel pose yoga pose|轮式
+half boat pose ardha navasana|半船式

@@ -1,0 +1,87 @@
+{
+  "source": "open-fitness",
+  "license": "MIT",
+  "note": "Paths traced for OpenFitness on top of @musclemap/assets 1.1.0. They fill hip-flexors, serratus, and upper-back, which that package does not draw as highlightable catalogue regions. Serratus is four rib slips in the skin notch under the chest and lateral to the abs. Upper back is the rhomboid sheet between the spine and the medial scapula, clipped off the trapezius and the lats. Coordinates use viewBox 0 0 1024 1536. A mirrored right path is generated for every left path.",
+  "diagrams": {
+    "male-front": [
+      {
+        "group": "HIP_FLEXORS",
+        "id": "HIP_FLEXOR_LEFT",
+        "mirror": true,
+        "d": "M446 708 L468 700 L484 722 L492 748 L474 774 L456 760 L440 730 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M403 446 L404 447 L407 449 L411 451 L415 453 L420 455 L399 457 L364 458 L364 456 L364 454 L378 452 L374 450 L371 448 L368 446 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M399 462 L399 463 L400 465 L401 467 L402 469 L403 471 L404 473 L369 472 L368 470 L367 468 L366 466 L365 464 L364 462 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M406 477 L396 478 L396 480 L396 482 L396 484 L396 486 L396 488 L373 487 L372 485 L371 483 L370 481 L369 479 L369 477 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M397 492 L397 493 L398 495 L398 497 L399 499 L400 501 L401 503 L380 502 L379 500 L378 498 L377 496 L376 494 L375 492 Z"
+      }
+    ],
+    "female-front": [
+      {
+        "group": "HIP_FLEXORS",
+        "id": "HIP_FLEXOR_LEFT",
+        "mirror": true,
+        "d": "M450 694 L474 686 L492 712 L486 750 L464 758 L446 730 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M409 424 L410 425 L411 426 L412 427 L413 428 L414 429 L415 430 L416 431 L417 432 L419 433 L394 433 L394 432 L394 431 L394 430 L394 429 L394 428 L393 427 L393 426 L393 425 L393 424 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M420 434 L422 435 L424 436 L426 437 L428 438 L430 439 L433 440 L437 441 L398 441 L396 440 L395 439 L395 438 L395 437 L395 436 L395 435 L395 434 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M448 445 L448 446 L448 447 L448 448 L448 449 L448 450 L448 451 L448 452 L448 453 L448 454 L399 454 L420 453 L421 452 L422 451 L424 450 L426 449 L429 448 L431 447 L434 446 L437 445 Z"
+      },
+      {
+        "group": "SERRATUS",
+        "id": "SERRATUS_LEFT",
+        "mirror": true,
+        "d": "M423 455 L423 456 L423 457 L423 458 L423 459 L423 460 L424 461 L424 462 L424 463 L425 464 L425 465 L426 466 L426 467 L427 468 L427 469 L428 470 L404 470 L404 469 L404 468 L403 467 L403 466 L403 465 L402 464 L402 463 L402 462 L401 461 L401 460 L401 459 L400 458 L400 457 L400 456 L400 455 Z"
+      }
+    ],
+    "male-back": [
+      {
+        "group": "BACK_UPPER",
+        "id": "UPPER_BACK_LEFT",
+        "mirror": true,
+        "d": "M392 353 L388 356 L385 359 L382 362 L380 365 L377 368 L373 371 L371 374 L369 377 L366 380 L364 383 L362 386 L359 389 L358 392 L358 395 L359 398 L360 401 L360 404 L361 407 L363 410 L364 413 L366 416 L367 419 L369 422 L371 425 L373 428 L375 431 L377 434 L381 437 L385 440 L390 443 L404 446 L410 446 L426 443 L429 440 L434 437 L436 434 L436 431 L436 428 L437 425 L436 422 L436 419 L435 416 L435 413 L434 410 L434 407 L433 404 L432 401 L432 398 L431 395 L430 392 L429 389 L428 386 L426 383 L424 380 L422 377 L422 374 L420 371 L418 368 L416 365 L414 362 L411 359 L406 356 L402 353 Z"
+      }
+    ],
+    "female-back": [
+      {
+        "group": "BACK_UPPER",
+        "id": "UPPER_BACK_LEFT",
+        "mirror": true,
+        "d": "M419 350 L416 353 L413 356 L410 359 L408 362 L406 365 L403 368 L401 371 L399 374 L396 377 L394 380 L391 383 L388 386 L385 389 L383 392 L380 395 L378 398 L377 401 L376 404 L376 407 L376 410 L377 413 L378 416 L379 419 L380 422 L382 425 L384 428 L386 431 L389 434 L393 437 L397 440 L402 443 L408 446 L416 449 L432 449 L437 446 L439 443 L441 440 L443 437 L444 434 L445 431 L446 428 L447 425 L447 422 L447 419 L447 416 L447 413 L447 410 L447 407 L447 404 L447 401 L446 398 L446 395 L445 392 L445 389 L444 386 L444 383 L443 380 L442 377 L441 374 L440 371 L439 368 L438 365 L437 362 L435 359 L433 356 L430 353 L426 350 Z"
+      }
+    ]
+  }
+}

@@ -22,6 +22,18 @@ import {
   sumNutrients,
 } from './nutrition';
 import {
+  canonicalCatalogId,
+  decodeExerciseCursor,
+  emptyExerciseCatalog,
+  encodeExerciseCursor,
+  exerciseTaxonomy,
+  isCatalogExerciseId,
+  presentExercise,
+  virtualExercise,
+  type ExerciseCatalog,
+} from './exercise-catalog';
+import {
+  bodyPartValues,
   deleteSchema,
   exerciseSchema,
   foodSchema,
@@ -31,6 +43,7 @@ import {
   ingredientsSchema,
   isoDateTime,
   listSchema,
+  movementCategoryValues,
   mutation,
   notes,
   operationId,
@@ -82,6 +95,7 @@ export class FitnessService {
     public repository: Repository,
     public actor: Actor,
     private catalog: FoodCatalog,
+    private exerciseCatalog: ExerciseCatalog = emptyExerciseCatalog,
   ) {
     this.registerOperations();
   }
@@ -322,6 +336,159 @@ export class FitnessService {
       ],
     });
   }
+  private async searchExercises(args: {
+    query?: string;
+    cursor?: string;
+    limit: number;
+    source?: 'all' | 'mine' | 'catalog';
+    bodyPart?: (typeof bodyPartValues)[number];
+    equipment?: string;
+    target?: string;
+    movementCategory?: (typeof movementCategoryValues)[number];
+  }) {
+    const limit = args.limit;
+    const source = args.source ?? 'all';
+    const filters = {
+      query: args.query?.trim() || undefined,
+      bodyPart: args.bodyPart,
+      equipment: args.equipment,
+      target: args.target,
+      movementCategory: args.movementCategory,
+    };
+    let cursor: ReturnType<typeof decodeExerciseCursor> | undefined;
+    if (args.cursor?.trim()) {
+      try {
+        cursor = decodeExerciseCursor(args.cursor);
+      } catch {
+        throw new AppError(422, 'INVALID_CURSOR');
+      }
+    }
+    if (source !== 'catalog' && (!cursor || cursor.phase === 'mine')) {
+      const owned = await this.repository.searchOwnedExercises<Exercise>(this.actor.ownerId, {
+        ...filters,
+        limit,
+        ...(cursor?.phase === 'mine' ? { cursor: { date: cursor.date, id: cursor.id } } : {}),
+      });
+      if (source === 'mine') {
+        return {
+          items: owned.items,
+          cursor: owned.cursor
+            ? encodeExerciseCursor({ phase: 'mine', date: owned.cursor.date, id: owned.cursor.id })
+            : null,
+        };
+      }
+      if (owned.cursor) {
+        return {
+          items: owned.items,
+          cursor: encodeExerciseCursor({
+            phase: 'mine',
+            date: owned.cursor.date,
+            id: owned.cursor.id,
+          }),
+        };
+      }
+      const remaining = limit - owned.items.length;
+      if (remaining <= 0) {
+        return { items: owned.items, cursor: encodeExerciseCursor({ phase: 'catalog' }) };
+      }
+      const catalog = await this.exerciseCatalog.search({
+        ...filters,
+        ownerId: this.actor.ownerId,
+        limit: remaining,
+      });
+      return {
+        items: [
+          ...owned.items,
+          ...catalog.items.map((item) => virtualExercise(item, this.actor.locale)),
+        ],
+        cursor: catalog.cursor
+          ? encodeExerciseCursor({ phase: 'catalog', ...catalog.cursor })
+          : null,
+      };
+    }
+    const catalogCursor = cursor?.phase === 'catalog' && 'mode' in cursor ? cursor : undefined;
+    const catalog = await this.exerciseCatalog.search({
+      ...filters,
+      ownerId: this.actor.ownerId,
+      limit,
+      cursor: catalogCursor,
+    });
+    return {
+      items: catalog.items.map((item) => virtualExercise(item, this.actor.locale)),
+      cursor: catalog.cursor ? encodeExerciseCursor({ phase: 'catalog', ...catalog.cursor }) : null,
+    };
+  }
+  private async readExercise(exerciseId: string) {
+    const owned = await this.repository.get<Exercise>(this.actor.ownerId, 'exercise', exerciseId);
+    if (owned) return owned;
+    const catalogId = canonicalCatalogId(exerciseId);
+    if (!catalogId || !isCatalogExerciseId(catalogId)) throw notFound();
+    const record = await this.exerciseCatalog.get(catalogId);
+    if (!record) throw notFound();
+    return virtualExercise(record, this.actor.locale);
+  }
+  private async resolveExerciseForWrite(
+    exerciseId: string,
+    pending: Map<string, { entity: Entity<Exercise>; expectedVersion?: number }>,
+  ): Promise<{
+    snapshot: Exercise;
+    adoption?: { entity: Entity<Exercise>; expectedVersion?: number };
+  }> {
+    const already = pending.get(exerciseId);
+    if (already) return { snapshot: already.entity.data };
+    const owned = await this.repository.get<Exercise>(this.actor.ownerId, 'exercise', exerciseId);
+    if (owned) return { snapshot: owned.data };
+    const catalogId = canonicalCatalogId(exerciseId);
+    if (!catalogId || !isCatalogExerciseId(catalogId)) throw notFound();
+    const record = await this.exerciseCatalog.get(catalogId);
+    if (!record) throw notFound();
+    const data = presentExercise(record.data, this.actor.locale, record.i18n);
+    const raw = await this.repository.getAny<Exercise>(this.actor.ownerId, 'exercise', catalogId);
+    const now = new Date().toISOString();
+    if (raw?.deleted) {
+      const { deleted: _deleted, ...rest } = raw;
+      const adoption = {
+        entity: { ...rest, version: raw.version + 1, data, updatedAt: now },
+        expectedVersion: raw.version,
+      };
+      pending.set(catalogId, adoption);
+      return { snapshot: data, adoption };
+    }
+    if (raw) return { snapshot: raw.data };
+    const adoption = {
+      entity: {
+        id: catalogId,
+        kind: 'exercise' as const,
+        version: 1,
+        data,
+        createdAt: now,
+        updatedAt: now,
+      },
+    };
+    pending.set(catalogId, adoption);
+    return { snapshot: data, adoption };
+  }
+  private withAdoptions(
+    prepared: Prepared,
+    adopted: { entity: Entity<Exercise>; expectedVersion?: number }[],
+  ): Prepared {
+    if (!adopted.length) return prepared;
+    const response =
+      prepared.response && typeof prepared.response === 'object'
+        ? {
+            ...(prepared.response as Record<string, unknown>),
+            adoptedExercises: adopted.map((item) => item.entity),
+          }
+        : prepared.response;
+    return {
+      ...prepared,
+      response,
+      mutations: [
+        ...adopted.map((item) => ({ entity: item.entity, expectedVersion: item.expectedVersion })),
+        ...prepared.mutations,
+      ],
+    };
+  }
   private registerOperations(): void {
     this.add({
       name: 'get_agent_context',
@@ -340,8 +507,9 @@ export class FitnessService {
         permissions: ['full_business_access'],
         locale: this.actor.locale,
         timeZone: this.actor.timeZone,
-        instructionsVersion: '1',
+        instructionsVersion: '2',
         instructions: t(this.actor.locale, 'botInstructions'),
+        exerciseCatalogAttribution: t(this.actor.locale, 'exerciseCatalogAttribution'),
         capabilities: {
           healthSyncProtocol: 1,
           training: true,
@@ -352,6 +520,7 @@ export class FitnessService {
           healthImport: false,
           imageProcessing: 'provided_by_agent',
           foodCatalog: 'cached_open_food_facts',
+          exerciseCatalog: 'shared_catalog',
         },
       }),
     });
@@ -419,12 +588,16 @@ export class FitnessService {
       const suffix = kind === 'plan' ? 'training_plan' : kind;
       this.add({
         name: `get_${suffix}`,
-        description: `Read one ${kind} and its current version.`,
+        description:
+          kind === 'exercise'
+            ? 'Read one exercise. A cat- id returns the owner copy when it exists, otherwise the shared catalogue record at version 0.'
+            : `Read one ${kind} and its current version.`,
         schema: getSchema,
         readOnly: true,
         method: 'GET',
         path: `/${plural}/:id`,
-        run: async (args) => this.require(kind, args.id),
+        run: async (args) =>
+          kind === 'exercise' ? this.readExercise(args.id) : this.require(kind, args.id),
       });
       if (kind === 'food') {
         this.add({
@@ -452,12 +625,41 @@ export class FitnessService {
             };
           },
         });
+      } else if (kind === 'exercise') {
+        this.add({
+          name: 'search_exercises',
+          description:
+            "List or search this owner's exercises together with the shared catalogue. Owner rows come first. source=mine or source=catalog limits the union. Optional filters are bodyPart, equipment, target, and movementCategory. Catalogue rows use cat- ids and version 0 until adopted.",
+          schema: listSchema.extend({
+            source: z.preprocess(
+              (value) => (value === '' || value === undefined ? 'all' : value),
+              z.enum(['all', 'mine', 'catalog']),
+            ),
+            bodyPart: z.preprocess(
+              (value) => (value === '' ? undefined : value),
+              z.enum(bodyPartValues).optional(),
+            ),
+            equipment: z.preprocess(
+              (value) => (value === '' ? undefined : value),
+              z.string().max(80).optional(),
+            ),
+            target: z.preprocess(
+              (value) => (value === '' ? undefined : value),
+              z.string().max(80).optional(),
+            ),
+            movementCategory: z.preprocess(
+              (value) => (value === '' ? undefined : value),
+              z.enum(movementCategoryValues).optional(),
+            ),
+          }),
+          readOnly: true,
+          method: 'GET',
+          path: '/exercises',
+          run: async (args) => this.searchExercises(args),
+        });
       } else {
         this.add({
-          name:
-            kind === 'recipe' || kind === 'exercise'
-              ? `search_${suffix === 'exercise' ? 'exercises' : suffix + 's'}`
-              : `list_${suffix}s`,
+          name: kind === 'recipe' ? 'search_recipes' : `list_${suffix}s`,
           description: `List or search your ${plural} using cursor pagination.`,
           schema: listSchema,
           readOnly: true,
@@ -513,9 +715,31 @@ export class FitnessService {
         method: 'POST',
         path,
         run: async (args) => {
-          if (kind === 'exercise')
-            for (const assetId of args.data.mediaAssetIds) await this.readyAsset(assetId);
           let data = args.data;
+          if (kind === 'exercise') {
+            if (args.data.source?.kind === 'catalog')
+              throw new AppError(422, 'CATALOG_SOURCE_RESERVED', 'invalidInput');
+            if (typeof args.id === 'string' && args.id.startsWith('cat-')) {
+              const existing = await this.repository.getAny<Exercise>(
+                this.actor.ownerId,
+                'exercise',
+                args.id,
+              );
+              if (!existing || existing.deleted)
+                throw new AppError(422, 'CATALOG_ID_RESERVED', 'invalidInput');
+            }
+            for (const assetId of args.data.mediaAssetIds) await this.readyAsset(assetId);
+            if (args.id) {
+              const current = await this.require<Exercise>('exercise', args.id);
+              if (current.version !== args.expectedVersion) throw conflict();
+              if (current.data.source?.kind === 'catalog' || data.source) {
+                data = {
+                  ...data,
+                  source: { ...current.data.source, ...data.source, kind: 'user' },
+                };
+              }
+            }
+          }
           if (kind === 'food' && args.id) {
             const current = await this.require<Food>('food', args.id);
             if (current.version !== args.expectedVersion) throw conflict();
@@ -526,6 +750,98 @@ export class FitnessService {
         },
       });
     }
+    this.add({
+      name: 'adopt_exercise',
+      description:
+        'Copy a shared catalogue exercise into this owner. Repeating the adoption returns the existing exercise. A soft-deleted copy is restored from the current catalogue entry. Overrides require expectedVersion.',
+      schema: z.object({
+        operationId,
+        id,
+        expectedVersion: z.number().int().positive().optional(),
+        overrides: z
+          .object({
+            name: z.string().min(1).max(200).optional(),
+            aliases: z.array(z.string().max(200)).max(30).optional(),
+            instructions: z.string().max(20000).optional(),
+            notes: z.string().max(10000).optional(),
+          })
+          .optional(),
+      }),
+      readOnly: false,
+      method: 'POST',
+      path: '/exercises/:id/adopt',
+      run: async (args) => {
+        const catalogId = canonicalCatalogId(args.id);
+        if (!catalogId || !isCatalogExerciseId(catalogId)) throw notFound();
+        const record = await this.exerciseCatalog.get(catalogId);
+        if (!record) throw notFound();
+        const current = await this.repository.getAny<Exercise>(
+          this.actor.ownerId,
+          'exercise',
+          catalogId,
+        );
+        const overrides = args.overrides ?? {};
+        const hasOverrides = Object.keys(overrides).length > 0;
+        if (current && !current.deleted && !hasOverrides)
+          return { response: { exercise: current, created: false }, mutations: [] };
+        if (current && !current.deleted && hasOverrides) {
+          assert(args.expectedVersion !== undefined, 'EXPECTED_VERSION_REQUIRED');
+          if (current.version !== args.expectedVersion) throw conflict();
+          const data = { ...current.data, ...overrides };
+          const doc = {
+            ...current,
+            version: current.version + 1,
+            data,
+            updatedAt: new Date().toISOString(),
+          };
+          return {
+            response: { exercise: doc, created: false },
+            mutations: [{ entity: doc, expectedVersion: current.version }],
+          };
+        }
+        const data = {
+          ...presentExercise(record.data, this.actor.locale, record.i18n),
+          ...overrides,
+        };
+        const now = new Date().toISOString();
+        if (current?.deleted) {
+          const { deleted: _deleted, ...rest } = current;
+          const doc = {
+            ...rest,
+            version: current.version + 1,
+            data,
+            updatedAt: now,
+          };
+          return {
+            response: { exercise: doc, created: true },
+            mutations: [{ entity: doc, expectedVersion: current.version }],
+          };
+        }
+        const doc: Entity<Exercise> = {
+          id: catalogId,
+          kind: 'exercise',
+          version: 1,
+          data,
+          createdAt: now,
+          updatedAt: now,
+        };
+        return { response: { exercise: doc, created: true }, mutations: [{ entity: doc }] };
+      },
+    });
+    this.add({
+      name: 'list_exercise_taxonomy',
+      description:
+        'List body parts, equipment, muscles, and movement categories with labels for the owner locale, plus the body-diagram SVG paths and muscle-region ids.',
+      schema: z.object({}),
+      readOnly: true,
+      method: 'GET',
+      path: '/exercise-taxonomy',
+      run: async () => ({
+        ...exerciseTaxonomy(this.actor.locale),
+        attribution: t(this.actor.locale, 'exerciseCatalogAttribution'),
+        diagramNote: t(this.actor.locale, 'exerciseDiagramNote'),
+      }),
+    });
     this.add({
       name: 'lookup_food',
       description:
@@ -638,20 +954,20 @@ export class FitnessService {
     this.add({
       name: 'save_training_plan',
       description:
-        'Create or revise a training plan, including exercise snapshots, target sets, rest periods, and superset groups.',
+        'Create or revise a training plan, including exercise snapshots, target sets, rest periods, and superset groups. A cat- exercise id is adopted into this owner in the same transaction.',
       schema: z.object({ ...mutation, data: planSchema }),
       readOnly: false,
       method: 'POST',
       path: '/training-plans',
       run: async (args) => {
-        const exercises = await Promise.all(
-          args.data.exercises.map(async (entry: any) => ({
-            ...entry,
-            exerciseSnapshot: (await this.require<Exercise>('exercise', entry.exerciseId)).data,
-          })),
-        );
+        const pending = new Map<string, { entity: Entity<Exercise>; expectedVersion?: number }>();
+        const exercises = [];
+        for (const entry of args.data.exercises) {
+          const resolved = await this.resolveExerciseForWrite(entry.exerciseId, pending);
+          exercises.push({ ...entry, exerciseSnapshot: resolved.snapshot });
+        }
         const doc = await this.save<Plan>('plan', { ...args.data, exercises }, args);
-        return this.prepared(doc, args.expectedVersion);
+        return this.withAdoptions(this.prepared(doc, args.expectedVersion), [...pending.values()]);
       },
     });
     this.add({
@@ -903,7 +1219,7 @@ export class FitnessService {
     this.add({
       name: 'log_workout_set',
       description:
-        'Append an actual set, including exercise snapshot, reps, load, duration, distance, and optional effort.',
+        'Append an actual set, including exercise snapshot, reps, load, duration, distance, and optional effort. A cat- exercise id that is not already on the workout plan is adopted in the same transaction.',
       schema: z.object({
         operationId,
         workoutId: id,
@@ -924,10 +1240,13 @@ export class FitnessService {
           ),
           'SET_METRICS_REQUIRED',
         );
-        const exerciseSnapshot =
-          workout.data.plan?.snapshot.exercises.find(
-            (entry) => entry.exerciseId === args.exerciseId,
-          )?.exerciseSnapshot ?? (await this.require<Exercise>('exercise', args.exerciseId)).data;
+        const planned = workout.data.plan?.snapshot.exercises.find(
+          (entry) => entry.exerciseId === args.exerciseId,
+        )?.exerciseSnapshot;
+        const pending = new Map<string, { entity: Entity<Exercise>; expectedVersion?: number }>();
+        const exerciseSnapshot = planned
+          ? planned
+          : (await this.resolveExerciseForWrite(args.exerciseId, pending)).snapshot;
         const set = {
           ...args.set,
           id: crypto.randomUUID(),
@@ -942,7 +1261,7 @@ export class FitnessService {
           { ...workout.data, sets: [...workout.data.sets, set] },
           { id: workout.id, expectedVersion: args.expectedVersion },
         );
-        return this.prepared(doc, args.expectedVersion);
+        return this.withAdoptions(this.prepared(doc, args.expectedVersion), [...pending.values()]);
       },
     });
     this.add({
