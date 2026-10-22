@@ -7,12 +7,22 @@ struct MuscleMapView: View {
   var genderOverride = ""
   var accessibilitySummary: String
   @State private var artwork: [String: MuscleMapArtwork] = [:]
+  @State private var loadedGender = ""
   private var gender: String { genderOverride.isEmpty ? diagram?.gender ?? "male" : genderOverride }
   private var highlights: [DiagramHighlight] { diagram?.highlights?.filter(\.matched) ?? [] }
 
+  private struct ArtworkKey: Hashable {
+    var account: String
+    var supported: Bool
+    var gender: String
+    var views: [String]
+    var highlights: [DiagramHighlight]
+  }
   var body: some View {
-    Group {
-      if model.supportsExerciseCatalog, !highlights.isEmpty, !artwork.isEmpty {
+    VStack(spacing: 0) {
+      if model.supportsExerciseCatalog, !highlights.isEmpty, !artwork.isEmpty,
+        loadedGender == gender
+      {
         HStack(alignment: .top, spacing: 12) {
           ForEach(diagram?.views ?? [], id: \.self) { view in
             if let map = artwork[view] {
@@ -25,14 +35,24 @@ struct MuscleMapView: View {
             }
           }
         }.accessibilityElement(children: .ignore).accessibilityLabel(accessibilitySummary)
+          .accessibilityIdentifier("muscle-map-\(loadedGender)")
       }
     }
-    .task(id: "\(model.accountKey)-\(gender)-\(diagram?.views.joined() ?? "")") {
+    .task(
+      id: ArtworkKey(
+        account: model.accountKey, supported: model.supportsExerciseCatalog, gender: gender,
+        views: diagram?.views ?? [], highlights: highlights)
+    ) {
       artwork = [:]
+      loadedGender = ""
+      let requestedGender = gender
       guard model.supportsExerciseCatalog, !highlights.isEmpty else { return }
       for view in diagram?.views ?? [] {
-        if let value = try? await model.muscleMap(gender: gender, view: view), !Task.isCancelled {
+        if let value = try? await model.muscleMap(gender: requestedGender, view: view),
+          !Task.isCancelled
+        {
           artwork[view] = value
+          loadedGender = requestedGender
         }
       }
     }

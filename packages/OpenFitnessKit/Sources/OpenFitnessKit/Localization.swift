@@ -228,7 +228,7 @@ public enum AppLanguage: String, Codable, CaseIterable, Sendable {
 public struct Localizer: Sendable {
   public var language: AppLanguage
   public init(_ language: AppLanguage = .english) { self.language = language }
-  private var bundle: Bundle {
+  var bundle: Bundle {
     let code = language == .simplifiedChinese ? "zh-hans" : "en"
     let actual = Bundle.module.localizations.first { $0.lowercased() == code } ?? code
     return Bundle(url: Bundle.module.bundleURL.appendingPathComponent(actual + ".lproj"))

@@ -46,7 +46,11 @@ extension AppModel {
             && (query.movementCategory == nil || $0.data.movementCategory == query.movementCategory)
             && (query.target == nil || $0.data.primaryMuscles?.contains(query.target!) == true)
         }
-        return .init(items: items)
+        let start = cursor.flatMap(Int.init) ?? 0
+        let end = min(start + limit, items.count)
+        guard start <= end else { throw APIError("INVALID_CURSOR") }
+        return .init(
+          items: Array(items[start..<end]), cursor: end < items.count ? String(end) : nil)
       }
     #endif
     let owner = accountKey
@@ -72,6 +76,7 @@ extension AppModel {
   }
 
   func cacheExercise(_ value: Record<Exercise>) {
+    guard exerciseDetails[value.id].map({ $0.version <= value.version }) ?? true else { return }
     if exerciseDetails[value.id] == nil, exerciseDetails.count >= 200,
       let first = exerciseDetails.keys.sorted().first
     {
@@ -86,13 +91,16 @@ extension AppModel {
         return exerciseDetails[id] ?? record
       }
     #endif
-    if !isOnline, let cached = exerciseDetails[id] { return cached }
+    if !isOnline {
+      guard let cached = exerciseDetails[id] else { throw APIError("NETWORK_UNAVAILABLE") }
+      return cached
+    }
     let owner = accountKey
     let result = try await api().request(
       Record<Exercise>.self, path: "/api/v1/exercises/\(id.pathSegment)")
     guard owner == accountKey else { throw APIError("ACCOUNT_MISMATCH") }
     cacheExercise(result)
-    return result
+    return exerciseDetails[id] ?? result
   }
 
   func adoptExercise(id: String) async throws -> Record<Exercise> {
@@ -127,6 +135,7 @@ extension AppModel {
       taxonomyCache[key] = cached
       return cached.value
     }
+    guard isOnline else { throw APIError("NETWORK_UNAVAILABLE") }
     do {
       let api = try api()
       await api.setLanguage(language.rawValue)

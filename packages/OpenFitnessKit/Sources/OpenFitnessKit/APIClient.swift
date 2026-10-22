@@ -376,8 +376,10 @@ public actor APIClient {
   }
   public func publicData(path: String) async throws -> Data {
     guard
-      path.range(
-        of: #"^/musclemap/(male|female)-(front|back)\.svg$"#, options: .regularExpression) != nil
+      [
+        "/musclemap/male-front.svg", "/musclemap/male-back.svg",
+        "/musclemap/female-front.svg", "/musclemap/female-back.svg",
+      ].contains(path)
     else { throw APIError("INVALID_ENDPOINT") }
     let url = try server.endpoint(path)
     var request = URLRequest(url: url)

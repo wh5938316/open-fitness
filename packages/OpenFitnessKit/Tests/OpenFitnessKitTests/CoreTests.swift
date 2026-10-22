@@ -317,6 +317,7 @@ private actor PublicArtworkTransport: HTTPTransport {
     "/api/v1/exercises", "https://attacker.example/musclemap/male-front.svg",
     "//attacker.example/musclemap/male-front.svg", "/musclemap/../api/v1/agent-context",
     "/musclemap/%2e%2e/secret.svg", "/musclemap/male-front.svg?token=secret",
+    "/musclemap/male-front.svg\n",
   ] {
     await #expect(throws: APIError.self) { try await api.publicData(path: path) }
   }
@@ -393,5 +394,17 @@ private actor PublicArtworkTransport: HTTPTransport {
   }
   for languages in [["en", "zh-Hans"], ["zh-Hant-TW"], ["ja"], []] {
     #expect(AppLanguage.preferredSystemLanguage(languages) == .english)
+  }
+}
+
+@Test func localizationDictionariesHaveExactlyTheTypedKeys() throws {
+  let expected = Set(CopyKey.allCases.map(\.rawValue))
+  for language in AppLanguage.allCases {
+    let url = try #require(
+      Localizer(language).bundle.url(forResource: "Localizable", withExtension: "strings"))
+    let dictionary = try #require(
+      PropertyListSerialization.propertyList(
+        from: Data(contentsOf: url), format: nil) as? [String: String])
+    #expect(Set(dictionary.keys) == expected)
   }
 }

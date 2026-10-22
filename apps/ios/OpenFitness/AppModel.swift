@@ -56,6 +56,7 @@ final class AppModel {
   @ObservationIgnored private var companion: PhoneCompanion?
   @ObservationIgnored private var historyCursor: String?
   @ObservationIgnored private var refreshRequested = false
+  @ObservationIgnored var exerciseCacheAccountKey = ""
   @ObservationIgnored var exerciseDetails: [String: Record<Exercise>] = [:]
   @ObservationIgnored var muscleMapCache: [String: MuscleMapArtwork] = [:]
   @ObservationIgnored var taxonomyCache: [String: CachedExerciseTaxonomy] = [:]
@@ -169,10 +170,13 @@ final class AppModel {
   }
   private func activateAccount(_ value: AgentContext) async throws {
     let api = try api()
-    if context?.ownerId != value.ownerId {
+    let nextExerciseAccountKey = OAuthSecurity.accountKey(
+      origin: try ServerConfiguration(serverAddress).origin, ownerId: value.ownerId)
+    if exerciseCacheAccountKey != nextExerciseAccountKey {
       exerciseDetails = [:]
       taxonomyCache = [:]
     }
+    exerciseCacheAccountKey = nextExerciseAccountKey
     context = value
     recentExerciseHistory =
       (try? recentExercisesURL()).flatMap {
@@ -490,8 +494,10 @@ final class AppModel {
     await refresh()
   }
   func saveExercise(_ value: Exercise) async throws -> Record<Exercise> {
+    let owner = accountKey
     let result = try await api().mutation(
       Record<Exercise>.self, path: "/api/v1/exercises", fields: ["data": try .from(value)])
+    guard owner == accountKey else { throw APIError("ACCOUNT_MISMATCH") }
     cacheExercise(result)
     exerciseCatalogRevision += 1
     return result
@@ -717,6 +723,7 @@ final class AppModel {
     healthSummary = nil
     journal = .init()
     isConnected = false
+    exerciseCacheAccountKey = ""
     exerciseDetails = [:]
     taxonomyCache = [:]
     context = nil
@@ -745,6 +752,12 @@ final class AppModel {
   #if DEBUG
     private func loadPreview() {
       isPreview = true
+      if ProcessInfo.processInfo.arguments.contains("-ui-testing-artwork") {
+        serverAddress = "http://localhost:18788"
+        if let server = try? ServerConfiguration(serverAddress) {
+          client = APIClient(server: server, vault: vault)
+        }
+      }
       isConnected = true
       language =
         ProcessInfo.processInfo.arguments.contains("-ui-testing-zh")

@@ -167,7 +167,7 @@ struct TrainingView: View {
           showEditor = true
         } label: {
           Image(systemName: "plus")
-        }.accessibilityLabel(model.text(.newPlan))
+        }.accessibilityLabel(model.text(.newPlan)).accessibilityIdentifier("new-plan")
       }
     }.sheet(isPresented: $showEditor) { PlanEditor() }
       .sheet(isPresented: $showLibrary) { ExercisePicker(mode: .browse) }

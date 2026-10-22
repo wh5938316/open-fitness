@@ -74,10 +74,10 @@ struct ExercisePicker: View {
         } else if !searching, items.isEmpty, model.isOnline {
           Text(model.text(.noResults)).foregroundStyle(.secondary)
         }
-        if cursor != nil, !searching, loadError == nil {
+        if cursor != nil, loadError == nil {
           Button(model.text(.loadMore)) {
             Task { await loadPage(key: searchKey, token: generation, cursor: cursor) }
-          }.task(id: cursor) {
+          }.disabled(searching).task(id: cursor) {
             await loadPage(key: searchKey, token: generation, cursor: cursor)
           }
         }
@@ -307,6 +307,7 @@ struct ExerciseDetailView: View {
               if let text = exercise.source?.attribution { Text(text) }
               if let text = taxonomy?.attribution { Text(text) }
               if let license = exercise.source?.license { Text(license) }
+              if let note = taxonomy?.diagramNote { Text(note) }
             }.font(.footnote).foregroundStyle(.secondary)
           }
         }
@@ -375,7 +376,8 @@ struct ExerciseDetailView: View {
       result.append(label(category, in: taxonomy?.movementCategories))
     }
     result.append(model.text(exercise.category == "duration" ? .timed : .strength))
-    return result
+    var seen = Set<String>()
+    return result.filter { seen.insert($0).inserted }
   }
   private func label(_ value: String, in labels: [ExerciseTaxonomy.Label]?) -> String {
     labels?.first { $0.id == value }?.label ?? value

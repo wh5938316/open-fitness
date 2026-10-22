@@ -26,7 +26,17 @@
              "i18n":{"zh-CN":{"name":"卧推活动度练习","provenance":{"method":"human","reviewed":false}}}}}
         ]
         """#
-      return (try? JSONDecoder().decode([Record<Exercise>].self, from: Data(json.utf8))) ?? []
+      let base = (try? JSONDecoder().decode([Record<Exercise>].self, from: Data(json.utf8))) ?? []
+      guard ProcessInfo.processInfo.arguments.contains("-ui-testing-pages"), let first = base.first
+      else {
+        return base
+      }
+      return (0..<65).map { index in
+        var record = first
+        record.id = "cat-preview-page-\(index)"
+        record.data.name = "Bench fixture \(index)"
+        return record
+      }
     }()
 
     static let taxonomy: ExerciseTaxonomy = {
@@ -36,7 +46,9 @@
          "muscles":[{"id":"pectorals","label":"Pectorals"},{"id":"triceps","label":"Triceps"}],
          "movementCategories":[{"id":"strength","label":"Strength"},{"id":"mobility","label":"Mobility"}],
          "diagrams":{"artwork":"MuscleMap","viewBox":"0 0 1024 1536","packageVersion":"preview",
-           "license":"MIT","assets":{}},"attribution":"OpenFitness test fixture"}
+           "license":"MIT","assets":{
+             "male":{"front":"/musclemap/male-front.svg","back":"/musclemap/male-back.svg"},
+             "female":{"front":"/musclemap/female-front.svg","back":"/musclemap/female-back.svg"}}},"attribution":"OpenFitness test fixture"}
         """#
       // A malformed debug fixture must fail before it can mask a UI regression.
       return try! JSONDecoder().decode(ExerciseTaxonomy.self, from: Data(json.utf8))
