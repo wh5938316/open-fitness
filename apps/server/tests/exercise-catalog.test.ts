@@ -4,7 +4,12 @@ import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import { D1ExerciseCatalog } from '../src/adapters/d1-exercise-catalog';
 import { D1Repository } from '../src/adapters/cloudflare';
 import { createApp } from '../src/app';
-import { decodeExerciseCursor, loggingCategory } from '../src/domain/exercise-catalog';
+import regions from '../catalog/musclemap-regions.json';
+import {
+  decodeExerciseCursor,
+  loggingCategory,
+  presentExercise,
+} from '../src/domain/exercise-catalog';
 import { exerciseSchema, type Exercise } from '../src/domain/schemas';
 import { FitnessService } from '../src/domain/service';
 import type { Actor, Entity, Locale } from '../src/types';
@@ -492,4 +497,168 @@ describe('exercise catalogue', () => {
     );
     expect(await back.text()).toContain('data-surface="UPPER_BACK_LEFT"');
   });
+
+  it('derives diagram highlights from muscle tokens when muscleMap primaries are absent', () => {
+    const glutes = presentExercise(
+      diagramExercise({
+        name: 'Hip thrust',
+        bodyPart: 'upper legs',
+        primaryMuscles: ['glutes'],
+        secondaryMuscles: ['hamstrings', 'cardiovascular system'],
+        diagram: { gender: 'male', views: ['front'], regions: [] },
+      }),
+      'en',
+    );
+    const gluteal = glutes.diagram?.highlights?.find((item) => item.region === 'gluteal');
+    expect(gluteal?.role).toBe('primary');
+    expect(gluteal?.matched).toBe(true);
+    expect(gluteal?.weight).toBeUndefined();
+    expect(gluteal?.surfaces).toEqual(['GLUTEUS_LEFT', 'GLUTEUS_RIGHT']);
+    expect(glutes.diagram?.highlights?.find((item) => item.region === 'hamstring')?.role).toBe(
+      'secondary',
+    );
+    expect(
+      glutes.diagram?.highlights?.some((item) => item.region === 'cardiovascular system'),
+    ).toBe(false);
+    expect(glutes.diagram?.views).toEqual(['back']);
+    expect(glutes.diagram?.hrefs?.map((item) => item.href)).toEqual(['/musclemap/male-back.svg']);
+
+    const lats = presentExercise(
+      diagramExercise({
+        primaryMuscles: ['lats'],
+        secondaryMuscles: ['biceps', 'latissimus dorsi'],
+      }),
+      'en',
+    );
+    expect(lats.diagram?.highlights?.find((item) => item.region === 'lats')).toMatchObject({
+      role: 'primary',
+      matched: true,
+      surfaces: ['LATISSIMUS_LEFT', 'LATISSIMUS_RIGHT'],
+    });
+    expect(lats.diagram?.highlights?.map((item) => item.region)).toEqual(['lats', 'biceps']);
+    expect(lats.diagram?.views).toEqual(['front', 'back']);
+
+    const abductors = presentExercise(diagramExercise({ primaryMuscles: ['abductors'] }), 'en');
+    expect(abductors.diagram?.highlights?.[0]).toMatchObject({
+      region: 'abductors',
+      surfaces: ['ABDUCTOR_LEFT', 'ABDUCTOR_RIGHT'],
+      matched: true,
+    });
+    expect(abductors.diagram?.views).toEqual(['front', 'back']);
+  });
+
+  it('skips unknown muscle tokens and keeps a stored muscleMap ahead of token aliases', () => {
+    const unknown = presentExercise(
+      diagramExercise({
+        primaryMuscles: ['cardiovascular system', 'feet', 'ankles'],
+        diagram: { gender: 'female', views: ['front'], regions: [] },
+      }),
+      'en',
+    );
+    expect(unknown.diagram?.highlights).toEqual([]);
+    expect(unknown.diagram?.views).toEqual(['front']);
+    expect(unknown.diagram?.hrefs).toEqual([
+      { gender: 'female', view: 'front', href: '/musclemap/female-front.svg' },
+    ]);
+
+    const custom = presentExercise(
+      exerciseSchema.parse({ name: 'Custom curl', primaryMuscles: ['biceps'] }),
+      'en',
+    );
+    expect(custom.diagram).toBeUndefined();
+
+    const stored = diagramExercise({
+      primaryMuscles: ['glutes'],
+      muscleMap: {
+        primaries: ['chest'],
+        secondaries: ['triceps'],
+        weights: { chest: 1, triceps: 0.4 },
+      },
+      diagram: { gender: 'male', views: ['front'], regions: ['chest'] },
+    });
+    const before = structuredClone(stored);
+    const presented = presentExercise(stored, 'en');
+    expect(stored).toEqual(before);
+    expect(presented.diagram?.highlights?.map((item) => item.region)).toEqual(['chest', 'triceps']);
+    expect(presented.diagram?.highlights?.find((item) => item.region === 'triceps')?.weight).toBe(
+      0.4,
+    );
+    expect(presented.diagram?.views).toEqual(['front']);
+    expect(presented.muscleMap?.primaries).toEqual(['chest']);
+  });
+
+  it('points every muscle alias at a diagram region and every region surface at a shipped SVG', async () => {
+    for (const target of Object.values(regions.aliases)) {
+      expect(regions.regions).toHaveProperty(target);
+    }
+    for (const [token, target] of Object.entries(regions.aliases)) {
+      const presented = presentExercise(diagramExercise({ primaryMuscles: [token] }), 'en');
+      expect(presented.diagram?.highlights?.map((item) => item.region)).toEqual([target]);
+      expect(presented.diagram?.highlights?.[0]?.matched).toBe(true);
+    }
+    const taxonomy = (await service('zh-CN').execute('list_exercise_taxonomy', {})) as {
+      muscles: { id: string; label: string }[];
+      diagrams: {
+        regions: string[];
+        mapping: { region: string; matched: boolean; surfaces: string[] }[];
+      };
+    };
+    expect(taxonomy.muscles.find((item) => item.id === 'lats')?.label).toBe('背阔肌');
+    expect(taxonomy.muscles.find((item) => item.id === 'abductors')?.label).toBe('髋外展肌');
+    expect(taxonomy.diagrams.regions).toEqual(expect.arrayContaining(['lats', 'abductors']));
+    expect(new Set(taxonomy.diagrams.regions)).toEqual(new Set(Object.keys(regions.regions)));
+    expect(taxonomy.diagrams.mapping.find((item) => item.region === 'lats')).toMatchObject({
+      matched: true,
+      surfaces: ['LATISSIMUS_LEFT', 'LATISSIMUS_RIGHT'],
+    });
+    expect(taxonomy.diagrams.mapping.find((item) => item.region === 'abductors')?.surfaces).toEqual(
+      ['ABDUCTOR_LEFT', 'ABDUCTOR_RIGHT'],
+    );
+    expect(
+      taxonomy.diagrams.mapping.find((item) => item.region === 'upper-back')?.surfaces,
+    ).not.toContain('LATISSIMUS_LEFT');
+
+    let svg = '';
+    for (const name of ['male-front.svg', 'male-back.svg', 'female-front.svg', 'female-back.svg']) {
+      const ctx = createExecutionContext();
+      const response = await createApp(env).fetch(
+        new Request(`http://localhost:8787/musclemap/${name}`),
+        env,
+        ctx,
+      );
+      await waitOnExecutionContext(ctx);
+      expect(response.status).toBe(200);
+      svg += await response.text();
+    }
+    for (const [region, entry] of Object.entries(regions.regions)) {
+      for (const surface of entry.surfaces) {
+        expect(svg, `${region} ${surface}`).toContain(`data-surface="${surface}"`);
+      }
+    }
+  });
+
+  it('returns token-derived highlights for a catalogue row that has no muscleMap', async () => {
+    const situp = (await service().execute('get_exercise', { id: 'cat-0001' })) as Entity<Exercise>;
+    expect(situp.data.muscleMap).toBeUndefined();
+    expect(situp.data.diagram?.highlights?.find((item) => item.region === 'abs')).toMatchObject({
+      role: 'primary',
+      matched: true,
+      surfaces: ['CORE_LEFT', 'CORE_RIGHT'],
+    });
+    expect(situp.data.diagram?.highlights?.map((item) => item.region)).toEqual([
+      'abs',
+      'hip-flexors',
+      'lower-back',
+    ]);
+    expect(situp.data.diagram?.views).toEqual(['front', 'back']);
+  });
 });
+
+function diagramExercise(overrides: Record<string, unknown> = {}): Exercise {
+  return exerciseSchema.parse({
+    name: 'Diagram fixture',
+    bodyPart: 'upper legs',
+    diagram: { gender: 'male', views: ['front'], regions: [] },
+    ...overrides,
+  });
+}

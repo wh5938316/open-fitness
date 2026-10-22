@@ -212,6 +212,11 @@ public enum CopyKey: String, CaseIterable, Sendable {
   case loadMore
   case exerciseDetails
   case muscleMap
+  case muscleMapLoading
+  case muscleMapFailed
+  case muscleMapUnavailable
+  case primaryShort
+  case secondaryShort
 }
 public enum AppLanguage: String, Codable, CaseIterable, Sendable {
   case english = "en"

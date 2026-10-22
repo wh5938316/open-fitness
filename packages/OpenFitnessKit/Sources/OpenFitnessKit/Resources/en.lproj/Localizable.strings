@@ -211,3 +211,8 @@
 "loadMore" = "Load more";
 "exerciseDetails" = "Exercise details";
 "muscleMap" = "Muscle map";
+"muscleMapLoading" = "Loading muscle map…";
+"muscleMapFailed" = "Couldn't load the muscle map";
+"muscleMapUnavailable" = "No muscle map for this exercise";
+"primaryShort" = "Primary";
+"secondaryShort" = "Secondary";

@@ -14,6 +14,7 @@ export const MUSCLEMAP_FILES = [
 
 const FRONT = new Set([
   'abs',
+  'abductors',
   'adductors',
   'biceps',
   'chest',
@@ -22,7 +23,16 @@ const FRONT = new Set([
   'quadriceps',
   'serratus',
 ]);
-const BACK = new Set(['gluteal', 'hamstring', 'lower-back', 'trapezius', 'triceps', 'upper-back']);
+const BACK = new Set([
+  'abductors',
+  'gluteal',
+  'hamstring',
+  'lats',
+  'lower-back',
+  'trapezius',
+  'triceps',
+  'upper-back',
+]);
 
 export interface ExerciseTranslation {
   name?: string;
@@ -210,32 +220,68 @@ export function presentExercise(
     }
   }
   if (copy.diagram) {
+    const derived = diagramHighlights(copy);
+    const views =
+      derived.usedFallback && derived.highlights.length > 0
+        ? diagramViews(
+            derived.highlights.map((item) => item.region),
+            copy.bodyPart,
+          )
+        : copy.diagram.views;
     copy.diagram = {
       ...copy.diagram,
-      hrefs: diagramHrefs(copy.diagram.gender, copy.diagram.views),
-      highlights: diagramHighlights(copy),
+      views,
+      hrefs: diagramHrefs(copy.diagram.gender, views),
+      highlights: derived.highlights,
     };
   }
   return copy;
 }
 
+const regionTable = regions.regions;
+type RegionId = keyof typeof regionTable;
+
+function regionForMuscleToken(token: string): RegionId | undefined {
+  const key = token.trim().toLowerCase();
+  const aliases = regions.aliases as Record<string, string>;
+  const target = aliases[key] ?? (Object.hasOwn(regionTable, key) ? key : undefined);
+  if (!target || !Object.hasOwn(regionTable, target)) return undefined;
+  return target as RegionId;
+}
+
 function diagramHighlights(data: Exercise) {
-  const primary = new Set(data.muscleMap?.primaries ?? []);
-  const secondary = data.muscleMap?.secondaries ?? [];
-  const weights = data.muscleMap?.weights ?? {};
-  const ordered = [...primary, ...secondary.filter((region) => !primary.has(region))];
-  return ordered.map((region) => {
-    const entry = regions.regions[region as keyof typeof regions.regions];
+  const storedPrimary = data.muscleMap?.primaries ?? [];
+  const usedFallback = storedPrimary.length === 0;
+  const primary: string[] = [];
+  const secondary: string[] = [];
+  const seen = new Set<string>();
+  const weights: Record<string, number> = usedFallback ? {} : (data.muscleMap?.weights ?? {});
+  const add = (region: string | undefined, bucket: string[]) => {
+    if (!region || seen.has(region)) return;
+    seen.add(region);
+    bucket.push(region);
+  };
+  if (usedFallback) {
+    for (const token of data.primaryMuscles ?? []) add(regionForMuscleToken(token), primary);
+    for (const token of data.secondaryMuscles ?? []) add(regionForMuscleToken(token), secondary);
+  } else {
+    for (const region of storedPrimary) add(region, primary);
+    for (const region of data.muscleMap?.secondaries ?? []) add(region, secondary);
+  }
+  const primaryIds = new Set(primary);
+  const highlights = [...primary, ...secondary].map((region) => {
+    const entry = Object.hasOwn(regionTable, region) ? regionTable[region as RegionId] : undefined;
     const weight = weights[region];
     return {
       region,
-      role: primary.has(region) ? ('primary' as const) : ('secondary' as const),
+      role: primaryIds.has(region) ? ('primary' as const) : ('secondary' as const),
       ...(typeof weight === 'number' ? { weight } : {}),
       groups: entry?.groups ?? [],
       surfaces: entry?.surfaces ?? [],
       matched: Boolean(entry?.matched && entry.surfaces.length),
     };
   });
+  return { highlights, usedFallback };
 }
 export function virtualExercise(record: CatalogExercise, locale: Locale): Entity<Exercise> {
   return {

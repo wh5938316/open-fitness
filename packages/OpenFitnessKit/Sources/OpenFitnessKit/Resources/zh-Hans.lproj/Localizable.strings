@@ -211,3 +211,8 @@
 "loadMore" = "加载更多";
 "exerciseDetails" = "动作详情";
 "muscleMap" = "肌肉图";
+"muscleMapLoading" = "正在加载肌肉图…";
+"muscleMapFailed" = "肌肉图加载失败";
+"muscleMapUnavailable" = "此动作暂无肌肉图";
+"primaryShort" = "主要";
+"secondaryShort" = "次要";

@@ -1,6 +1,10 @@
 import OpenFitnessKit
 import SwiftUI
 
+private struct ExerciseRoute: Hashable {
+  var id: String
+}
+
 struct ExercisePicker: View {
   enum Mode { case select, browse }
   @Environment(AppModel.self) private var model
@@ -16,6 +20,8 @@ struct ExercisePicker: View {
   @State private var searching = false
   @State private var loadError: String?
   @State private var generation = UUID()
+  @State private var path: [ExerciseRoute] = []
+  @State private var routed: [String: Record<Exercise>] = [:]
 
   private struct SearchKey: Hashable {
     var query: ExerciseQuery
@@ -32,7 +38,7 @@ struct ExercisePicker: View {
   }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       List {
         Button {
           creating = true
@@ -57,7 +63,7 @@ struct ExercisePicker: View {
         if query.text.isEmpty, !model.recentExerciseHistory.items.isEmpty {
           Section(model.text(.recentExercises)) {
             ForEach(model.recentExerciseHistory.items.prefix(20)) { recent in
-              recentRow(recent.record)
+              row(recent.record)
             }
           }
         }
@@ -83,6 +89,13 @@ struct ExercisePicker: View {
         }
       }
       .navigationTitle(model.text(.exerciseLibrary))
+      .navigationDestination(for: ExerciseRoute.self) { route in
+        if let record = routed[route.id] ?? model.exerciseDetails[route.id] {
+          ExerciseDetailView(
+            record: record, selectionTitle: selectionTitle,
+            selected: mode == .select ? { choose($0) } : nil)
+        }
+      }
       .searchable(text: $query.text, prompt: model.text(.exerciseSearchPrompt))
       .modifier(ExerciseSearchScopes(enabled: model.supportsExerciseCatalog, source: $query.source))
       .toolbar {
@@ -123,30 +136,7 @@ struct ExercisePicker: View {
 
   private var exerciseRows: some View {
     ForEach(items) { item in
-      HStack {
-        if mode == .select {
-          Button {
-            choose(item)
-          } label: {
-            ExerciseRow(record: item, taxonomy: taxonomy)
-          }.buttonStyle(.plain)
-        } else {
-          NavigationLink {
-            ExerciseDetailView(record: item)
-          } label: {
-            ExerciseRow(record: item, taxonomy: taxonomy)
-          }
-        }
-        NavigationLink {
-          ExerciseDetailView(
-            record: item, selectionTitle: selectionTitle,
-            selected: mode == .select ? { choose($0) } : nil)
-        } label: {
-          Image(systemName: "info.circle")
-        }.buttonStyle(.borderless)
-          .accessibilityLabel(model.text(.exerciseDetails))
-          .accessibilityIdentifier("exercise-info-\(item.id)")
-      }
+      row(item)
     }
   }
 
@@ -156,22 +146,34 @@ struct ExercisePicker: View {
     dismiss()
   }
 
-  private func recentRow(_ record: Record<Exercise>) -> some View {
-    Group {
-      if mode == .select {
-        Button {
-          choose(record)
-        } label: {
-          ExerciseRow(record: record, taxonomy: taxonomy)
-        }
-        .buttonStyle(.plain)
-      } else {
-        NavigationLink {
-          ExerciseDetailView(record: record)
-        } label: {
-          ExerciseRow(record: record, taxonomy: taxonomy)
-        }
+  private func open(_ record: Record<Exercise>) {
+    routed[record.id] = record
+    // Assign rather than append so a row tap that also hits the info button
+    // still leaves a single detail on the stack.
+    path = [ExerciseRoute(id: record.id)]
+  }
+
+  /// List turns a plain `Button` into a row-wide control, so the info button uses
+  /// `.borderless` and the row uses a custom style. One tap then sets one route.
+  private func row(_ record: Record<Exercise>) -> some View {
+    HStack(spacing: 8) {
+      Button {
+        if mode == .select { choose(record) } else { open(record) }
+      } label: {
+        ExerciseRow(record: record, taxonomy: taxonomy, showsDisclosure: mode == .browse)
       }
+      .buttonStyle(ExerciseRowButtonStyle())
+      .accessibilityIdentifier("exercise-row-\(record.id)")
+      Button {
+        open(record)
+      } label: {
+        Image(systemName: "info.circle")
+          .padding(.vertical, 8)
+          .contentShape(.rect)
+      }
+      .buttonStyle(.borderless)
+      .accessibilityLabel(model.text(.exerciseDetails))
+      .accessibilityIdentifier("exercise-info-\(record.id)")
     }
   }
 
@@ -236,6 +238,7 @@ struct ExerciseRow: View {
   @Environment(AppModel.self) private var model
   var record: Record<Exercise>
   var taxonomy: ExerciseTaxonomy?
+  var showsDisclosure = false
   private var exercise: Exercise { record.data.localized(model.language) }
   var body: some View {
     HStack {
@@ -256,6 +259,9 @@ struct ExerciseRow: View {
         )
         .background(.green.opacity(0.1), in: .capsule).foregroundStyle(.secondary)
       }
+      if showsDisclosure {
+        Image(systemName: "chevron.right").font(.footnote).foregroundStyle(.secondary)
+      }
     }.contentShape(.rect)
   }
 }
@@ -271,30 +277,57 @@ struct ExerciseDetailView: View {
   @State private var loadError: String?
   private var exercise: Exercise { record.data.localized(model.language) }
 
+  private var genderSelection: Binding<String> {
+    Binding(
+      get: { gender.isEmpty ? (exercise.diagram?.gender ?? "male") : gender },
+      set: { gender = $0 })
+  }
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
-        MuscleMapView(
-          diagram: exercise.diagram, genderOverride: gender, accessibilitySummary: muscleSummary)
-        Text(exercise.name).font(.largeTitle.bold())
-        if let aliases = exercise.aliases, !aliases.isEmpty {
-          Text(aliases.prefix(3).joined(separator: " · ")).foregroundStyle(.secondary)
+        if model.supportsExerciseCatalog {
+          MuscleMapView(
+            diagram: exercise.diagram, genderOverride: gender, accessibilitySummary: muscleSummary
+          )
+          .padding(12)
+          .frame(maxWidth: .infinity)
+          .background(Color(.secondarySystemBackground), in: .rect(cornerRadius: 16))
         }
-        Text(tags.joined(separator: " · ")).font(.subheadline).foregroundStyle(.secondary)
-        muscles(.primaryMuscles, values: exercise.primaryMuscles ?? exercise.muscleGroups ?? [])
-        muscles(.secondaryMuscles, values: exercise.secondaryMuscles ?? [])
+        VStack(alignment: .leading, spacing: 4) {
+          Text(exercise.name).font(.title.bold())
+          if let aliases = exercise.aliases, !aliases.isEmpty {
+            Text(aliases.prefix(3).joined(separator: " · "))
+              .font(.subheadline).foregroundStyle(.secondary)
+          }
+        }
+        ChipFlowLayout {
+          ForEach(Array(tags.enumerated()), id: \.offset) { _, tag in
+            Text(tag).font(.caption).padding(.horizontal, 8).padding(.vertical, 4)
+              .background(.green.opacity(0.1), in: .capsule)
+          }
+        }
+        muscleChips(
+          .primaryMuscles, values: exercise.primaryMuscles ?? exercise.muscleGroups ?? [],
+          filled: true)
+        muscleChips(.secondaryMuscles, values: exercise.secondaryMuscles ?? [], filled: false)
         if let description = exercise.description, !description.isEmpty {
           detail(.exerciseDescription, text: description)
         }
         VStack(alignment: .leading, spacing: 8) {
           Text(model.text(.exerciseSteps)).font(.headline)
-          if let instructions = exercise.instructions, !instructions.isEmpty {
-            ForEach(Array(instructions.split(separator: "\n").enumerated()), id: \.offset) {
-              _, line in
-              Text(String(line))
-            }
-          } else {
+          if instructionLines.isEmpty {
             Text(model.text(.noInstructions)).foregroundStyle(.secondary)
+          } else {
+            ForEach(Array(instructionLines.enumerated()), id: \.offset) { index, line in
+              HStack(alignment: .top, spacing: 10) {
+                Text("\(index + 1)")
+                  .font(.caption.bold())
+                  .frame(minWidth: 22, minHeight: 22)
+                  .background(.green.opacity(0.14), in: .circle)
+                Text(line).frame(maxWidth: .infinity, alignment: .leading)
+              }
+            }
           }
           if exercise.needsRewrite == true || exercise.source?.needsRewrite == true {
             Label(model.text(.needsRewrite), systemImage: "text.badge.clock")
@@ -321,8 +354,10 @@ struct ExerciseDetailView: View {
       {
         ToolbarItem(placement: .topBarTrailing) {
           Menu {
-            Button(model.text(.bodyMale)) { gender = "male" }
-            Button(model.text(.bodyFemale)) { gender = "female" }
+            Picker(model.text(.muscleMap), selection: genderSelection) {
+              Text(model.text(.bodyMale)).tag("male")
+              Text(model.text(.bodyFemale)).tag("female")
+            }.pickerStyle(.inline)
           } label: {
             Image(systemName: "figure.stand")
           }
@@ -382,17 +417,103 @@ struct ExerciseDetailView: View {
   private func label(_ value: String, in labels: [ExerciseTaxonomy.Label]?) -> String {
     labels?.first { $0.id == value }?.label ?? value
   }
-  private func muscles(_ title: CopyKey, values: [String]) -> some View {
+  private var instructionLines: [String] {
+    (exercise.instructions ?? "").split(whereSeparator: \.isNewline).compactMap { line in
+      let body = String(line).replacingOccurrences(
+        of: #"^\d+[.)、]\s*"#, with: "", options: .regularExpression
+      ).trimmingCharacters(in: .whitespaces)
+      return body.isEmpty ? nil : body
+    }
+  }
+  private func muscleChips(_ title: CopyKey, values: [String], filled: Bool) -> some View {
     Group {
       if !values.isEmpty {
-        detail(title, text: values.map { label($0, in: taxonomy?.muscles) }.joined(separator: "、"))
+        VStack(alignment: .leading, spacing: 8) {
+          Text(model.text(title)).font(.headline)
+          ChipFlowLayout {
+            ForEach(Array(values.enumerated()), id: \.offset) { _, value in
+              muscleChip(label(value, in: taxonomy?.muscles), filled: filled)
+            }
+          }
+        }
       }
     }
+  }
+  private func muscleChip(_ text: String, filled: Bool) -> some View {
+    Text(text).font(.caption).padding(.horizontal, 8).padding(.vertical, 4)
+      .foregroundStyle(filled ? Color.primary : Color.secondary)
+      .background(filled ? Color.green.opacity(0.18) : Color.clear, in: .capsule)
+      .overlay {
+        if !filled { Capsule().stroke(Color.green.opacity(0.45), lineWidth: 1) }
+      }
   }
   private func detail(_ title: CopyKey, text: String) -> some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(model.text(title)).font(.headline)
       Text(text)
     }
+  }
+}
+
+private struct ExerciseRowButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .contentShape(.rect)
+      .opacity(configuration.isPressed ? 0.55 : 1)
+  }
+}
+
+private struct ChipFlowLayout: Layout {
+  var spacing: CGFloat = 8
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+    let rows = rows(maxWidth: proposal.width ?? .greatestFiniteMagnitude, subviews: subviews)
+    let width = proposal.width ?? rows.map(\.width).max() ?? 0
+    let gaps = spacing * CGFloat(max(rows.count - 1, 0))
+    let height = rows.reduce(CGFloat.zero) { $0 + $1.height } + gaps
+    return CGSize(width: width, height: height)
+  }
+  func placeSubviews(
+    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void
+  ) {
+    var y = bounds.minY
+    for row in rows(maxWidth: bounds.width, subviews: subviews) {
+      var x = bounds.minX
+      for index in row.indexes {
+        let size = subviews[index].sizeThatFits(.unspecified)
+        subviews[index].place(
+          at: CGPoint(x: x, y: y), anchor: .topLeading,
+          proposal: ProposedViewSize(width: size.width, height: size.height))
+        x += size.width + spacing
+      }
+      y += row.height + spacing
+    }
+  }
+  private struct Row {
+    var indexes: [Int]
+    var width: CGFloat
+    var height: CGFloat
+  }
+  private func rows(maxWidth: CGFloat, subviews: Subviews) -> [Row] {
+    var result: [Row] = []
+    var indexes: [Int] = []
+    var width: CGFloat = 0
+    var height: CGFloat = 0
+    for index in subviews.indices {
+      let size = subviews[index].sizeThatFits(.unspecified)
+      let next = width == 0 ? size.width : width + spacing + size.width
+      if width > 0, next > maxWidth {
+        result.append(.init(indexes: indexes, width: width, height: height))
+        indexes = [index]
+        width = size.width
+        height = size.height
+      } else {
+        indexes.append(index)
+        width = next
+        height = max(height, size.height)
+      }
+    }
+    if !indexes.isEmpty { result.append(.init(indexes: indexes, width: width, height: height)) }
+    return result
   }
 }
