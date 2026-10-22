@@ -203,3 +203,48 @@ private actor LostResponseTransport: HTTPTransport {
       URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first?.value == raw)
   }
 }
+
+private func catalogueFixtures() throws -> [Record<Exercise>] {
+  let url = try #require(Bundle.module.url(forResource: "catalog-exercises", withExtension: "json"))
+  return try JSONDecoder().decode([Record<Exercise>].self, from: Data(contentsOf: url))
+}
+@Test func catalogueFieldsRoundTripAndOlderExercisesStillDecode() throws {
+  let records = try catalogueFixtures()
+  #expect(records.count == 3)
+  #expect(records[0].isCatalogOnly)
+  #expect(records[0].data.description == nil)
+  #expect(records[0].data.diagram?.highlights?.first?.matched == true)
+  #expect(records[0].data.i18n?["zh-CN"]?.provenance?.tool == "fixture")
+  #expect(records[2].data.variantOf == "cat-5266")
+  let roundTrip = try JSONDecoder().decode(
+    [Record<Exercise>].self, from: JSONEncoder().encode(records))
+  #expect(try JSONValue.from(records) == JSONValue.from(roundTrip))
+  let old = try JSONDecoder().decode(Exercise.self, from: Data(#"{"name":"Squat"}"#.utf8))
+  #expect(old.name == "Squat")
+  #expect(old.diagram == nil)
+  #expect(old.localized(.simplifiedChinese).name == "Squat")
+}
+@Test func catalogueLocalizationIsIdempotent() throws {
+  let original = try catalogueFixtures()[0].data
+  #expect(try JSONValue.from(original.localized(.english)) == JSONValue.from(original))
+  let translated = original.localized(.simplifiedChinese)
+  #expect(translated.name == "四分之三仰卧起坐")
+  #expect(translated.description == "练习腹肌。")
+  #expect(translated.aliases?.contains(original.name) == true)
+  #expect(translated.aliases?.contains(translated.name) == false)
+  #expect(
+    try JSONValue.from(translated.localized(.simplifiedChinese)) == JSONValue.from(translated))
+  var presented = translated
+  presented.aliases = [original.name, "卷腹"]
+  #expect(try JSONValue.from(presented.localized(.simplifiedChinese)) == JSONValue.from(presented))
+}
+@Test func catalogueCapabilityIsOptional() throws {
+  for capabilities in [#"{}"#, #"{"exerciseCatalog":"shared_catalog","healthSyncProtocol":1}"#] {
+    let json = """
+      {"ownerId":"owner","actorId":"actor","locale":"en","timeZone":"Asia/Shanghai",
+       "capabilities":\(capabilities)}
+      """
+    let context = try JSONDecoder().decode(AgentContext.self, from: Data(json.utf8))
+    #expect(context.capabilities.exerciseCatalog == (capabilities == "{}" ? nil : "shared_catalog"))
+  }
+}
