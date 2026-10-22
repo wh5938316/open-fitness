@@ -109,6 +109,7 @@ struct PlanCard: View {
 struct TrainingView: View {
   @Environment(AppModel.self) private var model
   @State private var showEditor = false
+  @State private var showLibrary = false
   var body: some View {
     Screen {
       PendingBanner()
@@ -155,12 +156,22 @@ struct TrainingView: View {
     }.navigationTitle(model.text(.train)).toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button {
+          showLibrary = true
+        } label: {
+          Image(systemName: "books.vertical")
+        }
+        .accessibilityLabel(model.text(.exerciseLibrary))
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
           showEditor = true
         } label: {
           Image(systemName: "plus")
         }.accessibilityLabel(model.text(.newPlan))
       }
-    }.sheet(isPresented: $showEditor) { PlanEditor() }.refreshable { await model.refresh() }
+    }.sheet(isPresented: $showEditor) { PlanEditor() }
+      .sheet(isPresented: $showLibrary) { ExercisePicker(mode: .browse) }
+      .refreshable { await model.refresh() }
   }
 }
 struct PlanDetail: View {

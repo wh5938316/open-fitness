@@ -38,6 +38,31 @@ import XCTest
     XCTAssertTrue(app.tabBars.buttons["今天"].waitForExistence(timeout: 5))
     attachScreenshot(app, name: "Settings in Simplified Chinese")
   }
+  func testChineseCatalogueDetailCanAddExerciseToPlan() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-ui-testing-zh"]
+    app.launch()
+    app.tabBars.buttons["训练"].tap()
+    app.buttons["新建计划"].tap()
+    let name = app.textFields["plan-name"]
+    XCTAssertTrue(name.waitForExistence(timeout: 5))
+    name.tap()
+    name.typeText("Catalogue plan")
+    app.buttons["plan-add-exercise"].tap()
+    let search = app.searchFields.firstMatch
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    search.tap()
+    search.typeText("卧推")
+    let info = app.buttons["exercise-info-cat-preview-bench"]
+    XCTAssertTrue(info.waitForExistence(timeout: 5))
+    info.tap()
+    XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
+    app.buttons["select-exercise-detail"].tap()
+    XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
+    app.navigationBars.buttons["保存"].tap()
+    XCTAssertTrue(app.staticTexts["Catalogue plan"].waitForExistence(timeout: 5))
+    attachScreenshot(app, name: "Catalogue plan in Simplified Chinese")
+  }
   private func attachScreenshot(_ app: XCUIApplication, name: String) {
     let attachment = XCTAttachment(screenshot: app.screenshot())
     attachment.name = name

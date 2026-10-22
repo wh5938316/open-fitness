@@ -36,15 +36,16 @@ struct PlanEditor: View {
   @State private var notes = ""
   @State private var drafts: [PlanDraft] = []
   @State private var choosing = false
+  @State private var detail: Record<Exercise>?
   var body: some View {
     NavigationStack {
       Form {
         Section {
-          TextField(model.text(.planName), text: $name)
+          TextField(model.text(.planName), text: $name).accessibilityIdentifier("plan-name")
           TextField(model.text(.notes), text: $notes, axis: .vertical)
         }
         ForEach($drafts) { $draft in
-          Section(draft.exercise.data.name) {
+          Section {
             Stepper("\(model.text(.sets)): \(draft.count)", value: $draft.count, in: 1...30)
             if !["duration", "distance"].contains(draft.exercise.data.category ?? "") {
               InlineNumber(title: model.text(.reps), value: $draft.reps)
@@ -62,13 +63,24 @@ struct PlanEditor: View {
             Button(model.text(.delete), role: .destructive) {
               drafts.removeAll { $0.id == draft.id }
             }
+          } header: {
+            HStack {
+              Text(draft.exercise.data.localized(model.language).name)
+              Spacer()
+              Button {
+                detail = draft.exercise
+              } label: {
+                Image(systemName: "info.circle")
+              }
+              .buttonStyle(.borderless).accessibilityLabel(model.text(.exerciseDetails))
+            }
           }
         }
         Button {
           choosing = true
         } label: {
           Label(model.text(.addExercise), systemImage: "plus")
-        }
+        }.accessibilityIdentifier("plan-add-exercise")
       }.navigationTitle(model.text(.newPlan)).navigationBarTitleDisplayMode(.inline)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) { Button(model.text(.cancel)) { dismiss() } }
@@ -87,65 +99,23 @@ struct PlanEditor: View {
                 } || model.isBusy)
           }
         }
-        .sheet(isPresented: $choosing) { ExercisePicker { drafts.append(.init(exercise: $0)) } }
+        .sheet(isPresented: $choosing) {
+          ExercisePicker(selected: { drafts.append(.init(exercise: $0)) })
+        }
+        .sheet(item: $detail) { record in
+          NavigationStack {
+            ExerciseDetailView(record: record)
+              .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                  Button(model.text(.done)) { detail = nil }
+                }
+              }
+          }
+        }
     }
   }
 }
-struct ExercisePicker: View {
-  @Environment(AppModel.self) private var model
-  @Environment(\.dismiss) private var dismiss
-  var selected: (Record<Exercise>) -> Void
-  @State private var query = ""
-  @State private var items: [Record<Exercise>] = []
-  @State private var creating = false
-  @State private var loadError: String?
-  var body: some View {
-    NavigationStack {
-      List {
-        Button {
-          creating = true
-        } label: {
-          Label(model.text(.addExercise), systemImage: "plus")
-        }
-        ForEach(items) { item in
-          Button {
-            selected(item)
-            dismiss()
-          } label: {
-            VStack(alignment: .leading, spacing: 5) {
-              Text(item.data.name).foregroundStyle(.primary)
-              Text((item.data.muscleGroups ?? []).joined(separator: " · ")).font(.caption)
-                .foregroundStyle(.secondary)
-            }
-          }
-        }
-        if let loadError { Text(loadError).foregroundStyle(.secondary) }
-      }.navigationTitle(model.text(.exercises)).searchable(
-        text: $query, prompt: model.text(.search)
-      )
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) { Button(model.text(.cancel)) { dismiss() } }
-      }
-      .task(id: query) {
-        do {
-          if !query.isEmpty { try await Task.sleep(for: .milliseconds(300)) }
-          let result = try await model.exercises(query: query)
-          if !Task.isCancelled {
-            items = result
-            loadError = nil
-          }
-        } catch { if !Task.isCancelled { loadError = model.copy.error(error) } }
-      }
-      .sheet(isPresented: $creating) {
-        NewExerciseEditor {
-          selected($0)
-          dismiss()
-        }
-      }
-    }
-  }
-}
-private struct NewExerciseEditor: View {
+struct NewExerciseEditor: View {
   @Environment(AppModel.self) private var model
   @Environment(\.dismiss) private var dismiss
   var selected: (Record<Exercise>) -> Void

@@ -14,6 +14,7 @@ struct OpenFitnessApp: App {
         .tint(.green)
         .task { await model.boot() }
         .onChange(of: scenePhase) { _, phase in
+          model.exerciseSceneChanged(isBackground: phase == .background)
           if phase == .active { Task { await model.refresh() } }
           if phase == .background {
             let request = BGAppRefreshTaskRequest(identifier: "org.openfitness.refresh")

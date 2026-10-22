@@ -181,6 +181,37 @@ public enum CopyKey: String, CaseIterable, Sendable {
   case mealTime
   case calculationUnavailable
   case disableHealth
+  case exerciseLibrary
+  case exerciseSearchPrompt
+  case sourceAll
+  case sourceMine
+  case sourceCatalog
+  case catalogBadge
+  case bodyPart
+  case equipment
+  case movementCategory
+  case targetMuscle
+  case clearFilter
+  case primaryMuscles
+  case secondaryMuscles
+  case exerciseDescription
+  case exerciseSteps
+  case noInstructions
+  case needsRewrite
+  case addToPlan
+  case addToMyExercises
+  case inMyExercises
+  case attribution
+  case bodyFront
+  case bodyBack
+  case bodyMale
+  case bodyFemale
+  case offlineCatalog
+  case addExerciseToWorkout
+  case recentExercises
+  case loadMore
+  case exerciseDetails
+  case muscleMap
 }
 public enum AppLanguage: String, Codable, CaseIterable, Sendable {
   case english = "en"

@@ -23,6 +23,10 @@ public struct Record<Value: Codable & Sendable>: Codable, Sendable, Identifiable
 public struct RecordPage<Value: Codable & Sendable>: Codable, Sendable {
   public var items: [Record<Value>]
   public var cursor: String?
+  public init(items: [Record<Value>], cursor: String? = nil) {
+    self.items = items
+    self.cursor = cursor
+  }
 }
 public struct Nutrients: Codable, Sendable, Equatable {
   public var energyKcal: Double?

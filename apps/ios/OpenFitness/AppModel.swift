@@ -56,6 +56,11 @@ final class AppModel {
   @ObservationIgnored private var companion: PhoneCompanion?
   @ObservationIgnored private var historyCursor: String?
   @ObservationIgnored private var refreshRequested = false
+  @ObservationIgnored var exerciseDetails: [String: Record<Exercise>] = [:]
+  @ObservationIgnored var taxonomyCache: [String: CachedExerciseTaxonomy] = [:]
+  @ObservationIgnored var exerciseBackgroundedAt: Date?
+  var exerciseCatalogRevision = 0
+  var supportsExerciseCatalog: Bool { context?.capabilities.exerciseCatalog == "shared_catalog" }
   var copy: Localizer { .init(language) }
   func text(_ key: CopyKey) -> String { copy.text(key) }
   var timeZone: String { context?.timeZone ?? "America/New_York" }
@@ -160,6 +165,10 @@ final class AppModel {
   }
   private func activateAccount(_ value: AgentContext) async throws {
     let api = try api()
+    if context?.ownerId != value.ownerId {
+      exerciseDetails = [:]
+      taxonomyCache = [:]
+    }
     context = value
     isConnected = true
     try await api.enableMutationRecovery(accountKey: accountKey)
@@ -281,11 +290,6 @@ final class AppModel {
     language = value
     UserDefaults.standard.set(value.rawValue, forKey: "appLanguage")
     await client?.setLanguage(value.rawValue)
-    if isConnected, !isPreview {
-      _ = try? await client?.mutation(
-        JSONValue.self, method: "PUT", path: "/api/v1/preferences",
-        fields: ["locale": .string(value.rawValue)])
-    }
     sendCompanion()
   }
   func start(_ plan: Record<TrainingPlan>, source: String = "ios") throws {
@@ -476,19 +480,24 @@ final class AppModel {
       fields: ["expectedVersion": .number(Double(workout.version)), "set": try .from(metrics)])
     await refresh()
   }
-  func exercises(query: String = "") async throws -> [Record<Exercise>] {
-    let q = query.queryValue
-    return try await api().request(
-      RecordPage<Exercise>.self, path: "/api/v1/exercises?limit=100&query=\(q)"
-    ).items
-  }
   func saveExercise(_ value: Exercise) async throws -> Record<Exercise> {
-    try await api().mutation(
+    let result = try await api().mutation(
       Record<Exercise>.self, path: "/api/v1/exercises", fields: ["data": try .from(value)])
+    cacheExercise(result)
+    exerciseCatalogRevision += 1
+    return result
   }
   func savePlan(_ value: TrainingPlan) async throws {
+    if isPreview {
+      plans.append(.init(id: UUID().uuidString, kind: "plan", data: value))
+      return
+    }
     _ = try await api().mutation(
       Record<TrainingPlan>.self, path: "/api/v1/training-plans", fields: ["data": try .from(value)])
+    for entry in value.exercises where exerciseDetails[entry.exerciseId]?.isCatalogOnly == true {
+      exerciseDetails[entry.exerciseId] = nil
+    }
+    exerciseCatalogRevision += 1
     await refresh()
   }
   func saveRecipe(_ value: Recipe, existing: Record<Recipe>? = nil) async throws -> Record<Recipe> {
@@ -697,6 +706,8 @@ final class AppModel {
     healthSummary = nil
     journal = .init()
     isConnected = false
+    exerciseDetails = [:]
+    taxonomyCache = [:]
     context = nil
     plans = []
     recipes = []
@@ -724,7 +735,14 @@ final class AppModel {
     private func loadPreview() {
       isPreview = true
       isConnected = true
-      language = .english
+      language =
+        ProcessInfo.processInfo.arguments.contains("-ui-testing-zh")
+        ? .simplifiedChinese : .english
+      context = try? JSONDecoder().decode(
+        AgentContext.self,
+        from: Data(
+          #"{"ownerId":"preview","actorId":"preview","locale":"en","timeZone":"Asia/Shanghai","capabilities":{"exerciseCatalog":"shared_catalog"}}"#
+            .utf8))
       let exercise = Exercise(
         name: "Back squat",
         instructions:
