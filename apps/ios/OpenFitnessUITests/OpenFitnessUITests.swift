@@ -57,6 +57,14 @@ import XCTest
     XCTAssertTrue(info.waitForExistence(timeout: 5))
     info.tap()
     XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["动作详情"].waitForExistence(timeout: 5))
+    leaveExerciseDetail(app, title: "动作详情")
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["动作库"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.navigationBars["动作详情"].exists)
+    XCTAssertFalse(app.buttons["select-exercise-detail"].exists)
+    info.tap()
+    XCTAssertTrue(app.buttons["select-exercise-detail"].waitForExistence(timeout: 5))
     app.buttons["select-exercise-detail"].tap()
     XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
     app.navigationBars.buttons["保存"].tap()
@@ -140,6 +148,98 @@ import XCTest
     app.buttons["Female"].tap()
     XCTAssertTrue(app.otherElements["muscle-map-female"].waitForExistence(timeout: 10))
     attachScreenshot(app, name: "Female muscle map")
+  }
+  func testExerciseDetailPushesOnce() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    let info = app.buttons["exercise-info-cat-preview-bench"]
+    XCTAssertTrue(info.waitForExistence(timeout: 5))
+    info.tap()
+    assertDetailIsShowing(app, name: "Barbell bench press")
+    leaveExerciseDetail(app)
+    assertExerciseLibraryIsShowing(app, name: "Barbell bench press")
+    app.buttons["exercise-row-cat-preview-bench"].tap()
+    assertDetailIsShowing(app, name: "Barbell bench press")
+    leaveExerciseDetail(app)
+    assertExerciseLibraryIsShowing(app, name: "Barbell bench press")
+  }
+  func testRecentExerciseDetailPushesOnce() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["new-plan"].tap()
+    let name = app.textFields["plan-name"]
+    XCTAssertTrue(name.waitForExistence(timeout: 5))
+    name.tap()
+    name.typeText("Recent plan")
+    app.buttons["plan-add-exercise"].tap()
+    let row = app.buttons["exercise-row-cat-preview-bench"]
+    XCTAssertTrue(row.waitForExistence(timeout: 5))
+    row.tap()
+    XCTAssertTrue(app.staticTexts["Barbell bench press"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.navigationBars["Exercise details"].exists)
+    app.buttons["plan-add-exercise"].tap()
+    XCTAssertTrue(app.staticTexts["Recent"].waitForExistence(timeout: 5))
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    XCTAssertTrue(app.navigationBars["Exercise details"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["select-exercise-detail"].exists)
+    leaveExerciseDetail(app)
+    XCTAssertTrue(app.navigationBars["Exercise library"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.navigationBars["Exercise details"].exists)
+    XCTAssertFalse(app.buttons["select-exercise-detail"].exists)
+    XCTAssertTrue(app.staticTexts["Recent"].exists)
+  }
+  func testExerciseWithoutDiagramShowsPlaceholder() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    let search = app.searchFields.firstMatch
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    search.tap()
+    search.typeText("mobility")
+    app.buttons["exercise-info-cat-preview-rewrite"].tap()
+    XCTAssertTrue(app.staticTexts["Bench mobility"].waitForExistence(timeout: 5))
+    let placeholder = app.descendants(matching: .any)["muscle-map-empty"]
+    XCTAssertTrue(placeholder.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["No muscle map for this exercise"].exists)
+  }
+  func testUnreachableArtworkShowsMuscleMapError() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    let error = app.descendants(matching: .any)["muscle-map-error"]
+    XCTAssertTrue(error.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["Try again"].exists)
+    XCTAssertTrue(app.staticTexts["Couldn't load the muscle map"].exists)
+  }
+  private func assertDetailIsShowing(_ app: XCUIApplication, name: String) {
+    XCTAssertTrue(app.navigationBars["Exercise details"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts[name].exists)
+    XCTAssertTrue(app.buttons["Add to my exercises"].exists)
+  }
+  private func assertExerciseLibraryIsShowing(_ app: XCUIApplication, name: String) {
+    XCTAssertTrue(app.navigationBars["Exercise library"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.navigationBars["Exercise details"].exists)
+    XCTAssertFalse(app.buttons["Add to my exercises"].exists)
+    XCTAssertTrue(app.staticTexts[name].exists)
+  }
+  private func leaveExerciseDetail(_ app: XCUIApplication, title: String = "Exercise details") {
+    let bar = app.navigationBars[title]
+    XCTAssertTrue(bar.waitForExistence(timeout: 5))
+    let back = bar.buttons.matching(
+      NSPredicate(format: "label != %@ AND label != %@", "Muscle map", "肌肉图")
+    ).element(boundBy: 0)
+    XCTAssertTrue(back.waitForExistence(timeout: 5))
+    back.tap()
   }
   private func attachScreenshot(_ app: XCUIApplication, name: String) {
     let attachment = XCTAttachment(screenshot: app.screenshot())

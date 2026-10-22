@@ -249,6 +249,38 @@ private func catalogueFixtures() throws -> [Record<Exercise>] {
   }
 }
 
+@Test func muscleMapParsesEveryShippedDiagram() throws {
+  for name in ["male-front", "male-back", "female-front", "female-back"] {
+    let url = try #require(Bundle.module.url(forResource: name, withExtension: "svg"))
+    let artwork = try MuscleMap.parse(svg: Data(contentsOf: url))
+    #expect(artwork.viewBox.x == 0)
+    #expect(artwork.viewBox.y == 0)
+    #expect(artwork.viewBox.width == 1024)
+    #expect(artwork.viewBox.height == 1536)
+    #expect(!artwork.outline.isEmpty)
+    #expect(artwork.surfaces.count >= 28)
+  }
+}
+@Test func fixtureHighlightSurfacesExistInArtwork() throws {
+  var artwork: [String: MuscleMapArtwork] = [:]
+  for name in ["male-front", "male-back", "female-front", "female-back"] {
+    let url = try #require(Bundle.module.url(forResource: name, withExtension: "svg"))
+    artwork[name] = try MuscleMap.parse(svg: Data(contentsOf: url))
+  }
+  for record in try catalogueFixtures() {
+    let diagram = try #require(record.data.diagram)
+    for highlight in diagram.highlights ?? [] where highlight.matched {
+      for view in diagram.views {
+        let map = try #require(artwork["\(diagram.gender)-\(view)"])
+        for surface in highlight.surfaces {
+          #expect(
+            map.surfaces[surface] != nil,
+            "\(record.id) surface \(surface) is missing from \(diagram.gender)-\(view)")
+        }
+      }
+    }
+  }
+}
 @Test func muscleMapPreservesRepeatedSurfacesAndUnmappedRegions() throws {
   let url = try #require(Bundle.module.url(forResource: "male-front", withExtension: "svg"))
   let artwork = try MuscleMap.parse(svg: Data(contentsOf: url))

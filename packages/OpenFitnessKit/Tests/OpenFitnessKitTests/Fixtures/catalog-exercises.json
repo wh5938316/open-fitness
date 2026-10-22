@@ -40,8 +40,8 @@
             "region": "abs",
             "role": "primary",
             "weight": 1,
-            "groups": ["ABS"],
-            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "groups": ["CORE"],
+            "surfaces": ["CORE_LEFT", "CORE_RIGHT"],
             "matched": true
           }
         ],
@@ -111,8 +111,8 @@
             "region": "abs",
             "role": "primary",
             "weight": 1,
-            "groups": ["ABS"],
-            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "groups": ["CORE"],
+            "surfaces": ["CORE_LEFT", "CORE_RIGHT"],
             "matched": true
           }
         ],
@@ -180,8 +180,8 @@
             "region": "abs",
             "role": "primary",
             "weight": 1,
-            "groups": ["ABS"],
-            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "groups": ["CORE"],
+            "surfaces": ["CORE_LEFT", "CORE_RIGHT"],
             "matched": true
           }
         ],
