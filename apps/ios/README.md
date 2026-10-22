@@ -46,9 +46,19 @@ Servers from migration `0007_food_catalog` onward own the catalog cache. Older c
 
 - **Health:** user-approved dietary energy, protein, carbohydrates, fat and fiber export, actual receipts, pending delivery display, selected writer controls, pause, and optional short-lived daily HealthKit summary sharing with the coach. OpenFitness never connects directly to Xiaomi services.
 - **Watch:** cached plans, exercise navigation, actual set entry, rest countdown, live workout pause/resume/finish, heart rate and active energy through `HKWorkoutSession`, Apple Health workout saving, and durable transfer of structured training commands to the phone.
-- **Localization:** English and Simplified Chinese, including permission descriptions, errors and settings; shared API identifiers and user-authored text are unaffected.
+- **Localization:** English and Simplified Chinese, including permission descriptions, errors and settings. First launch follows the first system language preference; the time zone falls back to Asia/Shanghai until account context loads. Language changes stay local to the app and do not change web or agent preferences. Shared API identifiers and user-authored text are unaffected.
 
 The Watch is a companion, not a standalone OAuth client. The iPhone must connect once and transfer a plan. Cached Watch training can continue without reachability; queued operations upload through the paired phone. OAuth and device secrets are never transferred to the Watch. Existing Watch workouts stay bound to their original account when the phone disconnects or changes accounts.
+
+## Exercise catalogue
+
+The training toolbar opens the exercise library in browse mode. Plan editing and active workouts use the same paginated picker, with a 400 ms search debounce, source scopes, body part/equipment/category/target filters, translated details, and explicit adoption into the owner's exercises. The client enables catalogue controls only when `exerciseCatalog` is `shared_catalog`. Older servers retain personal exercise search.
+
+Details render native muscle maps from the server's public SVG assets; no WebView, external exercise media, third-party Swift dependency, or complete local catalogue is used. Taxonomy is cached for seven days per account, origin and app language, with stale fallback. Parsed artwork is cached by origin and artwork package version. Exercise translations provide a Chinese fallback even when owner preferences request English; taxonomy labels still follow owner locale when it overrides Accept-Language.
+
+Selecting an exercise remembers up to 20 recent records per account. Offline pickers show those recent records without searching the server. Unplanned workout exercises retain a snapshot in the durable command journal and upload only the exercise ID; the server adopts catalogue exercises in the same transaction as the first logged set. Existing plan and workout snapshots are not rewritten. Watch catalogue browsing and unplanned exercise cards are not implemented.
+
+Production catalogue availability requires PR #11's Worker deployment, remote migrations 0008/0009, and production seed separately. This iOS change includes that server branch for local/API compatibility and does not deploy, migrate, or seed remote data.
 
 ## Retry and privacy behavior
 
@@ -62,7 +72,9 @@ Optional coach summaries contain daily steps, active energy, exercise minutes, l
 
 ## Validation boundaries
 
-`OpenFitnessKit` tests cover PKCE/callback attacks, origin restrictions, concurrent refresh, missing nutrients and health versions, account boundaries, durable retries and both language dictionaries. XCUITest navigates deterministic debug fixtures for training, recipe detail and Chinese settings. Debug fixtures are compiled out of Release. They do not contact a service or claim a real HealthKit write.
+`OpenFitnessKit` tests cover PKCE/callback attacks, origin restrictions, concurrent refresh, missing nutrients and health versions, account boundaries, durable retries and both language dictionaries. XCUITest navigates deterministic debug fixtures for training, recipe detail, Chinese settings, catalogue selection, three pages of exercise search, and unplanned set entry. Debug fixtures are compiled out of Release and do not claim a real HealthKit write.
+
+The optional muscle-map UI test downloads only the existing public SVG files from a local static server. It is skipped unless explicitly enabled. In one terminal, run `python3 -m http.server 18788 --bind 127.0.0.1 --directory apps/server/public`; run the XCUITest command above with `TEST_RUNNER_OPENFITNESS_ARTWORK_TEST_SERVER=1` in the other terminal. This exercises both body shapes without credentials or remote access.
 
 Workers integration tests validate the device permission, single writer, leases, receipts, corrections, recovery, and cache boundary against local D1/KV/R2. Browser acceptance validates the shared Clerk sign-in, OAuth, and MCP flow. Production Clerk approval, real Watch sensor data, background delivery, device signing and Apple Health permissions must also be checked on your own physical devices.
 

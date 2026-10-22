@@ -38,6 +38,109 @@ import XCTest
     XCTAssertTrue(app.tabBars.buttons["今天"].waitForExistence(timeout: 5))
     attachScreenshot(app, name: "Settings in Simplified Chinese")
   }
+  func testChineseCatalogueDetailCanAddExerciseToPlan() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-ui-testing-zh"]
+    app.launch()
+    app.tabBars.buttons["训练"].tap()
+    app.buttons["new-plan"].tap()
+    let name = app.textFields["plan-name"]
+    XCTAssertTrue(name.waitForExistence(timeout: 5))
+    name.tap()
+    name.typeText("Catalogue plan")
+    app.buttons["plan-add-exercise"].tap()
+    let search = app.searchFields.firstMatch
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    search.tap()
+    search.typeText("卧推")
+    let info = app.buttons["exercise-info-cat-preview-bench"]
+    XCTAssertTrue(info.waitForExistence(timeout: 5))
+    info.tap()
+    XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
+    app.buttons["select-exercise-detail"].tap()
+    XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
+    app.navigationBars.buttons["保存"].tap()
+    XCTAssertTrue(app.staticTexts["Catalogue plan"].waitForExistence(timeout: 5))
+    attachScreenshot(app, name: "Catalogue plan in Simplified Chinese")
+  }
+  func testUnplannedCatalogueExerciseCanLogMultipleSets() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Resume workout")).firstMatch
+      .tap()
+    let add = app.buttons["workout-add-exercise"]
+    app.swipeUp()
+    XCTAssertTrue(add.waitForExistence(timeout: 5))
+    add.tap()
+    let search = app.searchFields.firstMatch
+    XCTAssertTrue(search.waitForExistence(timeout: 5))
+    search.tap()
+    search.typeText("bench")
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["select-exercise-detail"].tap()
+    for _ in 0..<2 {
+      let log = app.buttons["log-set-2"]
+      if !log.isHittable { app.swipeUp() }
+      XCTAssertTrue(log.waitForExistence(timeout: 5))
+      log.tap()
+      app.buttons["save-set"].tap()
+    }
+    XCTAssertEqual(
+      app.buttons.matching(
+        NSPredicate(
+          format: "identifier BEGINSWITH %@", "recorded-set-cat-preview-bench-"
+        )
+      ).count, 2)
+  }
+  func testCataloguePaginationReachesTheThirdPage() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-ui-testing-pages"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    XCTAssertTrue(app.staticTexts["Bench fixture 0"].waitForExistence(timeout: 5))
+    let thirdPage = app.staticTexts["Bench fixture 64"]
+    for _ in 0..<28 {
+      if thirdPage.exists { break }
+      app.swipeUp()
+    }
+    XCTAssertTrue(thirdPage.waitForExistence(timeout: 5))
+    XCTAssertEqual(app.staticTexts.matching(identifier: "Bench fixture 64").count, 1)
+  }
+  func testCatalogueAdoptionKeepsDetailsVisible() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["Add to my exercises"].tap()
+    let adopted = app.buttons["In my exercises"]
+    XCTAssertTrue(adopted.waitForExistence(timeout: 5))
+    XCTAssertFalse(adopted.isEnabled)
+  }
+  func testMuscleMapCanSwitchGender() throws {
+    guard ProcessInfo.processInfo.environment["OPENFITNESS_ARTWORK_TEST_SERVER"] == "1" else {
+      throw XCTSkip(
+        "Serve apps/server/public on localhost:18788 and set TEST_RUNNER_OPENFITNESS_ARTWORK_TEST_SERVER=1."
+      )
+    }
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-ui-testing-artwork"]
+    app.launch()
+    app.tabBars.buttons["Train"].tap()
+    app.buttons["Exercise library"].tap()
+    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["Muscle map"].tap()
+    app.buttons["Male"].tap()
+    XCTAssertTrue(app.otherElements["muscle-map-male"].waitForExistence(timeout: 10))
+    attachScreenshot(app, name: "Male muscle map")
+    app.buttons["Muscle map"].tap()
+    app.buttons["Female"].tap()
+    XCTAssertTrue(app.otherElements["muscle-map-female"].waitForExistence(timeout: 10))
+    attachScreenshot(app, name: "Female muscle map")
+  }
   private func attachScreenshot(_ app: XCUIApplication, name: String) {
     let attachment = XCTAttachment(screenshot: app.screenshot())
     attachment.name = name

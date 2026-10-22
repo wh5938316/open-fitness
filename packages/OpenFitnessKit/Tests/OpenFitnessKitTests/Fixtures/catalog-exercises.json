@@ -1,0 +1,214 @@
+[
+  {
+    "id": "cat-0001",
+    "kind": "exercise",
+    "version": 0,
+    "data": {
+      "name": "3/4 sit-up",
+      "aliases": [],
+      "category": "strength",
+      "instructions": "1. Lie flat on your back with your knees bent and feet flat on the ground.\n2. Place your hands behind your head with your elbows pointing outwards.\n3. Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.\n4. Pause for a moment at the top, then slowly lower your upper body back down to the starting position.\n5. Repeat for the desired number of repetitions.",
+      "description": null,
+      "needsRewrite": false,
+      "muscleGroups": ["abs", "hip flexors", "lower back"],
+      "equipment": ["body weight"],
+      "mediaAssetIds": [],
+      "notes": "",
+      "bodyPart": "waist",
+      "primaryMuscles": ["abs"],
+      "secondaryMuscles": ["hip flexors", "lower back"],
+      "movementCategory": "calisthenics",
+      "externalIds": {
+        "exercisedb": "0001",
+        "opengym": "0001"
+      },
+      "source": {
+        "kind": "catalog",
+        "origin": "exercisedb",
+        "catalogId": "cat-0001",
+        "catalogVersion": 1,
+        "license": "MIT",
+        "attribution": "ExerciseDB names and English instructions (MIT) via hasaneyldrm/exercises-dataset @7455efae41b3. Movement category and muscle-region ids are catalogue structure from openGym; no openGym prose or media is included.",
+        "needsRewrite": false
+      },
+      "diagram": {
+        "gender": "male",
+        "views": ["front"],
+        "regions": [],
+        "highlights": [
+          {
+            "region": "abs",
+            "role": "primary",
+            "weight": 1,
+            "groups": ["ABS"],
+            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "matched": true
+          }
+        ],
+        "hrefs": [
+          {
+            "gender": "male",
+            "view": "front",
+            "href": "/musclemap/male-front.svg"
+          }
+        ]
+      },
+      "i18n": {
+        "zh-CN": {
+          "name": "四分之三仰卧起坐",
+          "aliases": ["卷腹"],
+          "description": "练习腹肌。",
+          "instructions": "1. 仰卧。\\n2. 卷起上身。",
+          "provenance": {
+            "method": "machine",
+            "reviewed": false,
+            "tool": "fixture"
+          }
+        }
+      }
+    },
+    "createdAt": "2026-10-21T00:00:00.000Z",
+    "updatedAt": "2026-10-21T00:00:00.000Z"
+  },
+  {
+    "id": "cat-0002",
+    "kind": "exercise",
+    "version": 0,
+    "data": {
+      "name": "45° side bend",
+      "aliases": [],
+      "category": "strength",
+      "instructions": "1. Stand with your feet shoulder-width apart and your arms extended straight down by your sides.\n2. Keeping your back straight and your core engaged, slowly bend your torso to one side, lowering your hand towards your knee.\n3. Pause for a moment at the bottom, then slowly return to the starting position.\n4. Repeat on the other side.\n5. Continue alternating sides for the desired number of repetitions.",
+      "description": null,
+      "needsRewrite": false,
+      "muscleGroups": ["abs", "obliques"],
+      "equipment": ["body weight"],
+      "mediaAssetIds": [],
+      "notes": "",
+      "bodyPart": "waist",
+      "primaryMuscles": ["abs"],
+      "secondaryMuscles": ["obliques"],
+      "movementCategory": "strength",
+      "externalIds": {
+        "exercisedb": "0002",
+        "opengym": "0002"
+      },
+      "source": {
+        "kind": "catalog",
+        "origin": "exercisedb",
+        "catalogId": "cat-0002",
+        "catalogVersion": 1,
+        "license": "MIT",
+        "attribution": "ExerciseDB names and English instructions (MIT) via hasaneyldrm/exercises-dataset @7455efae41b3. Movement category and muscle-region ids are catalogue structure from openGym; no openGym prose or media is included.",
+        "needsRewrite": false
+      },
+      "diagram": {
+        "gender": "male",
+        "views": ["front"],
+        "regions": [],
+        "highlights": [
+          {
+            "region": "abs",
+            "role": "primary",
+            "weight": 1,
+            "groups": ["ABS"],
+            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "matched": true
+          }
+        ],
+        "hrefs": [
+          {
+            "gender": "male",
+            "view": "front",
+            "href": "/musclemap/male-front.svg"
+          }
+        ]
+      },
+      "i18n": {
+        "zh-CN": {
+          "name": "四分之三仰卧起坐",
+          "aliases": ["卷腹"],
+          "description": "练习腹肌。",
+          "instructions": "1. 仰卧。\\n2. 卷起上身。",
+          "provenance": {
+            "method": "machine",
+            "reviewed": false,
+            "tool": "fixture"
+          }
+        }
+      }
+    },
+    "createdAt": "2026-10-21T00:00:00.000Z",
+    "updatedAt": "2026-10-21T00:00:00.000Z"
+  },
+  {
+    "id": "cat-0004",
+    "kind": "exercise",
+    "version": 0,
+    "data": {
+      "name": "air twisting crunch",
+      "aliases": [],
+      "category": "strength",
+      "instructions": "1. Lie supine, knees lifted off the floor.\n2. Rest the hands behind the head.\n3. Raise the shoulders and rotate toward one knee.\n4. Come back, then rotate toward the other knee.\n5. Move slowly and keep the low back on the floor.",
+      "description": "With both legs suspended, twist through each crunch to train the abs and the obliques.",
+      "needsRewrite": false,
+      "muscleGroups": ["abs", "obliques", "hip flexors"],
+      "equipment": ["body weight"],
+      "mediaAssetIds": [],
+      "notes": "",
+      "bodyPart": "waist",
+      "primaryMuscles": ["abs"],
+      "secondaryMuscles": ["obliques", "hip flexors"],
+      "movementCategory": "calisthenics",
+      "externalIds": {
+        "opengym": "0004"
+      },
+      "source": {
+        "kind": "catalog",
+        "origin": "opengym",
+        "catalogId": "cat-0004",
+        "catalogVersion": 1,
+        "attribution": "Structured fields and muscle-region ids from openGym (AGPL-3.0) @e348fc17. Description and instructions are original rewrites, or blank when needsRewrite is true. No openGym code, translations, or media.",
+        "needsRewrite": false
+      },
+      "diagram": {
+        "gender": "female",
+        "views": ["front"],
+        "regions": [],
+        "highlights": [
+          {
+            "region": "abs",
+            "role": "primary",
+            "weight": 1,
+            "groups": ["ABS"],
+            "surfaces": ["ABS_LEFT", "ABS_RIGHT"],
+            "matched": true
+          }
+        ],
+        "hrefs": [
+          {
+            "gender": "male",
+            "view": "front",
+            "href": "/musclemap/male-front.svg"
+          }
+        ]
+      },
+      "variantOf": "cat-5266",
+      "i18n": {
+        "zh-CN": {
+          "name": "四分之三仰卧起坐",
+          "aliases": ["卷腹"],
+          "description": "练习腹肌。",
+          "instructions": "1. 仰卧。\\n2. 卷起上身。",
+          "provenance": {
+            "method": "machine",
+            "reviewed": false,
+            "tool": "fixture"
+          }
+        }
+      }
+    },
+    "createdAt": "2026-10-21T00:00:00.000Z",
+    "updatedAt": "2026-10-21T00:00:00.000Z"
+  }
+]

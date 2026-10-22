@@ -181,16 +181,54 @@ public enum CopyKey: String, CaseIterable, Sendable {
   case mealTime
   case calculationUnavailable
   case disableHealth
+  case exerciseLibrary
+  case exerciseSearchPrompt
+  case sourceAll
+  case sourceMine
+  case sourceCatalog
+  case catalogBadge
+  case bodyPart
+  case equipment
+  case movementCategory
+  case targetMuscle
+  case clearFilter
+  case primaryMuscles
+  case secondaryMuscles
+  case exerciseDescription
+  case exerciseSteps
+  case noInstructions
+  case needsRewrite
+  case addToPlan
+  case addToMyExercises
+  case inMyExercises
+  case attribution
+  case bodyFront
+  case bodyBack
+  case bodyMale
+  case bodyFemale
+  case offlineCatalog
+  case addExerciseToWorkout
+  case recentExercises
+  case loadMore
+  case exerciseDetails
+  case muscleMap
 }
 public enum AppLanguage: String, Codable, CaseIterable, Sendable {
   case english = "en"
   case simplifiedChinese = "zh-CN"
   public var locale: Locale { Locale(identifier: rawValue) }
+  public static func preferredSystemLanguage(_ languages: [String] = Locale.preferredLanguages)
+    -> AppLanguage
+  {
+    let first = languages.first?.lowercased() ?? ""
+    return first.hasPrefix("zh-hans") || first == "zh-cn" || first == "zh-sg"
+      ? .simplifiedChinese : .english
+  }
 }
 public struct Localizer: Sendable {
   public var language: AppLanguage
   public init(_ language: AppLanguage = .english) { self.language = language }
-  private var bundle: Bundle {
+  var bundle: Bundle {
     let code = language == .simplifiedChinese ? "zh-hans" : "en"
     let actual = Bundle.module.localizations.first { $0.lowercased() == code } ?? code
     return Bundle(url: Bundle.module.bundleURL.appendingPathComponent(actual + ".lproj"))

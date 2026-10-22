@@ -42,6 +42,9 @@ importers:
       '@modelcontextprotocol/client':
         specifier: ^2.3.1
         version: 2.3.1
+      '@musclemap/assets':
+        specifier: 1.1.0
+        version: 1.1.0
       '@playwright/test':
         specifier: ^1.64.1
         version: 1.64.1
@@ -492,6 +495,12 @@ packages:
   '@modelcontextprotocol/server@2.3.1':
     resolution: {integrity: sha512-e59MfWuSssj6DoQ96JCTqdW1AXT5/XtnTl0WWd6MU1Ka434fFUGGosCLJbGNySDhHGvxQWoRWK137FXYFkYNWw==}
     engines: {node: '>=20'}
+
+  '@musclemap/assets@1.1.0':
+    resolution: {integrity: sha512-Ms3Xb2DYcHf4wecfO5APtuSv6sTFal2tkqi4KcfU+LWVFWtUyxxXMHm8nPH+J1CMR2OCbu35RoJq2t5FCQngdQ==}
+
+  '@musclemap/core@1.1.0':
+    resolution: {integrity: sha512-KyJ4kquElR6DO5iFvnIht47mw72oi+Xim5CT6+7ku2+ynjL6y4M5lAWaR1szUB0PVsjBGgnfK+eOTKtgC47hLg==}
 
   '@noble/ciphers@1.3.0':
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
@@ -1636,6 +1645,12 @@ snapshots:
     dependencies:
       '@modelcontextprotocol/core': 2.3.1
       zod: 4.6.7
+
+  '@musclemap/assets@1.1.0':
+    dependencies:
+      '@musclemap/core': 1.1.0
+
+  '@musclemap/core@1.1.0': {}
 
   '@noble/ciphers@1.3.0': {}
 

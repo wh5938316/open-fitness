@@ -23,6 +23,10 @@ public struct Record<Value: Codable & Sendable>: Codable, Sendable, Identifiable
 public struct RecordPage<Value: Codable & Sendable>: Codable, Sendable {
   public var items: [Record<Value>]
   public var cursor: String?
+  public init(items: [Record<Value>], cursor: String? = nil) {
+    self.items = items
+    self.cursor = cursor
+  }
 }
 public struct Nutrients: Codable, Sendable, Equatable {
   public var energyKcal: Double?
@@ -161,11 +165,118 @@ public struct Exercise: Codable, Sendable {
   public var equipment: [String]?
   public var mediaAssetIds: [String]?
   public var notes: String?
+  public var description: String?
+  public var bodyPart: String?
+  public var primaryMuscles: [String]?
+  public var secondaryMuscles: [String]?
+  public var movementCategory: String?
+  public var muscleMap: MuscleMapRegions?
+  public var diagram: ExerciseDiagram?
+  public var source: ExerciseSource?
+  public var i18n: [String: ExerciseTranslation]?
+  public var externalIds: [String: String]?
+  public var needsRewrite: Bool?
+  public var variantOf: String?
   public init(name: String, category: String = "strength", instructions: String = "") {
     self.name = name
     self.category = category
     self.instructions = instructions
   }
+}
+public struct ExerciseTranslation: Codable, Sendable {
+  public var name: String?
+  public var aliases: [String]?
+  public var description: String?
+  public var instructions: String?
+  public var provenance: ExerciseProvenance?
+}
+public struct ExerciseProvenance: Codable, Sendable {
+  public var method: String
+  public var reviewed: Bool
+  public var tool: String?
+}
+public struct ExerciseSource: Codable, Sendable {
+  public var kind: String
+  public var origin: String?
+  public var catalogId: String?
+  public var catalogVersion: Int?
+  public var license: String?
+  public var attribution: String?
+  public var needsRewrite: Bool?
+}
+public struct DiagramHighlight: Codable, Sendable, Hashable {
+  public var region: String
+  public var role: String
+  public var weight: Double?
+  public var groups: [String]
+  public var surfaces: [String]
+  public var matched: Bool
+}
+public struct ExerciseDiagram: Codable, Sendable {
+  public struct Href: Codable, Sendable {
+    public var gender: String
+    public var view: String
+    public var href: String
+  }
+  public var gender: String
+  public var views: [String]
+  public var regions: [String]?
+  public var hrefs: [Href]?
+  public var highlights: [DiagramHighlight]?
+}
+public struct MuscleMapRegions: Codable, Sendable {
+  public var primaries: [String]?
+  public var secondaries: [String]?
+  public var weights: [String: Double]?
+  public var bodyPart: String?
+}
+public struct ExerciseTaxonomy: Codable, Sendable {
+  public struct Label: Codable, Sendable, Hashable, Identifiable {
+    public var id: String
+    public var label: String
+  }
+  public var bodyParts: [Label]
+  public var equipment: [Label]
+  public var muscles: [Label]
+  public var movementCategories: [Label]
+  public var diagrams: Diagrams
+  public var attribution: String?
+  public var diagramNote: String?
+  public struct Diagrams: Codable, Sendable {
+    public var artwork: String
+    public var viewBox: String
+    public var packageVersion: String
+    public var license: String
+    public var assets: [String: [String: String]]
+  }
+}
+public struct AdoptExerciseResult: Codable, Sendable {
+  public var exercise: Record<Exercise>
+  public var created: Bool
+}
+extension Exercise {
+  public func localized(_ language: AppLanguage) -> Exercise {
+    guard language == .simplifiedChinese, let translation = i18n?["zh-CN"],
+      let name = translation.name, !name.isEmpty
+    else { return self }
+    var copy = self
+    var aliases = copy.aliases ?? []
+    if copy.name != name { aliases.append(copy.name) }
+    aliases += translation.aliases ?? []
+    var seen = Set<String>()
+    copy.aliases = aliases.filter { $0 != name && seen.insert($0).inserted }
+    copy.name = name
+    if let description = translation.description, !description.isEmpty {
+      copy.description = description
+    }
+    if let instructions = translation.instructions, !instructions.isEmpty {
+      copy.instructions = instructions
+    }
+    return copy
+  }
+}
+extension Record where Value == Exercise {
+  public var isCatalogOnly: Bool { version == 0 && id.hasPrefix("cat-") }
 }
 public struct SetMetrics: Codable, Sendable {
   public var reps: Int?
@@ -313,7 +424,10 @@ public struct AgentContext: Codable, Sendable {
   public var locale: String
   public var timeZone: String
   public var capabilities: Capabilities
-  public struct Capabilities: Codable, Sendable { public var healthSyncProtocol: Int? }
+  public struct Capabilities: Codable, Sendable {
+    public var healthSyncProtocol: Int?
+    public var exerciseCatalog: String?
+  }
 }
 public struct HealthDeviceCredential: Codable, Sendable {
   public var deviceId: String

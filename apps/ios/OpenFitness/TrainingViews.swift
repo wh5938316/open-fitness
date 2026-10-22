@@ -109,6 +109,7 @@ struct PlanCard: View {
 struct TrainingView: View {
   @Environment(AppModel.self) private var model
   @State private var showEditor = false
+  @State private var showLibrary = false
   var body: some View {
     Screen {
       PendingBanner()
@@ -155,12 +156,22 @@ struct TrainingView: View {
     }.navigationTitle(model.text(.train)).toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button {
+          showLibrary = true
+        } label: {
+          Image(systemName: "books.vertical")
+        }
+        .accessibilityLabel(model.text(.exerciseLibrary))
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
           showEditor = true
         } label: {
           Image(systemName: "plus")
-        }.accessibilityLabel(model.text(.newPlan))
+        }.accessibilityLabel(model.text(.newPlan)).accessibilityIdentifier("new-plan")
       }
-    }.sheet(isPresented: $showEditor) { PlanEditor() }.refreshable { await model.refresh() }
+    }.sheet(isPresented: $showEditor) { PlanEditor() }
+      .sheet(isPresented: $showLibrary) { ExercisePicker(mode: .browse) }
+      .refreshable { await model.refresh() }
   }
 }
 struct PlanDetail: View {
@@ -177,7 +188,13 @@ struct PlanDetail: View {
               Text(String(format: "%02d", index + 1)).font(.caption.monospaced()).foregroundStyle(
                 .secondary)
               VStack(alignment: .leading, spacing: 5) {
-                Text(entry.exerciseSnapshot.name).font(.title3.bold())
+                NavigationLink {
+                  ExerciseDetailView(
+                    record: .init(
+                      id: entry.exerciseId, kind: "exercise", data: entry.exerciseSnapshot))
+                } label: {
+                  Text(entry.exerciseSnapshot.localized(model.language).name).font(.title3.bold())
+                }.buttonStyle(.plain)
                 Text(
                   "\(entry.sets.count) \(model.text(.sets)) · \(Int(entry.restSeconds)) \(model.text(.sec)) \(model.text(.rest))"
                 ).font(.subheadline).foregroundStyle(.secondary)
@@ -191,6 +208,17 @@ struct PlanDetail: View {
             }
             if let guidance = entry.exerciseSnapshot.instructions, !guidance.isEmpty {
               Text(guidance).font(.subheadline).foregroundStyle(.secondary)
+            }
+            if model.supportsExerciseCatalog,
+              entry.exerciseSnapshot.diagram?.highlights?.contains(where: \.matched) == true
+            {
+              DisclosureGroup(model.text(.muscleMap)) {
+                MuscleMapView(
+                  diagram: entry.exerciseSnapshot.diagram,
+                  accessibilitySummary: entry.exerciseSnapshot.localized(model.language).name
+                )
+                .frame(maxHeight: 220)
+              }
             }
             ForEach(entry.exerciseSnapshot.mediaAssetIds ?? [], id: \.self) {
               PrivateRecipeImage(assetId: $0).frame(height: 180).clipShape(.rect(cornerRadius: 16))
@@ -250,6 +278,8 @@ struct WorkoutRunner: View {
   var historical: Record<Workout>? = nil
   @State private var editor: SetEditorSelection?
   @State private var confirmsFinish = false
+  @State private var choosingExercise = false
+  @State private var extraExercises: [Record<Exercise>] = []
   private var record: Record<Workout>? {
     if let historical { return model.workouts.first { $0.id == historical.id } ?? historical }
     return model.activeWorkout
@@ -279,14 +309,15 @@ struct WorkoutRunner: View {
             }
           }
           PendingBanner()
-          ForEach(Array((record.data.plan?.snapshot.exercises ?? []).enumerated()), id: \.offset) {
+          ForEach(Array(exercises(in: record).enumerated()), id: \.element.exerciseId) {
             index, exercise in
             Surface {
               VStack(alignment: .leading, spacing: 16) {
                 HStack {
                   Text(String(format: "%02d", index + 1)).font(.caption.monospaced())
                     .foregroundStyle(.green)
-                  Text(exercise.exerciseSnapshot.name).font(.title3.bold())
+                  Text(exercise.exerciseSnapshot.localized(model.language).name).font(
+                    .title3.bold())
                   Spacer()
                 }
                 if let text = exercise.exerciseSnapshot.instructions, !text.isEmpty {
@@ -312,10 +343,10 @@ struct WorkoutRunner: View {
                 }
                 if record.data.state == "active" {
                   Button {
-                    var metrics = exercise.sets[
-                      min(
-                        record.data.sets.filter { $0.exerciseId == exercise.exerciseId }.count,
-                        max(exercise.sets.count - 1, 0))]
+                    let index = min(
+                      record.data.sets.filter { $0.exerciseId == exercise.exerciseId }.count,
+                      max(exercise.sets.count - 1, 0))
+                    var metrics = exercise.sets.isEmpty ? SetMetrics() : exercise.sets[index]
                     metrics.groupId = exercise.groupId ?? metrics.groupId
                     editor = .init(
                       exerciseId: exercise.exerciseId, exercise: exercise.exerciseSnapshot,
@@ -329,6 +360,12 @@ struct WorkoutRunner: View {
             }
           }
           if record.data.state == "active" {
+            Button {
+              choosingExercise = true
+            } label: {
+              Label(model.text(.addExerciseToWorkout), systemImage: "plus")
+                .frame(maxWidth: .infinity)
+            }.buttonStyle(.glass).accessibilityIdentifier("workout-add-exercise")
             Button(model.text(.finishWorkout)) { confirmsFinish = true }.buttonStyle(
               .glassProminent
             ).frame(maxWidth: .infinity).accessibilityIdentifier("finish-workout")
@@ -340,13 +377,22 @@ struct WorkoutRunner: View {
             }.font(.footnote).frame(maxWidth: .infinity).padding(.top, 8)
           }
         }.navigationTitle(record.data.name).navigationBarTitleDisplayMode(.inline)
+          .sheet(isPresented: $choosingExercise) {
+            ExercisePicker(
+              selected: { exercise in
+                if !exercises(in: record).contains(where: { $0.exerciseId == exercise.id }) {
+                  extraExercises.append(exercise)
+                }
+              }, selectionTitle: .addExerciseToWorkout)
+          }
           .sheet(item: $editor) { selection in
             SetEditor(selection: selection) { metrics in
               if let existing = selection.existing {
                 try await model.reviseSet(workout: record, set: existing, metrics: metrics)
               } else {
                 try model.logSet(
-                  exerciseId: selection.exerciseId, metrics: metrics, restSeconds: selection.rest)
+                  exerciseId: selection.exerciseId, metrics: metrics, restSeconds: selection.rest,
+                  exercise: selection.exercise)
               }
             }
           }
@@ -368,6 +414,23 @@ struct WorkoutRunner: View {
       }
     }
   }
+  private func exercises(in record: Record<Workout>) -> [PlannedExercise] {
+    var entries = record.data.plan?.snapshot.exercises ?? []
+    var seen = Set(entries.map(\.exerciseId))
+    for set in record.data.sets where seen.insert(set.exerciseId).inserted {
+      entries.append(
+        .init(
+          exerciseId: set.exerciseId, exercise: set.exerciseSnapshot, sets: [set.metrics]))
+    }
+    for extra in extraExercises where seen.insert(extra.id).inserted {
+      let metrics =
+        extra.data.category == "duration"
+        ? SetMetrics(durationSeconds: 60) : SetMetrics(reps: 8, weightKg: 0)
+      entries.append(.init(exerciseId: extra.id, exercise: extra.data, sets: [metrics]))
+    }
+    return entries
+  }
+
 }
 private struct SetEditor: View {
   @Environment(AppModel.self) private var model

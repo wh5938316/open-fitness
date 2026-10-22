@@ -374,6 +374,21 @@ public actor APIClient {
   public func imageData(assetId: String) async throws -> Data {
     try await authorizedData(path: "/api/v1/media/\(assetId.pathSegment)/content")
   }
+  public func publicData(path: String) async throws -> Data {
+    guard
+      [
+        "/musclemap/male-front.svg", "/musclemap/male-back.svg",
+        "/musclemap/female-front.svg", "/musclemap/female-back.svg",
+      ].contains(path)
+    else { throw APIError("INVALID_ENDPOINT") }
+    let url = try server.endpoint(path)
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    let (data, response) = try await transport.data(for: request)
+    guard response.url == url else { throw APIError("INVALID_ENDPOINT") }
+    try Self.check(data, response)
+    return data
+  }
   public func upload(_ bytes: Data, to url: URL, contentType: String) async throws {
     guard url.host == server.url.host, url.port == server.url.port, url.scheme == server.url.scheme
     else { throw APIError("INVALID_UPLOAD_URL") }
@@ -416,6 +431,11 @@ public actor APIClient {
   }
 }
 extension String {
+  public var queryValue: String {
+    addingPercentEncoding(
+      withAllowedCharacters: CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")) ?? ""
+  }
   public var pathSegment: String {
     addingPercentEncoding(
       withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-_"))) ?? ""

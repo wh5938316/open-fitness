@@ -55,6 +55,26 @@
 			"isa" = "PBXBuildFile";
 			"fileRef" = "B415396C3DAD4E3A53532B2D";
 		};
+		"1566D88703D0FDCB08A66080" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "ExerciseCatalogModel.swift";
+			"sourceTree" = "<group>";
+		};
+		"E960F8825A2F7CDDDA7B11F7" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "1566D88703D0FDCB08A66080";
+		};
+		"AAB20B0FD59BC1E9300E25F6" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "ExerciseCatalogViews.swift";
+			"sourceTree" = "<group>";
+		};
+		"37DF7F2756F60BA24FA59922" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "AAB20B0FD59BC1E9300E25F6";
+		};
 		"666667FB27584D58EA627C18" = {
 			"isa" = "PBXFileReference";
 			"lastKnownFileType" = "sourcecode.swift";
@@ -101,6 +121,16 @@
 			"path" = "Info.plist";
 			"sourceTree" = "<group>";
 		};
+		"A6599FBD92C9F176A00AB23A" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "MuscleMapView.swift";
+			"sourceTree" = "<group>";
+		};
+		"CD9159CB979F9DF155F0D6FF" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "A6599FBD92C9F176A00AB23A";
+		};
 		"A02FA6C7F176470A1A018086" = {
 			"isa" = "PBXFileReference";
 			"lastKnownFileType" = "text.plist.entitlements";
@@ -136,6 +166,16 @@
 		"E0DAC355DB05178B480CAC03" = {
 			"isa" = "PBXBuildFile";
 			"fileRef" = "23195780B4B7143468E78296";
+		};
+		"ECEE0F5650A17E730A5F42B9" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "PreviewExerciseCatalog.swift";
+			"sourceTree" = "<group>";
+		};
+		"46A8B213DCBB6BA2B829F2D8" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "ECEE0F5650A17E730A5F42B9";
 		};
 		"2ADBC76D758609394BB24810" = {
 			"isa" = "PBXFileReference";
@@ -201,15 +241,19 @@
 				"1FF5BE5F0365090847988773",
 				"817405764C65AF7179C020AD",
 				"B415396C3DAD4E3A53532B2D",
+				"1566D88703D0FDCB08A66080",
+				"AAB20B0FD59BC1E9300E25F6",
 				"666667FB27584D58EA627C18",
 				"C9C7403B20D73BF640E9BE72",
 				"8FEFAD8726862055968F9631",
 				"DF8854B3CFB5C3849BD375E6",
 				"6B8A1AB13D230F495A3919A0",
+				"A6599FBD92C9F176A00AB23A",
 				"A02FA6C7F176470A1A018086",
 				"D65D0C1604BE95A7427397D7",
 				"545C593E8CEA37C85DAA77E1",
 				"23195780B4B7143468E78296",
+				"ECEE0F5650A17E730A5F42B9",
 				"2ADBC76D758609394BB24810",
 				"8EAD3B017759AD2B24898416",
 				"7B8B255F1E6F9F0DF18B9EB9",
@@ -232,13 +276,17 @@
 				"43981CB1F29D81EBD6D65E5E",
 				"C54243C5B1683FF750FBF589",
 				"2E1E32F9F2FDE2B9E9D92C6B",
+				"E960F8825A2F7CDDDA7B11F7",
+				"37DF7F2756F60BA24FA59922",
 				"6A27DDDFB459AE08DE8799E4",
 				"4733B24B2C690941F0547F78",
 				"4C77B8BA348705F72500FB5C",
 				"79513B5ABFBB73D347504B6F",
+				"CD9159CB979F9DF155F0D6FF",
 				"06425E39EB83E83C2073CC4E",
 				"ABFA7320D309A516257B8292",
 				"E0DAC355DB05178B480CAC03",
+				"46A8B213DCBB6BA2B829F2D8",
 				"6C1A9D6D84797F77959A4CC7",
 				"366167408D93ACD926D4FB58",
 			);

@@ -42,6 +42,84 @@ export class D1Repository implements Repository {
       .first<Row>();
     return row ? entity<T>(row) : null;
   }
+  async getAny<T>(ownerId: string, kind: EntityKind, id: string): Promise<Entity<T> | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM documents WHERE owner_id=? AND kind=? AND id=?')
+      .bind(ownerId, kind, id)
+      .first<Row>();
+    return row ? entity<T>(row) : null;
+  }
+  async searchOwnedExercises<T>(
+    ownerId: string,
+    options: {
+      limit: number;
+      cursor?: { date: string; id: string };
+      query?: string;
+      bodyPart?: string;
+      equipment?: string;
+      target?: string;
+      movementCategory?: string;
+    },
+  ): Promise<{ items: Entity<T>[]; cursor: { date: string; id: string } | null }> {
+    const limit = Math.min(Math.max(options.limit, 1), 100);
+    const where = ['owner_id=?', "kind='exercise'", 'deleted=0'];
+    const params: unknown[] = [ownerId];
+    const query = options.query?.trim();
+    if (query) {
+      const pattern = containsLike(query);
+      where.push(`(
+        LOWER(COALESCE(json_extract(data, '$.name'), '')) LIKE ? ESCAPE '\\'
+        OR EXISTS (
+          SELECT 1 FROM json_each(documents.data, '$.aliases') AS alias
+          WHERE LOWER(alias.value) LIKE ? ESCAPE '\\'
+        )
+        OR LOWER(COALESCE(json_extract(data, '$.i18n."zh-CN".name'), '')) LIKE ? ESCAPE '\\'
+        OR EXISTS (
+          SELECT 1 FROM json_each(COALESCE(json_extract(documents.data, '$.i18n."zh-CN".aliases'), '[]')) AS alias
+          WHERE LOWER(alias.value) LIKE ? ESCAPE '\\'
+        )
+      )`);
+      params.push(pattern, pattern, pattern, pattern);
+    }
+    if (options.bodyPart) {
+      where.push("json_extract(data, '$.bodyPart') = ?");
+      params.push(options.bodyPart);
+    }
+    if (options.equipment) {
+      where.push(`EXISTS (
+        SELECT 1 FROM json_each(documents.data, '$.equipment') AS item
+        WHERE item.value = ?
+      )`);
+      params.push(options.equipment);
+    }
+    if (options.target) {
+      where.push(`EXISTS (
+        SELECT 1 FROM json_each(documents.data, '$.primaryMuscles') AS item
+        WHERE item.value = ?
+      )`);
+      params.push(options.target);
+    }
+    if (options.movementCategory) {
+      where.push("json_extract(data, '$.movementCategory') = ?");
+      params.push(options.movementCategory);
+    }
+    if (options.cursor) {
+      where.push('(created_at < ? OR (created_at = ? AND id < ?))');
+      params.push(options.cursor.date, options.cursor.date, options.cursor.id);
+    }
+    const result = await this.db
+      .prepare(
+        `SELECT * FROM documents WHERE ${where.join(' AND ')} ORDER BY created_at DESC, id DESC LIMIT ?`,
+      )
+      .bind(...params, limit + 1)
+      .all<Row>();
+    const rows = result.results.slice(0, limit);
+    const last = rows.at(-1);
+    return {
+      items: rows.map((row) => entity<T>(row)),
+      cursor: result.results.length > limit && last ? { date: last.created_at, id: last.id } : null,
+    };
+  }
   async list<T>(
     ownerId: string,
     kind: EntityKind,

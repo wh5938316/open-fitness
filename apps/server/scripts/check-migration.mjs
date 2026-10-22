@@ -561,9 +561,60 @@ try {
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='catalog_products'")
     .first();
   assert(catalog?.name === 'catalog_products', 'catalog_products was not created');
+  const exerciseMigration = migrations.find((migration) => migration.name.startsWith('0008'));
+  assert(exerciseMigration, 'expected migration 0008');
+  const mealBeforeExerciseMigration = await db
+    .prepare('SELECT version,data,updated_at FROM documents WHERE owner_id=? AND id=?')
+    .bind('owner', 'meal-1')
+    .first();
+  await db.batch(exerciseMigration.queries.map((query) => db.prepare(query)));
+  const mealAfterExerciseMigration = await db
+    .prepare('SELECT version,data,updated_at FROM documents WHERE owner_id=? AND id=?')
+    .bind('owner', 'meal-1')
+    .first();
+  assert(
+    JSON.stringify(mealAfterExerciseMigration) === JSON.stringify(mealBeforeExerciseMigration),
+    'exercise catalogue migration rewrote a meal',
+  );
+  assert(
+    (
+      await db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='catalog_exercises'")
+        .first()
+    )?.name === 'catalog_exercises',
+    'catalog_exercises was not created',
+  );
+  assert(
+    (
+      await db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='catalog_exercise_i18n'",
+        )
+        .first()
+    )?.name === 'catalog_exercise_i18n',
+    'catalog_exercise_i18n was not created',
+  );
+  await db
+    .prepare(
+      `INSERT INTO catalog_exercises(
+        id, external_id, source, catalog_version, data, search_text,
+        body_part, equipment, target, movement_category, needs_rewrite, updated_at
+      ) VALUES ('cat-0001','0001','exercisedb',1,'{"name":"Example"}','example','waist','body weight','abs','strength',0,'2026-10-21T00:00:00.000Z')`,
+    )
+    .run();
+  const i18nDescription = migrations.find((migration) => migration.name.startsWith('0009'));
+  assert(i18nDescription, 'expected migration 0009');
+  await db.batch(i18nDescription.queries.map((query) => db.prepare(query)));
+  const descriptionColumn = await db.prepare(`PRAGMA table_info('catalog_exercise_i18n')`).all();
+  assert(
+    descriptionColumn.results.some((column) => column.name === 'description'),
+    'catalog_exercise_i18n.description was not added',
+  );
   console.log('migration 0005 preserved owner data and per-owner recovery');
   console.log('migration 0006 removed local WebAuthn tables');
   console.log('migration 0007 backfilled the earliest food barcode per owner');
+  console.log('migration 0008 added the global exercise catalogue');
+  console.log('migration 0009 added Chinese exercise descriptions');
 } finally {
   await miniflare.dispose();
   rmSync(persist, { recursive: true, force: true });

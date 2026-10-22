@@ -1,0 +1,105 @@
+{
+  "package": "@musclemap/assets",
+  "version": "1.1.0",
+  "license": "MIT",
+  "viewBox": "0 0 1024 1536",
+  "regions": {
+    "abs": {
+      "groups": ["CORE"],
+      "surfaces": ["CORE_LEFT", "CORE_RIGHT"],
+      "matched": true,
+      "note": "MuscleMap draws the midline abdomen as CORE. There is no separate rectus id."
+    },
+    "adductors": {
+      "groups": ["ADDUCTORS"],
+      "surfaces": ["ADDUCTOR_LEFT", "ADDUCTOR_RIGHT"],
+      "matched": true
+    },
+    "biceps": {
+      "groups": ["BICEPS"],
+      "surfaces": ["BICEPS_LEFT", "BICEPS_RIGHT"],
+      "matched": true
+    },
+    "calves": {
+      "groups": ["CALVES"],
+      "surfaces": ["CALVES_LEFT", "CALVES_RIGHT"],
+      "matched": true
+    },
+    "chest": {
+      "groups": ["CHEST"],
+      "surfaces": ["CHEST_LEFT", "CHEST_RIGHT"],
+      "matched": true
+    },
+    "deltoids": {
+      "groups": ["SHOULDERS_FRONT", "SHOULDERS_SIDE", "SHOULDERS_REAR"],
+      "surfaces": [
+        "SHOULDER_FRONT_LEFT",
+        "SHOULDER_FRONT_RIGHT",
+        "SHOULDER_SIDE_LEFT",
+        "SHOULDER_SIDE_RIGHT",
+        "SHOULDER_REAR_LEFT",
+        "SHOULDER_REAR_RIGHT"
+      ],
+      "matched": true,
+      "note": "All three deltoid heads. A front SVG contains the front and side heads; a back SVG contains the rear and side heads."
+    },
+    "forearm": {
+      "groups": ["FOREARMS"],
+      "surfaces": ["FOREARM_LEFT", "FOREARM_RIGHT"],
+      "matched": true
+    },
+    "gluteal": {
+      "groups": ["GLUTES"],
+      "surfaces": ["GLUTEUS_LEFT", "GLUTEUS_RIGHT"],
+      "matched": true
+    },
+    "hamstring": {
+      "groups": ["HAMSTRINGS"],
+      "surfaces": ["HAMSTRINGS_LEFT", "HAMSTRINGS_RIGHT"],
+      "matched": true
+    },
+    "hip-flexors": {
+      "groups": ["HIP_FLEXORS"],
+      "surfaces": ["HIP_FLEXOR_LEFT", "HIP_FLEXOR_RIGHT"],
+      "matched": true,
+      "note": "OpenFitness addition. Iliopsoas along the upper inner hip, below the abs and above the inner quad."
+    },
+    "lower-back": {
+      "groups": ["BACK_LOWER"],
+      "surfaces": ["LOWER_BACK_LEFT", "LOWER_BACK_RIGHT"],
+      "matched": true
+    },
+    "obliques": {
+      "groups": ["OBLIQUES"],
+      "surfaces": ["OBLIQUE_LEFT", "OBLIQUE_RIGHT"],
+      "matched": true
+    },
+    "quadriceps": {
+      "groups": ["QUADS"],
+      "surfaces": ["QUADRICEPS_LEFT", "QUADRICEPS_RIGHT"],
+      "matched": true
+    },
+    "serratus": {
+      "groups": ["SERRATUS"],
+      "surfaces": ["SERRATUS_LEFT", "SERRATUS_RIGHT"],
+      "matched": true,
+      "note": "OpenFitness addition. Four finger-shaped slips on the lateral ribcage, in the notch under the chest and above the obliques."
+    },
+    "trapezius": {
+      "groups": ["TRAPEZIUS"],
+      "surfaces": ["TRAPEZIUS_LEFT", "TRAPEZIUS_RIGHT"],
+      "matched": true
+    },
+    "triceps": {
+      "groups": ["TRICEPS"],
+      "surfaces": ["TRICEPS_LEFT", "TRICEPS_RIGHT"],
+      "matched": true
+    },
+    "upper-back": {
+      "groups": ["BACK_UPPER"],
+      "surfaces": ["UPPER_BACK_LEFT", "UPPER_BACK_RIGHT"],
+      "matched": true,
+      "note": "OpenFitness addition. Rhomboid sheet between the spine and the medial scapula, from the upper scapula to its lower tip, kept off the trapezius and medial to the lats."
+    }
+  }
+}

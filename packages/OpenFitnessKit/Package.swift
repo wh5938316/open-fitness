@@ -8,6 +8,8 @@ let package = Package(
   products: [.library(name: "OpenFitnessKit", targets: ["OpenFitnessKit"])],
   targets: [
     .target(name: "OpenFitnessKit", resources: [.process("Resources")]),
-    .testTarget(name: "OpenFitnessKitTests", dependencies: ["OpenFitnessKit"]),
+    .testTarget(
+      name: "OpenFitnessKitTests", dependencies: ["OpenFitnessKit"],
+      resources: [.process("Fixtures")]),
   ]
 )

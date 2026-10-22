@@ -8,6 +8,8 @@ import {
   insufficientScope,
 } from '@cloudflare/workers-oauth-provider';
 import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
+import { D1ExerciseCatalog } from './adapters/d1-exercise-catalog';
+import { MUSCLEMAP_FILES } from './domain/exercise-catalog';
 import { createFoodCatalog } from './adapters/cached-food-catalog';
 import { D1FoodCatalogStore } from './adapters/d1-food-catalog';
 import { D1HealthSyncStore } from './adapters/cloudflare-health';
@@ -43,7 +45,12 @@ import { requireBarcode } from './domain/barcode';
 import { foodSchema } from './domain/schemas';
 
 function createServices(env: Env, actor: Actor, origin: string) {
-  const service = new FitnessService(new D1Repository(env.DB), actor, createFoodCatalog(env));
+  const service = new FitnessService(
+    new D1Repository(env.DB),
+    actor,
+    createFoodCatalog(env),
+    new D1ExerciseCatalog(env.DB),
+  );
   const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
   media.register();
   registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
@@ -240,6 +247,11 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
   app.get('/auth.js', (c) => env.ASSETS.fetch(c.req.raw));
   app.get('/:chunk{auth-[A-Za-z0-9]+\\.js}', (c) => env.ASSETS.fetch(c.req.raw));
   app.get('/README.md', (c) => env.ASSETS.fetch(new Request(auth.origin + '/README.md')));
+  app.get('/musclemap/:file', (c) => {
+    const file = c.req.param('file');
+    if (!MUSCLEMAP_FILES.includes(file as (typeof MUSCLEMAP_FILES)[number])) return c.notFound();
+    return env.ASSETS.fetch(new Request(new URL(`/musclemap/${file}`, auth.origin)));
+  });
   app.get('/openapi.json', (c) => {
     const { service } = createServices(
       env,

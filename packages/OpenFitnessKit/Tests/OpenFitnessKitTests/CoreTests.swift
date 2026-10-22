@@ -187,3 +187,224 @@ private actor LostResponseTransport: HTTPTransport {
   try await otherAccount.recoverPendingMutations()
   #expect(await transport.bodies.count == 2)
 }
+
+@Test func searchQueryValuesUseOnlyRFC3986UnreservedCharacters() throws {
+  let values = [
+    ("卧推", "%E5%8D%A7%E6%8E%A8"),
+    ("哑铃 卧推", "%E5%93%91%E9%93%83%20%E5%8D%A7%E6%8E%A8"),
+    ("3/4 sit-up", "3%2F4%20sit-up"),
+    ("a&b=c", "a%26b%3Dc"), ("+", "%2B"), ("-._~", "-._~"),
+  ]
+  let server = try ServerConfiguration("https://fitness.example")
+  for (raw, encoded) in values {
+    #expect(raw.queryValue == encoded)
+    let url = try server.endpoint("/api/v1/exercises?query=\(raw.queryValue)")
+    #expect(
+      URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first?.value == raw)
+  }
+}
+
+private func catalogueFixtures() throws -> [Record<Exercise>] {
+  let url = try #require(Bundle.module.url(forResource: "catalog-exercises", withExtension: "json"))
+  return try JSONDecoder().decode([Record<Exercise>].self, from: Data(contentsOf: url))
+}
+@Test func catalogueFieldsRoundTripAndOlderExercisesStillDecode() throws {
+  let records = try catalogueFixtures()
+  #expect(records.count == 3)
+  #expect(records[0].isCatalogOnly)
+  #expect(records[0].data.description == nil)
+  #expect(records[0].data.diagram?.highlights?.first?.matched == true)
+  #expect(records[0].data.i18n?["zh-CN"]?.provenance?.tool == "fixture")
+  #expect(records[2].data.variantOf == "cat-5266")
+  let roundTrip = try JSONDecoder().decode(
+    [Record<Exercise>].self, from: JSONEncoder().encode(records))
+  #expect(try JSONValue.from(records) == JSONValue.from(roundTrip))
+  let old = try JSONDecoder().decode(Exercise.self, from: Data(#"{"name":"Squat"}"#.utf8))
+  #expect(old.name == "Squat")
+  #expect(old.diagram == nil)
+  #expect(old.localized(.simplifiedChinese).name == "Squat")
+}
+@Test func catalogueLocalizationIsIdempotent() throws {
+  let original = try catalogueFixtures()[0].data
+  #expect(try JSONValue.from(original.localized(.english)) == JSONValue.from(original))
+  let translated = original.localized(.simplifiedChinese)
+  #expect(translated.name == "四分之三仰卧起坐")
+  #expect(translated.description == "练习腹肌。")
+  #expect(translated.aliases?.contains(original.name) == true)
+  #expect(translated.aliases?.contains(translated.name) == false)
+  #expect(
+    try JSONValue.from(translated.localized(.simplifiedChinese)) == JSONValue.from(translated))
+  var presented = translated
+  presented.aliases = [original.name, "卷腹"]
+  #expect(try JSONValue.from(presented.localized(.simplifiedChinese)) == JSONValue.from(presented))
+}
+@Test func catalogueCapabilityIsOptional() throws {
+  for capabilities in [#"{}"#, #"{"exerciseCatalog":"shared_catalog","healthSyncProtocol":1}"#] {
+    let json = """
+      {"ownerId":"owner","actorId":"actor","locale":"en","timeZone":"Asia/Shanghai",
+       "capabilities":\(capabilities)}
+      """
+    let context = try JSONDecoder().decode(AgentContext.self, from: Data(json.utf8))
+    #expect(context.capabilities.exerciseCatalog == (capabilities == "{}" ? nil : "shared_catalog"))
+  }
+}
+
+@Test func muscleMapPreservesRepeatedSurfacesAndUnmappedRegions() throws {
+  let url = try #require(Bundle.module.url(forResource: "male-front", withExtension: "svg"))
+  let artwork = try MuscleMap.parse(svg: Data(contentsOf: url))
+  #expect(artwork.viewBox.width == 1024)
+  #expect(artwork.viewBox.height == 1536)
+  #expect(artwork.surfaces.count == 30)
+  #expect(artwork.surfaces["QUADRICEPS_LEFT"]?.count == 2)
+  #expect(artwork.surfaces["SERRATUS_LEFT"]?.count == 4)
+  #expect(artwork.surfaces["ABDUCTOR_LEFT"] != nil)
+  #expect(artwork.regions["ABDUCTOR_LEFT"] == nil)
+  #expect(!artwork.outline.isEmpty)
+  let roundTrip = try JSONDecoder().decode(
+    MuscleMapArtwork.self, from: JSONEncoder().encode(artwork))
+  #expect(roundTrip.surfaces == artwork.surfaces)
+}
+private func svgWithPath(_ path: String) -> Data {
+  Data(
+    """
+    <svg viewBox="0 0 10 20"><path data-outline="BODY" d="M0 0L10 20Z"/>
+    <path data-surface="TEST" d="\(path)"/></svg>
+    """.utf8)
+}
+@Test func muscleMapSupportsRelativeRepeatedAndHorizontalVerticalCommands() throws {
+  let artwork = try MuscleMap.parse(
+    svg: svgWithPath("m1 2 3 4h2v-1c1 0 2 0 3 0 1 0 2 0 3 0z M1e1 .5L-1-2Z"))
+  #expect(
+    artwork.surfaces["TEST"]?.first == [
+      .move(1, 2), .line(4, 6), .line(6, 6), .line(6, 5),
+      .cubic(7, 5, 8, 5, 9, 5), .cubic(10, 5, 11, 5, 12, 5), .close,
+      .move(10, 0.5), .line(-1, -2), .close,
+    ])
+}
+@Test func muscleMapRejectsUnsupportedAndMalformedPaths() {
+  for path in ["M0 0Q1 2 3 4", "M0 0A1 2 3 4 5 6 7", "M0 0L1", "M0 0@L1 2", "", "Z"] {
+    #expect(throws: APIError.self) { try MuscleMap.parse(svg: svgWithPath(path)) }
+  }
+}
+private actor PublicArtworkTransport: HTTPTransport {
+  var requests: [URLRequest] = []
+  let status: Int
+  let responseURL: URL?
+  init(status: Int = 200, responseURL: URL? = nil) {
+    self.status = status
+    self.responseURL = responseURL
+  }
+  func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+    requests.append(request)
+    return (
+      Data("svg".utf8),
+      HTTPURLResponse(
+        url: responseURL ?? request.url!, statusCode: status, httpVersion: nil,
+        headerFields: ["Location": "https://attacker.example/art.svg"])!
+    )
+  }
+}
+@Test func publicArtworkNeverSendsCredentialsAndRejectsOtherEndpoints() async throws {
+  let transport = PublicArtworkTransport()
+  let api = APIClient(
+    server: try .init("https://fitness.example"),
+    vault: TestVault(.init(clientId: "native", accessToken: "private-token")), transport: transport)
+  #expect(try await api.publicData(path: "/musclemap/male-front.svg") == Data("svg".utf8))
+  let requests = await transport.requests
+  #expect(requests.first?.httpMethod == "GET")
+  #expect(requests.first?.value(forHTTPHeaderField: "Authorization") == nil)
+  for path in [
+    "/api/v1/exercises", "https://attacker.example/musclemap/male-front.svg",
+    "//attacker.example/musclemap/male-front.svg", "/musclemap/../api/v1/agent-context",
+    "/musclemap/%2e%2e/secret.svg", "/musclemap/male-front.svg?token=secret",
+    "/musclemap/male-front.svg\n",
+  ] {
+    await #expect(throws: APIError.self) { try await api.publicData(path: path) }
+  }
+  #expect(await transport.requests.count == 1)
+  for transport in [
+    PublicArtworkTransport(status: 302),
+    PublicArtworkTransport(
+      responseURL: URL(string: "https://attacker.example/musclemap/male-front.svg")),
+  ] {
+    let api = APIClient(
+      server: try .init("https://fitness.example"), vault: TestVault(nil), transport: transport)
+    await #expect(throws: APIError.self) {
+      try await api.publicData(path: "/musclemap/male-front.svg")
+    }
+  }
+}
+
+@Test func unplannedWorkoutSetsPersistTheirSnapshotAndLegacyCommandsStillDecode() throws {
+  let planned = Exercise(name: "Original plan squat")
+  let plan = Record(
+    id: "plan", kind: "plan",
+    data: TrainingPlan(
+      name: "Training", exercises: [.init(exerciseId: "squat", exercise: planned, sets: [])]))
+  let workout = Record(id: "session", kind: "workout", data: Workout(name: "Training", plan: plan))
+  let catalog = try catalogueFixtures()[0]
+  let command = try OfflineCommand.workoutSet(
+    accountKey: "owner", workout: workout, exerciseId: catalog.id,
+    metrics: .init(reps: 8), exercise: catalog.data)
+  #expect(command.exerciseSnapshot?.name == catalog.data.name)
+  var journal = CommandJournal()
+  try journal.enqueue(command, accountKey: "owner")
+  let restored = try JSONDecoder().decode(CommandJournal.self, from: JSONEncoder().encode(journal))
+  #expect(restored.commands[0].exerciseSnapshot?.name == catalog.data.name)
+  #expect(restored.commands[0].id == command.id)
+  #expect(throws: APIError.self) {
+    try OfflineCommand.workoutSet(
+      accountKey: "owner", workout: workout, exerciseId: "unknown", metrics: .init())
+  }
+  let plannedCommand = try OfflineCommand.workoutSet(
+    accountKey: "owner", workout: workout, exerciseId: "squat", metrics: .init(),
+    exercise: Exercise(name: "Updated template"))
+  #expect(plannedCommand.exerciseSnapshot?.name == "Original plan squat")
+  var old = try #require(
+    JSONSerialization.jsonObject(with: JSONEncoder().encode(command)) as? [String: Any])
+  old.removeValue(forKey: "exerciseSnapshot")
+  let legacy = try JSONDecoder().decode(
+    OfflineCommand.self, from: JSONSerialization.data(withJSONObject: old))
+  #expect(legacy.exerciseSnapshot == nil)
+  #expect(legacy.exerciseId == command.exerciseId)
+}
+@Test func recentExercisesAreBoundedDeduplicatedAndPersistedInUseOrder() throws {
+  var history = RecentExerciseHistory()
+  for index in 0..<25 {
+    history.record(
+      .init(id: "exercise-\(index)", kind: "exercise", data: .init(name: "Exercise \(index)")))
+  }
+  #expect(history.items.count == 20)
+  #expect(history.items.first?.id == "exercise-24")
+  let date = Date(timeIntervalSince1970: 1234)
+  history.record(
+    .init(id: "exercise-10", kind: "exercise", data: .init(name: "Selected again")), at: date)
+  #expect(history.items.first?.id == "exercise-10")
+  #expect(history.items.first?.usedAt == date)
+  #expect(Set(history.items.map(\.id)).count == 20)
+  let decoded = try JSONDecoder().decode(
+    RecentExerciseHistory.self, from: JSONEncoder().encode(history))
+  #expect(decoded.items.map(\.id) == history.items.map(\.id))
+  #expect(decoded.items.first?.record.data.name == "Selected again")
+}
+
+@Test func initialLanguageFollowsTheFirstSystemPreference() {
+  for locale in ["zh-Hans", "zh-Hans-CN", "zh-CN", "zh-SG"] {
+    #expect(AppLanguage.preferredSystemLanguage([locale, "en"]) == .simplifiedChinese)
+  }
+  for languages in [["en", "zh-Hans"], ["zh-Hant-TW"], ["ja"], []] {
+    #expect(AppLanguage.preferredSystemLanguage(languages) == .english)
+  }
+}
+
+@Test func localizationDictionariesHaveExactlyTheTypedKeys() throws {
+  let expected = Set(CopyKey.allCases.map(\.rawValue))
+  for language in AppLanguage.allCases {
+    let url = try #require(
+      Localizer(language).bundle.url(forResource: "Localizable", withExtension: "strings"))
+    let dictionary = try #require(
+      PropertyListSerialization.propertyList(
+        from: Data(contentsOf: url), format: nil) as? [String: String])
+    #expect(Set(dictionary.keys) == expected)
+  }
+}
