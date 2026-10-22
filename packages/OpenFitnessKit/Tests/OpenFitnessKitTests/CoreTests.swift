@@ -386,3 +386,12 @@ private actor PublicArtworkTransport: HTTPTransport {
   #expect(decoded.items.map(\.id) == history.items.map(\.id))
   #expect(decoded.items.first?.record.data.name == "Selected again")
 }
+
+@Test func initialLanguageFollowsTheFirstSystemPreference() {
+  for locale in ["zh-Hans", "zh-Hans-CN", "zh-CN", "zh-SG"] {
+    #expect(AppLanguage.preferredSystemLanguage([locale, "en"]) == .simplifiedChinese)
+  }
+  for languages in [["en", "zh-Hans"], ["zh-Hant-TW"], ["ja"], []] {
+    #expect(AppLanguage.preferredSystemLanguage(languages) == .english)
+  }
+}

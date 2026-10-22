@@ -217,6 +217,13 @@ public enum AppLanguage: String, Codable, CaseIterable, Sendable {
   case english = "en"
   case simplifiedChinese = "zh-CN"
   public var locale: Locale { Locale(identifier: rawValue) }
+  public static func preferredSystemLanguage(_ languages: [String] = Locale.preferredLanguages)
+    -> AppLanguage
+  {
+    let first = languages.first?.lowercased() ?? ""
+    return first.hasPrefix("zh-hans") || first == "zh-cn" || first == "zh-sg"
+      ? .simplifiedChinese : .english
+  }
 }
 public struct Localizer: Sendable {
   public var language: AppLanguage

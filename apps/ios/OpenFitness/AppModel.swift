@@ -65,7 +65,7 @@ final class AppModel {
   var supportsExerciseCatalog: Bool { context?.capabilities.exerciseCatalog == "shared_catalog" }
   var copy: Localizer { .init(language) }
   func text(_ key: CopyKey) -> String { copy.text(key) }
-  var timeZone: String { context?.timeZone ?? "America/New_York" }
+  var timeZone: String { context?.timeZone ?? "Asia/Shanghai" }
   var accountKey: String {
     context.map {
       OAuthSecurity.accountKey(
@@ -102,7 +102,8 @@ final class AppModel {
       UserDefaults.standard.string(forKey: "serverAddress")
       ?? "https://open-fitness.hotee.workers.dev"
     language =
-      AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "en") ?? .english
+      UserDefaults.standard.string(forKey: "appLanguage").flatMap(AppLanguage.init(rawValue:))
+      ?? AppLanguage.preferredSystemLanguage()
     monitor.pathUpdateHandler = { [weak self] path in
       let online = path.status == .satisfied
       Task { @MainActor in
