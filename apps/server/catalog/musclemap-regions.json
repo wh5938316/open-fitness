@@ -10,6 +10,12 @@
       "matched": true,
       "note": "MuscleMap draws the midline abdomen as CORE. There is no separate rectus id."
     },
+    "abductors": {
+      "groups": ["ABDUCTORS"],
+      "surfaces": ["ABDUCTOR_LEFT", "ABDUCTOR_RIGHT"],
+      "matched": true,
+      "note": "Hip abductors. The same ABDUCTOR surfaces are drawn on the front and back views."
+    },
     "adductors": {
       "groups": ["ADDUCTORS"],
       "surfaces": ["ADDUCTOR_LEFT", "ADDUCTOR_RIGHT"],
@@ -64,6 +70,12 @@
       "matched": true,
       "note": "OpenFitness addition. Iliopsoas along the upper inner hip, below the abs and above the inner quad."
     },
+    "lats": {
+      "groups": ["LATS"],
+      "surfaces": ["LATISSIMUS_LEFT", "LATISSIMUS_RIGHT"],
+      "matched": true,
+      "note": "Latissimus dorsi. Drawn on the back views as LATISSIMUS, separate from the rhomboid upper-back sheet."
+    },
     "lower-back": {
       "groups": ["BACK_LOWER"],
       "surfaces": ["LOWER_BACK_LEFT", "LOWER_BACK_RIGHT"],
@@ -101,5 +113,53 @@
       "matched": true,
       "note": "OpenFitness addition. Rhomboid sheet between the spine and the medial scapula, from the upper scapula to its lower tip, kept off the trapezius and medial to the lats."
     }
+  },
+  "aliases": {
+    "abs": "abs",
+    "abdominals": "abs",
+    "core": "abs",
+    "lower abs": "abs",
+    "abductors": "abductors",
+    "adductors": "adductors",
+    "biceps": "biceps",
+    "calves": "calves",
+    "soleus": "calves",
+    "chest": "chest",
+    "pectorals": "chest",
+    "upper chest": "chest",
+    "deltoids": "deltoids",
+    "delts": "deltoids",
+    "shoulders": "deltoids",
+    "rear deltoids": "deltoids",
+    "forearm": "forearm",
+    "forearms": "forearm",
+    "wrist flexors": "forearm",
+    "wrist extensors": "forearm",
+    "grip muscles": "forearm",
+    "gluteal": "gluteal",
+    "glutes": "gluteal",
+    "hamstring": "hamstring",
+    "hamstrings": "hamstring",
+    "hip-flexors": "hip-flexors",
+    "hip flexors": "hip-flexors",
+    "lats": "lats",
+    "latissimus dorsi": "lats",
+    "lower-back": "lower-back",
+    "lower back": "lower-back",
+    "spine": "lower-back",
+    "obliques": "obliques",
+    "quadriceps": "quadriceps",
+    "quads": "quadriceps",
+    "serratus": "serratus",
+    "serratus anterior": "serratus",
+    "trapezius": "trapezius",
+    "traps": "trapezius",
+    "levator scapulae": "trapezius",
+    "triceps": "triceps",
+    "upper-back": "upper-back",
+    "upper back": "upper-back",
+    "rhomboids": "upper-back",
+    "inner thighs": "adductors",
+    "groin": "adductors"
   }
 }

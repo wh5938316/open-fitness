@@ -461,6 +461,7 @@
   },
   "diagramRegions": [
     "abs",
+    "abductors",
     "adductors",
     "biceps",
     "calves",
@@ -470,6 +471,7 @@
     "gluteal",
     "hamstring",
     "hip-flexors",
+    "lats",
     "lower-back",
     "obliques",
     "quadriceps",

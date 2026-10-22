@@ -8,11 +8,11 @@
 - **openGym structure** (`source: "opengym"`, plus movement category and `muscleMap` on ExerciseDB rows): ids, names, body part, equipment, muscles, movement category, and muscle-region ids from [openGym](https://github.com/DuarteSantos8/openGym) commit `e348fc17c42c7e9a211c5972e573ad3698190ee2`. No openGym code, `i18n` files, or media.
 - **Wording**: openGym descriptions and instruction lists are not copied. A fresh rewrite is stored only when it passes a phrase-distance check. The current seed has a rewrite for every openGym row, so `needsRewrite` is false. ExerciseDB rows keep the MIT English steps and a null English description.
 - **Variants**: catalogue files that only point at another id become rows with `variantOf`. They reuse the base movement's text and pick `diagram.gender` from the female/male link. They do not add images.
-- **Chinese**: `exercise-i18n.zh-CN.json` has a zh-CN name, description, and instruction list for every catalogue id. The wording is written for this project. Variants reuse the base exercise's Chinese entry. `taxonomy.json` has zh-CN labels for body parts, equipment, muscles (including the 17 diagram regions), and movement categories.
+- **Chinese**: `exercise-i18n.zh-CN.json` has a zh-CN name, description, and instruction list for every catalogue id. The wording is written for this project. Variants reuse the base exercise's Chinese entry. `taxonomy.json` has zh-CN labels for body parts, equipment, muscles (including the 19 diagram regions), and movement categories.
 
 `taxonomy.json` holds English and Chinese labels for body parts, equipment, muscles, and movement categories. Search text and `list_exercise_taxonomy` both read it.
 
-`musclemap-regions.json` maps catalogue region ids onto MuscleMap groups and surface ids. `musclemap-extra-paths.json` adds hip-flexor, serratus, and upper-back outlines that the package does not include. The flat SVGs are generated into `public/musclemap/` with `pnpm --filter @openfitness/server musclemap:svg`. Photo bodies from that package are not used.
+`musclemap-regions.json` maps catalogue region ids onto MuscleMap groups and surface ids. `lats` uses the package's `LATISSIMUS_*` paths and `abductors` uses `ABDUCTOR_*`. The `aliases` table maps muscle tokens such as `pectorals` and `glutes` onto those regions when a stored row has no `muscleMap` primaries. `musclemap-extra-paths.json` adds hip-flexor, serratus, and upper-back outlines that the package does not include. The flat SVGs are generated into `public/musclemap/` with `pnpm --filter @openfitness/server musclemap:svg`. Photo bodies from that package are not used.
 
 ## Rebuild
 

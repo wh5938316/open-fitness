@@ -13,6 +13,7 @@ export const OPENGIM_ATTRIBUTION =
 
 export const DIAGRAM_REGIONS = [
   'abs',
+  'abductors',
   'adductors',
   'biceps',
   'calves',
@@ -22,6 +23,7 @@ export const DIAGRAM_REGIONS = [
   'gluteal',
   'hamstring',
   'hip-flexors',
+  'lats',
   'lower-back',
   'obliques',
   'quadriceps',
@@ -32,6 +34,7 @@ export const DIAGRAM_REGIONS = [
 ];
 const FRONT = new Set([
   'abs',
+  'abductors',
   'adductors',
   'biceps',
   'chest',
@@ -40,7 +43,16 @@ const FRONT = new Set([
   'quadriceps',
   'serratus',
 ]);
-const BACK = new Set(['gluteal', 'hamstring', 'lower-back', 'trapezius', 'triceps', 'upper-back']);
+const BACK = new Set([
+  'abductors',
+  'gluteal',
+  'hamstring',
+  'lats',
+  'lower-back',
+  'trapezius',
+  'triceps',
+  'upper-back',
+]);
 const REGION_SET = new Set(DIAGRAM_REGIONS);
 
 const serverRoot = dirname(dirname(fileURLToPath(import.meta.url)));
