@@ -477,7 +477,7 @@ final class AppModel {
     await refresh()
   }
   func exercises(query: String = "") async throws -> [Record<Exercise>] {
-    let q = query.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
+    let q = query.queryValue
     return try await api().request(
       RecordPage<Exercise>.self, path: "/api/v1/exercises?limit=100&query=\(q)"
     ).items
@@ -578,7 +578,7 @@ final class AppModel {
       var items: [Record<Food>]
       var catalog: Catalog?
     }
-    let encoded = query.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
+    let encoded = query.queryValue
     let page = try await api().request(
       Page.self, path: "/api/v1/foods?query=\(encoded)&includeCatalog=true&limit=30")
     var hits = page.items.map { FoodSearchHit(id: $0.id, food: $0.data, savedId: $0.id) }

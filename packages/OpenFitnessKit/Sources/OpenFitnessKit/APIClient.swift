@@ -416,6 +416,11 @@ public actor APIClient {
   }
 }
 extension String {
+  public var queryValue: String {
+    addingPercentEncoding(
+      withAllowedCharacters: CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")) ?? ""
+  }
   public var pathSegment: String {
     addingPercentEncoding(
       withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-_"))) ?? ""

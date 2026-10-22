@@ -187,3 +187,19 @@ private actor LostResponseTransport: HTTPTransport {
   try await otherAccount.recoverPendingMutations()
   #expect(await transport.bodies.count == 2)
 }
+
+@Test func searchQueryValuesUseOnlyRFC3986UnreservedCharacters() throws {
+  let values = [
+    ("卧推", "%E5%8D%A7%E6%8E%A8"),
+    ("哑铃 卧推", "%E5%93%91%E9%93%83%20%E5%8D%A7%E6%8E%A8"),
+    ("3/4 sit-up", "3%2F4%20sit-up"),
+    ("a&b=c", "a%26b%3Dc"), ("+", "%2B"), ("-._~", "-._~"),
+  ]
+  let server = try ServerConfiguration("https://fitness.example")
+  for (raw, encoded) in values {
+    #expect(raw.queryValue == encoded)
+    let url = try server.endpoint("/api/v1/exercises?query=\(raw.queryValue)")
+    #expect(
+      URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first?.value == raw)
+  }
+}
