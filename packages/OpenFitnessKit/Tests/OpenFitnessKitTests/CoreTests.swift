@@ -248,3 +248,88 @@ private func catalogueFixtures() throws -> [Record<Exercise>] {
     #expect(context.capabilities.exerciseCatalog == (capabilities == "{}" ? nil : "shared_catalog"))
   }
 }
+
+@Test func muscleMapPreservesRepeatedSurfacesAndUnmappedRegions() throws {
+  let url = try #require(Bundle.module.url(forResource: "male-front", withExtension: "svg"))
+  let artwork = try MuscleMap.parse(svg: Data(contentsOf: url))
+  #expect(artwork.viewBox.width == 1024)
+  #expect(artwork.viewBox.height == 1536)
+  #expect(artwork.surfaces.count == 30)
+  #expect(artwork.surfaces["QUADRICEPS_LEFT"]?.count == 2)
+  #expect(artwork.surfaces["SERRATUS_LEFT"]?.count == 4)
+  #expect(artwork.surfaces["ABDUCTOR_LEFT"] != nil)
+  #expect(artwork.regions["ABDUCTOR_LEFT"] == nil)
+  #expect(!artwork.outline.isEmpty)
+  let roundTrip = try JSONDecoder().decode(
+    MuscleMapArtwork.self, from: JSONEncoder().encode(artwork))
+  #expect(roundTrip.surfaces == artwork.surfaces)
+}
+private func svgWithPath(_ path: String) -> Data {
+  Data(
+    """
+    <svg viewBox="0 0 10 20"><path data-outline="BODY" d="M0 0L10 20Z"/>
+    <path data-surface="TEST" d="\(path)"/></svg>
+    """.utf8)
+}
+@Test func muscleMapSupportsRelativeRepeatedAndHorizontalVerticalCommands() throws {
+  let artwork = try MuscleMap.parse(
+    svg: svgWithPath("m1 2 3 4h2v-1c1 0 2 0 3 0 1 0 2 0 3 0z M1e1 .5L-1-2Z"))
+  #expect(
+    artwork.surfaces["TEST"]?.first == [
+      .move(1, 2), .line(4, 6), .line(6, 6), .line(6, 5),
+      .cubic(7, 5, 8, 5, 9, 5), .cubic(10, 5, 11, 5, 12, 5), .close,
+      .move(10, 0.5), .line(-1, -2), .close,
+    ])
+}
+@Test func muscleMapRejectsUnsupportedAndMalformedPaths() {
+  for path in ["M0 0Q1 2 3 4", "M0 0A1 2 3 4 5 6 7", "M0 0L1", "M0 0@L1 2", "", "Z"] {
+    #expect(throws: APIError.self) { try MuscleMap.parse(svg: svgWithPath(path)) }
+  }
+}
+private actor PublicArtworkTransport: HTTPTransport {
+  var requests: [URLRequest] = []
+  let status: Int
+  let responseURL: URL?
+  init(status: Int = 200, responseURL: URL? = nil) {
+    self.status = status
+    self.responseURL = responseURL
+  }
+  func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+    requests.append(request)
+    return (
+      Data("svg".utf8),
+      HTTPURLResponse(
+        url: responseURL ?? request.url!, statusCode: status, httpVersion: nil,
+        headerFields: ["Location": "https://attacker.example/art.svg"])!
+    )
+  }
+}
+@Test func publicArtworkNeverSendsCredentialsAndRejectsOtherEndpoints() async throws {
+  let transport = PublicArtworkTransport()
+  let api = APIClient(
+    server: try .init("https://fitness.example"),
+    vault: TestVault(.init(clientId: "native", accessToken: "private-token")), transport: transport)
+  #expect(try await api.publicData(path: "/musclemap/male-front.svg") == Data("svg".utf8))
+  let requests = await transport.requests
+  #expect(requests.first?.httpMethod == "GET")
+  #expect(requests.first?.value(forHTTPHeaderField: "Authorization") == nil)
+  for path in [
+    "/api/v1/exercises", "https://attacker.example/musclemap/male-front.svg",
+    "//attacker.example/musclemap/male-front.svg", "/musclemap/../api/v1/agent-context",
+    "/musclemap/%2e%2e/secret.svg", "/musclemap/male-front.svg?token=secret",
+  ] {
+    await #expect(throws: APIError.self) { try await api.publicData(path: path) }
+  }
+  #expect(await transport.requests.count == 1)
+  for transport in [
+    PublicArtworkTransport(status: 302),
+    PublicArtworkTransport(
+      responseURL: URL(string: "https://attacker.example/musclemap/male-front.svg")),
+  ] {
+    let api = APIClient(
+      server: try .init("https://fitness.example"), vault: TestVault(nil), transport: transport)
+    await #expect(throws: APIError.self) {
+      try await api.publicData(path: "/musclemap/male-front.svg")
+    }
+  }
+}

@@ -240,12 +240,15 @@ struct ExerciseDetailView: View {
   var selected: ((Record<Exercise>) -> Void)?
   @State private var taxonomy: ExerciseTaxonomy?
   @State private var adopting = false
+  @AppStorage("muscleMapGender") private var gender = ""
   @State private var loadError: String?
   private var exercise: Exercise { record.data.localized(model.language) }
 
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
+        MuscleMapView(
+          diagram: exercise.diagram, genderOverride: gender, accessibilitySummary: muscleSummary)
         Text(exercise.name).font(.largeTitle.bold())
         if let aliases = exercise.aliases, !aliases.isEmpty {
           Text(aliases.prefix(3).joined(separator: " · ")).foregroundStyle(.secondary)
@@ -284,6 +287,21 @@ struct ExerciseDetailView: View {
       }.frame(maxWidth: .infinity, alignment: .leading).padding(20)
     }
     .navigationTitle(model.text(.exerciseDetails)).navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      if model.supportsExerciseCatalog,
+        exercise.diagram?.highlights?.contains(where: \.matched) == true
+      {
+        ToolbarItem(placement: .topBarTrailing) {
+          Menu {
+            Button(model.text(.bodyMale)) { gender = "male" }
+            Button(model.text(.bodyFemale)) { gender = "female" }
+          } label: {
+            Image(systemName: "figure.stand")
+          }
+          .accessibilityLabel(model.text(.muscleMap))
+        }
+      }
+    }
     .safeAreaInset(edge: .bottom) {
       if let selected {
         Button(model.text(selectionTitle)) { selected(record) }
@@ -310,6 +328,16 @@ struct ExerciseDetailView: View {
       }
       taxonomy = try? await model.exerciseTaxonomy()
     }
+  }
+
+  private var muscleSummary: String {
+    let primary = (exercise.primaryMuscles ?? exercise.muscleGroups ?? []).map {
+      label($0, in: taxonomy?.muscles)
+    }.joined(separator: "、")
+    let secondary = (exercise.secondaryMuscles ?? []).map { label($0, in: taxonomy?.muscles) }
+      .joined(separator: "、")
+    return
+      "\(model.text(.primaryMuscles)): \(primary); \(model.text(.secondaryMuscles)): \(secondary)"
   }
 
   private var tags: [String] {

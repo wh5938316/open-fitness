@@ -374,6 +374,19 @@ public actor APIClient {
   public func imageData(assetId: String) async throws -> Data {
     try await authorizedData(path: "/api/v1/media/\(assetId.pathSegment)/content")
   }
+  public func publicData(path: String) async throws -> Data {
+    guard
+      path.range(
+        of: #"^/musclemap/(male|female)-(front|back)\.svg$"#, options: .regularExpression) != nil
+    else { throw APIError("INVALID_ENDPOINT") }
+    let url = try server.endpoint(path)
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    let (data, response) = try await transport.data(for: request)
+    guard response.url == url else { throw APIError("INVALID_ENDPOINT") }
+    try Self.check(data, response)
+    return data
+  }
   public func upload(_ bytes: Data, to url: URL, contentType: String) async throws {
     guard url.host == server.url.host, url.port == server.url.port, url.scheme == server.url.scheme
     else { throw APIError("INVALID_UPLOAD_URL") }

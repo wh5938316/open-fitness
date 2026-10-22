@@ -121,6 +121,16 @@
 			"path" = "Info.plist";
 			"sourceTree" = "<group>";
 		};
+		"A6599FBD92C9F176A00AB23A" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "MuscleMapView.swift";
+			"sourceTree" = "<group>";
+		};
+		"CD9159CB979F9DF155F0D6FF" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "A6599FBD92C9F176A00AB23A";
+		};
 		"A02FA6C7F176470A1A018086" = {
 			"isa" = "PBXFileReference";
 			"lastKnownFileType" = "text.plist.entitlements";
@@ -238,6 +248,7 @@
 				"8FEFAD8726862055968F9631",
 				"DF8854B3CFB5C3849BD375E6",
 				"6B8A1AB13D230F495A3919A0",
+				"A6599FBD92C9F176A00AB23A",
 				"A02FA6C7F176470A1A018086",
 				"D65D0C1604BE95A7427397D7",
 				"545C593E8CEA37C85DAA77E1",
@@ -271,6 +282,7 @@
 				"4733B24B2C690941F0547F78",
 				"4C77B8BA348705F72500FB5C",
 				"79513B5ABFBB73D347504B6F",
+				"CD9159CB979F9DF155F0D6FF",
 				"06425E39EB83E83C2073CC4E",
 				"ABFA7320D309A516257B8292",
 				"E0DAC355DB05178B480CAC03",

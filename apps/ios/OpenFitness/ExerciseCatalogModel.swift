@@ -130,6 +130,32 @@ extension AppModel {
     }
   }
 
+  func muscleMap(gender: String, view: String) async throws -> MuscleMapArtwork {
+    guard ["male", "female"].contains(gender), ["front", "back"].contains(view) else {
+      throw APIError("INVALID_ENDPOINT")
+    }
+    let taxonomy = try await exerciseTaxonomy()
+    let server = try ServerConfiguration(serverAddress)
+    let origin = OAuthSecurity.accountKey(origin: server.origin, ownerId: "musclemap")
+    let key = "\(origin)-\(taxonomy.diagrams.packageVersion.queryValue)-\(gender)-\(view)"
+    if let cached = muscleMapCache[key] { return cached }
+    let url = try DiskStore.directory().appendingPathComponent("musclemap-\(key).json")
+    if let cached = DiskStore.read(MuscleMapArtwork.self, at: url) {
+      muscleMapCache[key] = cached
+      return cached
+    }
+    guard isOnline, let path = taxonomy.diagrams.assets[gender]?[view] else {
+      throw APIError("ARTWORK_UNAVAILABLE")
+    }
+    let data = try await api().publicData(path: path)
+    let parsed = try await Task.detached(priority: .utility) { try MuscleMap.parse(svg: data) }
+      .value
+    try Task.checkCancellation()
+    muscleMapCache[key] = parsed
+    try? DiskStore.write(parsed, to: url)
+    return parsed
+  }
+
   func exerciseSceneChanged(isBackground: Bool) {
     if isBackground {
       exerciseBackgroundedAt = Date()

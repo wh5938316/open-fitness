@@ -203,6 +203,17 @@ struct PlanDetail: View {
             if let guidance = entry.exerciseSnapshot.instructions, !guidance.isEmpty {
               Text(guidance).font(.subheadline).foregroundStyle(.secondary)
             }
+            if model.supportsExerciseCatalog,
+              entry.exerciseSnapshot.diagram?.highlights?.contains(where: \.matched) == true
+            {
+              DisclosureGroup(model.text(.muscleMap)) {
+                MuscleMapView(
+                  diagram: entry.exerciseSnapshot.diagram,
+                  accessibilitySummary: entry.exerciseSnapshot.localized(model.language).name
+                )
+                .frame(maxHeight: 220)
+              }
+            }
             ForEach(entry.exerciseSnapshot.mediaAssetIds ?? [], id: \.self) {
               PrivateRecipeImage(assetId: $0).frame(height: 180).clipShape(.rect(cornerRadius: 16))
             }

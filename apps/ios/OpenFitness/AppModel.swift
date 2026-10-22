@@ -57,6 +57,7 @@ final class AppModel {
   @ObservationIgnored private var historyCursor: String?
   @ObservationIgnored private var refreshRequested = false
   @ObservationIgnored var exerciseDetails: [String: Record<Exercise>] = [:]
+  @ObservationIgnored var muscleMapCache: [String: MuscleMapArtwork] = [:]
   @ObservationIgnored var taxonomyCache: [String: CachedExerciseTaxonomy] = [:]
   @ObservationIgnored var exerciseBackgroundedAt: Date?
   var exerciseCatalogRevision = 0
