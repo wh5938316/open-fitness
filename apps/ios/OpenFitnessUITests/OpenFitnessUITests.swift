@@ -53,7 +53,7 @@ import XCTest
     XCTAssertTrue(search.waitForExistence(timeout: 5))
     search.tap()
     search.typeText("卧推")
-    let info = app.buttons["exercise-info-cat-preview-bench"]
+    let info = app.buttons["exercise-row-cat-preview-bench"]
     XCTAssertTrue(info.waitForExistence(timeout: 5))
     info.tap()
     XCTAssertTrue(app.staticTexts["杠铃卧推"].waitForExistence(timeout: 5))
@@ -85,7 +85,7 @@ import XCTest
     XCTAssertTrue(search.waitForExistence(timeout: 5))
     search.tap()
     search.typeText("bench")
-    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["exercise-row-cat-preview-bench"].tap()
     app.buttons["select-exercise-detail"].tap()
     for _ in 0..<2 {
       let log = app.buttons["log-set-2"]
@@ -122,7 +122,7 @@ import XCTest
     app.launch()
     app.tabBars.buttons["Train"].tap()
     app.buttons["Exercise library"].tap()
-    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["exercise-row-cat-preview-bench"].tap()
     app.buttons["Add to my exercises"].tap()
     let adopted = app.buttons["In my exercises"]
     XCTAssertTrue(adopted.waitForExistence(timeout: 5))
@@ -139,7 +139,7 @@ import XCTest
     app.launch()
     app.tabBars.buttons["Train"].tap()
     app.buttons["Exercise library"].tap()
-    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["exercise-row-cat-preview-bench"].tap()
     app.buttons["Muscle map"].tap()
     app.buttons["Male"].tap()
     XCTAssertTrue(app.otherElements["muscle-map-male"].waitForExistence(timeout: 10))
@@ -155,7 +155,7 @@ import XCTest
     app.launch()
     app.tabBars.buttons["Train"].tap()
     app.buttons["Exercise library"].tap()
-    let info = app.buttons["exercise-info-cat-preview-bench"]
+    let info = app.buttons["exercise-row-cat-preview-bench"]
     XCTAssertTrue(info.waitForExistence(timeout: 5))
     info.tap()
     assertDetailIsShowing(app, name: "Barbell bench press")
@@ -179,12 +179,22 @@ import XCTest
     app.buttons["plan-add-exercise"].tap()
     let row = app.buttons["exercise-row-cat-preview-bench"]
     XCTAssertTrue(row.waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["exercise-info-cat-preview-bench"].exists)
     row.tap()
-    XCTAssertTrue(app.staticTexts["Barbell bench press"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Exercise details"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Barbell bench press"].exists)
+    XCTAssertTrue(app.buttons["select-exercise-detail"].exists)
+    leaveExerciseDetail(app)
+    XCTAssertTrue(app.navigationBars["Exercise library"].waitForExistence(timeout: 5))
     XCTAssertFalse(app.navigationBars["Exercise details"].exists)
+    XCTAssertFalse(app.buttons["select-exercise-detail"].exists)
+    row.tap()
+    XCTAssertTrue(app.buttons["select-exercise-detail"].waitForExistence(timeout: 5))
+    app.buttons["select-exercise-detail"].tap()
+    XCTAssertTrue(app.staticTexts["Barbell bench press"].waitForExistence(timeout: 5))
     app.buttons["plan-add-exercise"].tap()
     XCTAssertTrue(app.staticTexts["Recent"].waitForExistence(timeout: 5))
-    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["exercise-row-cat-preview-bench"].tap()
     XCTAssertTrue(app.navigationBars["Exercise details"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.buttons["select-exercise-detail"].exists)
     leaveExerciseDetail(app)
@@ -203,7 +213,7 @@ import XCTest
     XCTAssertTrue(search.waitForExistence(timeout: 5))
     search.tap()
     search.typeText("mobility")
-    app.buttons["exercise-info-cat-preview-rewrite"].tap()
+    app.buttons["exercise-row-cat-preview-rewrite"].tap()
     XCTAssertTrue(app.staticTexts["Bench mobility"].waitForExistence(timeout: 5))
     let placeholder = app.descendants(matching: .any)["muscle-map-empty"]
     XCTAssertTrue(placeholder.waitForExistence(timeout: 5))
@@ -215,7 +225,7 @@ import XCTest
     app.launch()
     app.tabBars.buttons["Train"].tap()
     app.buttons["Exercise library"].tap()
-    app.buttons["exercise-info-cat-preview-bench"].tap()
+    app.buttons["exercise-row-cat-preview-bench"].tap()
     let error = app.descendants(matching: .any)["muscle-map-error"]
     XCTAssertTrue(error.waitForExistence(timeout: 5))
     XCTAssertTrue(app.buttons["Try again"].exists)

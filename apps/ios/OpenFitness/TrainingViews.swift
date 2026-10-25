@@ -190,8 +190,9 @@ struct PlanDetail: View {
               VStack(alignment: .leading, spacing: 5) {
                 NavigationLink {
                   ExerciseDetailView(
-                    record: .init(
-                      id: entry.exerciseId, kind: "exercise", data: entry.exerciseSnapshot))
+                    record: model.preferredExercise(
+                      .init(id: entry.exerciseId, kind: "exercise", data: entry.exerciseSnapshot))
+                  )
                 } label: {
                   Text(entry.exerciseSnapshot.localized(model.language).name).font(.title3.bold())
                 }.buttonStyle(.plain)

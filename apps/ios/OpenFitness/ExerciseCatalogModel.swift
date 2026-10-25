@@ -28,11 +28,143 @@ struct CachedExerciseTaxonomy: Codable {
   var savedAt: Date
 }
 
+struct DeviceLibrary: Codable {
+  var foods: [Record<Food>] = []
+  var exercises: [Record<Exercise>] = []
+  var exercisesCursor: String?
+  var exercisesComplete = false
+  var exercisesIncludeCatalog = false
+  var meals: [Record<Meal>] = []
+  var mealsDay: String?
+  var workouts: [Record<Workout>] = []
+}
+
 extension AppModel {
+  var usesLocalExerciseLibrary: Bool {
+    if isPreview { return false }
+    return exerciseLibraryComplete || (!isOnline && !exerciseLibrary.isEmpty)
+  }
+
+  func deviceLibraryURL() throws -> URL {
+    guard !accountKey.isEmpty else { throw APIError("AUTHENTICATION_REQUIRED", status: 401) }
+    return try DiskStore.directory().appendingPathComponent("library-\(accountKey).json")
+  }
+
+  func loadDeviceLibrary() {
+    guard let url = try? deviceLibraryURL(),
+      let library = DiskStore.read(DeviceLibrary.self, at: url)
+    else { return }
+    foods = library.foods
+    exerciseLibrary = library.exercises
+    exerciseDetails = Dictionary(
+      library.exercises.map { ($0.id, $0) },
+      uniquingKeysWith: { first, second in
+        first.version >= second.version ? first : second
+      })
+    exerciseSyncCursor = library.exercisesCursor
+    exerciseLibraryComplete = library.exercisesComplete
+    exerciseLibraryIncludesCatalog = library.exercisesIncludeCatalog
+    if library.mealsDay == selectedDay.calendarDay(timeZone: timeZone) { meals = library.meals }
+    if !library.workouts.isEmpty { workouts = library.workouts }
+  }
+
+  func persistDeviceLibrary() {
+    guard let url = try? deviceLibraryURL() else { return }
+    try? DiskStore.write(
+      DeviceLibrary(
+        foods: foods, exercises: exerciseLibrary, exercisesCursor: exerciseSyncCursor,
+        exercisesComplete: exerciseLibraryComplete,
+        exercisesIncludeCatalog: exerciseLibraryIncludesCatalog, meals: meals,
+        mealsDay: selectedDay.calendarDay(timeZone: timeZone), workouts: workouts), to: url)
+  }
+
+  func matchingFoods(_ query: String) -> [FoodSearchHit] {
+    let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    return foods.compactMap { record in
+      guard foodMatches(record.data, trimmed) else { return nil }
+      return FoodSearchHit(id: record.id, food: record.data, savedId: record.id)
+    }
+  }
+
+  func rememberFood(_ record: Record<Food>) {
+    if let index = foods.firstIndex(where: { $0.id == record.id }) {
+      guard foods[index].version < record.version else { return }
+      foods[index] = record
+    } else {
+      foods.append(record)
+    }
+    persistDeviceLibrary()
+  }
+
+  func rememberFoods(_ hits: [FoodSearchHit]) {
+    var changed = false
+    for hit in hits {
+      guard let savedId = hit.savedId else { continue }
+      let record = Record(id: savedId, kind: "food", data: hit.food)
+      if let index = foods.firstIndex(where: { $0.id == savedId }) {
+        guard foods[index].version < record.version else { continue }
+        foods[index] = record
+      } else {
+        foods.append(record)
+      }
+      changed = true
+    }
+    if changed { persistDeviceLibrary() }
+  }
+
+  func syncLibraries() {
+    if supportsExerciseCatalog, exerciseLibraryComplete, !exerciseLibraryIncludesCatalog {
+      exerciseLibraryComplete = false
+      exerciseSyncCursor = nil
+    }
+    guard isOnline, isConnected, !isPreview else { return }
+    if exerciseLibraryComplete {
+      Task { await refreshOwnedExercises() }
+    } else {
+      Task { await syncExerciseLibrary() }
+    }
+  }
+
+  func exerciseIsDetailed(_ record: Record<Exercise>) -> Bool {
+    let data = record.data
+    func filled(_ value: String?) -> Bool {
+      value?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+    }
+    if filled(data.instructions) || filled(data.description)
+      || data.diagram?.highlights?.isEmpty == false
+    {
+      return true
+    }
+    if let translated = data.i18n?["zh-CN"],
+      filled(translated.instructions) || filled(translated.description)
+    {
+      return true
+    }
+    return data.source != nil && data.instructions != nil
+  }
+
+  func preferredExercise(_ record: Record<Exercise>) -> Record<Exercise> {
+    guard let cached = exerciseDetails[record.id] else { return record }
+    if exerciseIsDetailed(cached) == exerciseIsDetailed(record) {
+      return cached.version >= record.version ? cached : record
+    }
+    return exerciseIsDetailed(cached) ? cached : record
+  }
+
+  func localExercisePage(_ query: ExerciseQuery, cursor: String?, limit: Int = 30)
+    -> RecordPage<Exercise>
+  {
+    let filtered = exerciseLibrary.filter { exerciseMatches($0, query) }
+    let start = max(cursor.flatMap(Int.init) ?? 0, 0)
+    guard start <= filtered.count else { return .init(items: []) }
+    let end = min(start + limit, filtered.count)
+    return .init(
+      items: Array(filtered[start..<end]), cursor: end < filtered.count ? String(end) : nil)
+  }
+
   func searchExercises(_ query: ExerciseQuery, cursor: String?, limit: Int = 30) async throws
     -> RecordPage<Exercise>
   {
-    guard isOnline else { return .init(items: []) }
     #if DEBUG
       if isPreview {
         let items = PreviewExerciseCatalog.records.map { exerciseDetails[$0.id] ?? $0 }.filter {
@@ -53,11 +185,16 @@ extension AppModel {
           items: Array(items[start..<end]), cursor: end < items.count ? String(end) : nil)
       }
     #endif
+    if usesLocalExerciseLibrary || !isOnline {
+      return localExercisePage(query, cursor: cursor, limit: limit)
+    }
     let owner = accountKey
     let page = try await api().request(
       RecordPage<Exercise>.self,
       path: query.path(cursor: cursor, limit: limit, supportsCatalog: supportsExerciseCatalog))
     guard owner == accountKey else { throw APIError("ACCOUNT_MISMATCH") }
+    for item in page.items { cacheExercise(item, persist: false) }
+    persistDeviceLibrary()
     return page
   }
 
@@ -75,14 +212,20 @@ extension AppModel {
     } catch { errorMessage = copy.error(error) }
   }
 
-  func cacheExercise(_ value: Record<Exercise>) {
-    guard exerciseDetails[value.id].map({ $0.version <= value.version }) ?? true else { return }
-    if exerciseDetails[value.id] == nil, exerciseDetails.count >= 200,
-      let first = exerciseDetails.keys.sorted().first
-    {
-      exerciseDetails[first] = nil
+  @discardableResult
+  func cacheExercise(_ value: Record<Exercise>, persist: Bool = true) -> Bool {
+    if let existing = exerciseDetails[value.id] {
+      if existing.version > value.version { return false }
+      if existing.version == value.version, existing.updatedAt == value.updatedAt { return false }
     }
     exerciseDetails[value.id] = value
+    if let index = exerciseLibrary.firstIndex(where: { $0.id == value.id }) {
+      exerciseLibrary[index] = value
+    } else {
+      exerciseLibrary.append(value)
+    }
+    if persist, !isPreview { persistDeviceLibrary() }
+    return true
   }
 
   func exercise(id: String) async throws -> Record<Exercise> {
@@ -91,6 +234,7 @@ extension AppModel {
         return exerciseDetails[id] ?? record
       }
     #endif
+    if let cached = exerciseDetails[id], exerciseIsDetailed(cached) { return cached }
     if !isOnline {
       guard let cached = exerciseDetails[id] else { throw APIError("NETWORK_UNAVAILABLE") }
       return cached
@@ -179,12 +323,110 @@ extension AppModel {
     return parsed
   }
 
-  func exerciseSceneChanged(isBackground: Bool) {
-    if isBackground {
-      exerciseBackgroundedAt = Date()
-    } else if let date = exerciseBackgroundedAt {
-      if date.timeIntervalSinceNow < -3600 { exerciseDetails = [:] }
-      exerciseBackgroundedAt = nil
+  private func foodMatches(_ food: Food, _ query: String) -> Bool {
+    if query.isEmpty { return true }
+    if food.name.localizedCaseInsensitiveContains(query) { return true }
+    if food.barcode?.localizedCaseInsensitiveContains(query) == true { return true }
+    return food.aliases?.contains { $0.localizedCaseInsensitiveContains(query) } == true
+  }
+
+  private func exerciseMatches(_ record: Record<Exercise>, _ query: ExerciseQuery) -> Bool {
+    if query.source == "mine", record.isCatalogOnly { return false }
+    if query.source == "catalog", !record.isCatalogOnly { return false }
+    if let body = query.bodyPart, record.data.bodyPart != body { return false }
+    if let equipment = query.equipment, record.data.equipment?.contains(equipment) != true {
+      return false
     }
+    if let category = query.movementCategory, record.data.movementCategory != category {
+      return false
+    }
+    if let target = query.target, record.data.primaryMuscles?.contains(target) != true {
+      return false
+    }
+    let text = query.text.trimmingCharacters(in: .whitespacesAndNewlines)
+    if text.isEmpty { return true }
+    let translated = record.data.i18n?["zh-CN"]
+    let fields = [
+      record.data.name, record.data.description ?? "", record.data.instructions ?? "",
+      translated?.name ?? "", translated?.description ?? "", translated?.instructions ?? "",
+      (record.data.aliases ?? []).joined(separator: " "),
+      (translated?.aliases ?? []).joined(separator: " "),
+    ]
+    return fields.joined(separator: "\n").localizedCaseInsensitiveContains(text)
+  }
+
+  private func syncExerciseLibrary() async {
+    guard !exerciseSyncing, !exerciseLibraryComplete, isOnline, isConnected, !isPreview else {
+      return
+    }
+    exerciseSyncing = true
+    defer { exerciseSyncing = false }
+    var cursor = exerciseSyncCursor
+    var restarted = false
+    var pagesSinceSave = 0
+    let owner = accountKey
+    let query = ExerciseQuery()
+    while !Task.isCancelled {
+      do {
+        let page = try await api().request(
+          RecordPage<Exercise>.self,
+          path: query.path(cursor: cursor, limit: 100, supportsCatalog: supportsExerciseCatalog))
+        guard owner == accountKey else { return }
+        for item in page.items { cacheExercise(item, persist: false) }
+        cursor = page.cursor
+        exerciseSyncCursor = cursor
+        pagesSinceSave += 1
+        if cursor == nil {
+          exerciseLibraryComplete = true
+          exerciseLibraryIncludesCatalog = supportsExerciseCatalog
+          exerciseSyncCursor = nil
+        }
+        if exerciseLibraryComplete || pagesSinceSave.isMultiple(of: 10) {
+          persistDeviceLibrary()
+          pagesSinceSave = 0
+        }
+        if exerciseLibraryComplete {
+          exerciseCatalogRevision += 1
+          return
+        }
+      } catch {
+        guard owner == accountKey else { return }
+        if !restarted, (error as? APIError)?.code == "INVALID_CURSOR" {
+          restarted = true
+          cursor = nil
+          exerciseSyncCursor = nil
+          exerciseLibrary = []
+          exerciseDetails = [:]
+          continue
+        }
+        return
+      }
+    }
+  }
+
+  private func refreshOwnedExercises() async {
+    guard !exerciseSyncing, exerciseLibraryComplete, isOnline, isConnected, !isPreview else {
+      return
+    }
+    exerciseSyncing = true
+    defer { exerciseSyncing = false }
+    var cursor: String?
+    var changed = false
+    let owner = accountKey
+    let query = ExerciseQuery(source: "mine")
+    do {
+      repeat {
+        let page = try await api().request(
+          RecordPage<Exercise>.self,
+          path: query.path(cursor: cursor, limit: 100, supportsCatalog: supportsExerciseCatalog))
+        guard owner == accountKey else { return }
+        for item in page.items where cacheExercise(item, persist: false) { changed = true }
+        cursor = page.cursor
+      } while cursor != nil
+      if changed {
+        persistDeviceLibrary()
+        exerciseCatalogRevision += 1
+      }
+    } catch {}
   }
 }

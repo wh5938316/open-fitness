@@ -193,9 +193,12 @@ struct IngredientPicker: View {
         ToolbarItem(placement: .cancellationAction) { Button(model.text(.cancel)) { dismiss() } }
       }
       .task(id: query) {
-        guard query.count >= 2 else {
-          items = []
-          catalogDegraded = false
+        let local = model.matchingFoods(query)
+        items = local
+        catalogDegraded = false
+        loadError = nil
+        guard model.isOnline, query.count >= 2 else {
+          searching = false
           return
         }
         do {
@@ -203,7 +206,8 @@ struct IngredientPicker: View {
           searching = true
           let result = try await model.searchFoods(query)
           if !Task.isCancelled {
-            items = result.hits
+            var seen = Set(local.map(\.id))
+            items = local + result.hits.filter { seen.insert($0.id).inserted }
             catalogDegraded = result.catalogDegraded
             loadError = nil
             searching = false
@@ -214,6 +218,11 @@ struct IngredientPicker: View {
             searching = false
           }
         }
+      }
+      .onChange(of: model.foods.count) {
+        var seen = Set(items.map(\.id))
+        let extra = model.matchingFoods(query).filter { seen.insert($0.id).inserted }
+        if !extra.isEmpty { items.insert(contentsOf: extra, at: 0) }
       }
       .sheet(isPresented: $creating) {
         ManualFoodEditor { food, quantity, unit in

@@ -38,6 +38,10 @@ final class AppModel {
   var isRefreshing = false
   var isDraining = false
   var isConnected = false
+  var hasStoredCredentials = false
+  var isRestoringSession = false
+  var sessionNeedsInteractiveSignIn = false
+  var foods: [Record<Food>] = []
   var isOnline = true
   var healthStatus: HealthSyncStatus?
   var healthSummary: HealthSnapshot?
@@ -58,9 +62,14 @@ final class AppModel {
   @ObservationIgnored private var refreshRequested = false
   @ObservationIgnored var exerciseCacheAccountKey = ""
   @ObservationIgnored var exerciseDetails: [String: Record<Exercise>] = [:]
+  @ObservationIgnored var exerciseLibrary: [Record<Exercise>] = []
+  var exerciseLibraryComplete = false
+  @ObservationIgnored var exerciseLibraryIncludesCatalog = false
+  @ObservationIgnored var exerciseSyncCursor: String?
+  @ObservationIgnored var exerciseSyncing = false
   @ObservationIgnored var muscleMapCache: [String: MuscleMapArtwork] = [:]
   @ObservationIgnored var taxonomyCache: [String: CachedExerciseTaxonomy] = [:]
-  @ObservationIgnored var exerciseBackgroundedAt: Date?
+  @ObservationIgnored private var bootInFlight = false
   var recentExerciseHistory = RecentExerciseHistory()
   var exerciseCatalogRevision = 0
   var supportsExerciseCatalog: Bool { context?.capabilities.exerciseCatalog == "shared_catalog" }
@@ -113,6 +122,10 @@ final class AppModel {
       }
     }
     monitor.start(queue: DispatchQueue(label: "org.openfitness.network"))
+    #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("-ui-testing") { return }
+    #endif
+    restoreStoredSession()
   }
   func boot() async {
     companion = PhoneCompanion(model: self)
@@ -122,34 +135,79 @@ final class AppModel {
         return
       }
     #endif
+    if bootInFlight { return }
+    bootInFlight = true
+    defer {
+      bootInFlight = false
+      isRestoringSession = false
+    }
     do {
       let configuration = try ServerConfiguration(serverAddress)
-      client = APIClient(server: configuration, vault: vault)
-      if let credentials = try vault.read(for: configuration.origin) {
-        do { try await loadAccount() } catch {
-          guard error is URLError || ((error as? APIError)?.status ?? 0) >= 500,
-            let cached = DiskStore.read(
-              CachedAccount.self,
-              at: try accountCacheURL(configuration, clientId: credentials.clientId)),
-            cached.origin == configuration.origin, cached.clientId == credentials.clientId,
-            cached.savedAt.timeIntervalSinceNow > -86400
-          else { throw error }
-          try await activateAccount(cached.context)
-        }
-        await refresh()
+      if client == nil { client = APIClient(server: configuration, vault: vault) }
+      guard try vault.read(for: configuration.origin) != nil else {
+        hasStoredCredentials = false
+        return
       }
-    } catch { if (error as? APIError)?.status != 401 { errorMessage = copy.error(error) } }
+      hasStoredCredentials = true
+      if !isConnected { isRestoringSession = true }
+      do {
+        try await loadAccount()
+      } catch {
+        if isConnected {
+          try? await api().enableMutationRecovery(accountKey: accountKey)
+          if (error as? APIError)?.status == 401 { errorMessage = copy.text(.authRequired) }
+        } else if (error as? APIError)?.status == 401 {
+          sessionNeedsInteractiveSignIn = true
+          return
+        } else {
+          errorMessage = copy.error(error)
+          return
+        }
+      }
+      guard isConnected else { return }
+      await refresh()
+    } catch {
+      if (error as? APIError)?.status == 401 {
+        if !isConnected { sessionNeedsInteractiveSignIn = true }
+      } else if !isConnected {
+        errorMessage = copy.error(error)
+      }
+    }
   }
   func signIn() async throws {
     let configuration = try ServerConfiguration(serverAddress)
     let api = APIClient(server: configuration, vault: vault)
     client = api
     await api.setLanguage(language.rawValue)
-    try await authentication.signIn(client: api)
+    if try vault.read(for: configuration.origin)?.refreshToken == nil {
+      try await authentication.signIn(client: api)
+    }
     UserDefaults.standard.set(configuration.origin, forKey: "serverAddress")
     serverAddress = configuration.origin
-    try await loadAccount()
+    do {
+      try await loadAccount()
+    } catch let error as APIError where error.status == 401 {
+      try await authentication.signIn(client: api)
+      try await loadAccount()
+    }
+    sessionNeedsInteractiveSignIn = false
+    hasStoredCredentials = true
     await refresh()
+  }
+  private func restoreStoredSession() {
+    guard let configuration = try? ServerConfiguration(serverAddress),
+      let credentials = try? vault.read(for: configuration.origin)
+    else { return }
+    hasStoredCredentials = true
+    client = APIClient(server: configuration, vault: vault)
+    guard let url = try? accountCacheURL(configuration, clientId: credentials.clientId),
+      let cached = DiskStore.read(CachedAccount.self, at: url),
+      cached.origin == configuration.origin, cached.clientId == credentials.clientId
+    else {
+      isRestoringSession = true
+      return
+    }
+    if (try? installCachedAccount(cached.context)) == nil { isRestoringSession = true }
   }
   private func loadAccount() async throws {
     let api = try api()
@@ -168,13 +226,17 @@ final class AppModel {
     try DiskStore.directory().appendingPathComponent(
       "account-\(OAuthSecurity.accountKey(origin: server.origin, ownerId: clientId)).json")
   }
-  private func activateAccount(_ value: AgentContext) async throws {
-    let api = try api()
+  private func installCachedAccount(_ value: AgentContext) throws {
     let nextExerciseAccountKey = OAuthSecurity.accountKey(
       origin: try ServerConfiguration(serverAddress).origin, ownerId: value.ownerId)
     if exerciseCacheAccountKey != nextExerciseAccountKey {
       exerciseDetails = [:]
       taxonomyCache = [:]
+      exerciseLibrary = []
+      exerciseLibraryComplete = false
+      exerciseLibraryIncludesCatalog = false
+      exerciseSyncCursor = nil
+      foods = []
     }
     exerciseCacheAccountKey = nextExerciseAccountKey
     context = value
@@ -183,21 +245,27 @@ final class AppModel {
         DiskStore.read(RecentExerciseHistory.self, at: $0)
       } ?? .init()
     isConnected = true
-    try await api.enableMutationRecovery(accountKey: accountKey)
+    isRestoringSession = false
+    sessionNeedsInteractiveSignIn = false
+    hasStoredCredentials = true
     healthEnabled = UserDefaults.standard.bool(forKey: "nutritionSyncEnabled.\(accountKey)")
     sharesHealth = UserDefaults.standard.bool(forKey: "sharesHealthSummary.\(accountKey)")
     let folder = try DiskStore.directory()
     queueURL = folder.appendingPathComponent("queue-\(accountKey).json")
     cacheURL = folder.appendingPathComponent("cache-\(accountKey).json")
     journal = queueURL.flatMap { DiskStore.read(CommandJournal.self, at: $0) } ?? .init()
-    if let cache = cacheURL.flatMap({ DiskStore.read(CompanionSnapshot.self, at: $0) }),
-      Date.parseISO(cache.updatedAt)?.timeIntervalSinceNow ?? -.infinity > -86400
-    {
+    if let cache = cacheURL.flatMap({ DiskStore.read(CompanionSnapshot.self, at: $0) }) {
       plans = cache.plans
       recipes = cache.recipes
       workout = cache.workout
       nutrition = cache.nutrition
     }
+    loadDeviceLibrary()
+  }
+  private func activateAccount(_ value: AgentContext) async throws {
+    let api = try api()
+    try installCachedAccount(value)
+    try await api.enableMutationRecovery(accountKey: accountKey)
   }
   func api() throws -> APIClient {
     guard let client else { throw APIError("AUTHENTICATION_REQUIRED", status: 401) }
@@ -207,7 +275,10 @@ final class AppModel {
     Task {
       isBusy = true
       defer { isBusy = false }
-      do { try await action() } catch { errorMessage = copy.error(error) }
+      do { try await action() } catch {
+        if (error as? APIError)?.code == "AUTHORIZATION_CANCELLED" { return }
+        errorMessage = copy.error(error)
+      }
     }
   }
   func refresh() async {
@@ -229,6 +300,7 @@ final class AppModel {
       try await api.recoverPendingMutations()
       async let p = allRecords(TrainingPlan.self, path: "/api/v1/training-plans", api: api)
       async let r = allRecords(Recipe.self, path: "/api/v1/recipes", api: api)
+      async let savedFoods = allRecords(Food.self, path: "/api/v1/foods", api: api)
       async let w = api.request(RecordPage<Workout>.self, path: "/api/v1/workouts?limit=30")
       async let m = mealsForSelectedDay(api)
       async let n = api.request(
@@ -245,10 +317,13 @@ final class AppModel {
       }
       meals = try await m
       nutrition = try await n
+      if let saved = try? await savedFoods { foods = saved }
       if context?.capabilities.healthSyncProtocol != nil {
         healthStatus = try? await api.request(HealthSyncStatus.self, path: "/api/v1/health/status")
       }
       try persistCache()
+      persistDeviceLibrary()
+      syncLibraries()
       sendCompanion()
       await drain()
       if healthEnabled { await synchronizeHealth() }
@@ -296,6 +371,7 @@ final class AppModel {
       RecordPage<Workout>.self, path: "/api/v1/workouts?limit=30&cursor=\(encoded)")
     workouts += page.items
     historyCursor = page.cursor
+    persistDeviceLibrary()
   }
   var canLoadMoreHistory: Bool { historyCursor != nil }
   func setLanguage(_ value: AppLanguage) async {
@@ -584,8 +660,9 @@ final class AppModel {
       let lookup = try await api().request(
         Lookup.self, path: "/api/v1/food-catalog/\(digits.pathSegment)")
       if let saved = lookup.localFood {
-        return .init(
-          hits: [.init(id: saved.id, food: saved.data, savedId: saved.id)], catalogDegraded: false)
+        let hit = FoodSearchHit(id: saved.id, food: saved.data, savedId: saved.id)
+        rememberFoods([hit])
+        return .init(hits: [hit], catalogDegraded: false)
       }
       if let food = lookup.food {
         return .init(
@@ -610,16 +687,21 @@ final class AppModel {
       hits.append(
         .init(id: "catalog-" + (food.barcode ?? food.name), food: food, savedId: nil))
     }
-    return .init(hits: hits, catalogDegraded: page.catalog?.catalogStatus == "degraded")
+    let results = FoodSearchResults(
+      hits: hits, catalogDegraded: page.catalog?.catalogStatus == "degraded")
+    rememberFoods(results.hits)
+    return results
   }
   func importFood(barcode: String) async throws -> Record<Food> {
     struct Imported: Decodable, Sendable {
       var food: Record<Food>
       var created: Bool
     }
-    return try await api().mutation(
+    let saved = try await api().mutation(
       Imported.self, path: "/api/v1/foods/import", fields: ["barcode": .string(barcode)]
     ).food
+    rememberFood(saved)
+    return saved
   }
   func uploadCover(_ data: Data, recipe: Record<Recipe>) async throws {
     struct Ticket: Decodable, Sendable {
@@ -714,6 +796,7 @@ final class AppModel {
   }
   func disconnect() async {
     if let url = try? recentExercisesURL() { try? FileManager.default.removeItem(at: url) }
+    if let url = try? deviceLibraryURL() { try? FileManager.default.removeItem(at: url) }
     recentExerciseHistory = .init()
     await client?.disconnect()
     client = nil
@@ -723,12 +806,20 @@ final class AppModel {
     healthSummary = nil
     journal = .init()
     isConnected = false
+    hasStoredCredentials = false
+    isRestoringSession = false
+    sessionNeedsInteractiveSignIn = false
     exerciseCacheAccountKey = ""
     exerciseDetails = [:]
+    exerciseLibrary = []
+    exerciseLibraryComplete = false
+    exerciseLibraryIncludesCatalog = false
+    exerciseSyncCursor = nil
     taxonomyCache = [:]
     context = nil
     plans = []
     recipes = []
+    foods = []
     meals = []
     workouts = []
     workout = nil

@@ -46,6 +46,16 @@ struct PlanEditor: View {
         }
         ForEach($drafts) { $draft in
           Section {
+            Button {
+              detail = model.preferredExercise(draft.exercise)
+            } label: {
+              HStack {
+                Text(draft.exercise.data.localized(model.language).name).foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+              }
+            }
+            .accessibilityLabel(model.text(.exerciseDetails))
             Stepper("\(model.text(.sets)): \(draft.count)", value: $draft.count, in: 1...30)
             if !["duration", "distance"].contains(draft.exercise.data.category ?? "") {
               InlineNumber(title: model.text(.reps), value: $draft.reps)
@@ -62,17 +72,6 @@ struct PlanEditor: View {
             TextField(model.text(.group), text: $draft.group)
             Button(model.text(.delete), role: .destructive) {
               drafts.removeAll { $0.id == draft.id }
-            }
-          } header: {
-            HStack {
-              Text(draft.exercise.data.localized(model.language).name)
-              Spacer()
-              Button {
-                detail = draft.exercise
-              } label: {
-                Image(systemName: "info.circle")
-              }
-              .buttonStyle(.borderless).accessibilityLabel(model.text(.exerciseDetails))
             }
           }
         }

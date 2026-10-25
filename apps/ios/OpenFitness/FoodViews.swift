@@ -240,6 +240,12 @@ struct RecipeDetail: View {
       .onAppear { servings = current.data.defaultServings }
       .task(id: portionKey) {
         guard !model.isPreview else { return }
+        if overrides.isEmpty, additions.isEmpty {
+          preview = nil
+          calculating = false
+          calculationFailed = false
+          return
+        }
         calculating = true
         preview = nil
         calculationFailed = false
