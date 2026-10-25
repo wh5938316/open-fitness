@@ -38,8 +38,10 @@ final class NativeAuthentication: NSObject, ASWebAuthenticationPresentationConte
       ) { url, error in
         if let url {
           continuation.resume(returning: url)
+        } else if let error, !Self.isCancellation(error) {
+          continuation.resume(throwing: error)
         } else {
-          continuation.resume(throwing: error ?? APIError("AUTHORIZATION_CANCELLED"))
+          continuation.resume(throwing: APIError("AUTHORIZATION_CANCELLED"))
         }
       }
       web.presentationContextProvider = self
@@ -60,6 +62,14 @@ final class NativeAuthentication: NSObject, ASWebAuthenticationPresentationConte
         clientId: registration.clientId, accessToken: token.accessToken,
         refreshToken: token.refreshToken, expiresAt: Date().addingTimeInterval(token.expiresIn),
         scope: token.scope ?? scope))
+  }
+  private static func isCancellation(_ error: Error) -> Bool {
+    if let sessionError = error as? ASWebAuthenticationSessionError {
+      return sessionError.code == .canceledLogin
+    }
+    let bridged = error as NSError
+    return bridged.domain == ASWebAuthenticationSessionError.errorDomain
+      && bridged.code == ASWebAuthenticationSessionError.Code.canceledLogin.rawValue
   }
   func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
     guard

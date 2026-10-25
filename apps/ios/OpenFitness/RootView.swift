@@ -34,6 +34,8 @@ struct RootView: View {
               Task { await model.refresh() }
             }
           }
+      } else if model.hasStoredCredentials && !model.sessionNeedsInteractiveSignIn {
+        SessionRestoreView()
       } else {
         ConnectView()
       }
@@ -52,6 +54,20 @@ struct RootView: View {
         ProgressView().padding(12).glassEffect().padding(.top, 6).allowsHitTesting(false)
       }
     }
+  }
+}
+struct SessionRestoreView: View {
+  @Environment(AppModel.self) private var model
+  var body: some View {
+    VStack(spacing: 18) {
+      ProgressView()
+      Text(model.text(model.isRestoringSession ? .loading : .networkError))
+        .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
+      if !model.isRestoringSession {
+        Button(model.text(.retry)) { Task { await model.boot() } }.buttonStyle(.bordered)
+      }
+    }
+    .padding(28).frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
 struct ConnectView: View {

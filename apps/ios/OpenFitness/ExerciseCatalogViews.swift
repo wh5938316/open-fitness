@@ -1,10 +1,6 @@
 import OpenFitnessKit
 import SwiftUI
 
-private struct ExerciseRoute: Hashable {
-  var id: String
-}
-
 struct ExercisePicker: View {
   enum Mode { case select, browse }
   @Environment(AppModel.self) private var model
@@ -20,8 +16,6 @@ struct ExercisePicker: View {
   @State private var searching = false
   @State private var loadError: String?
   @State private var generation = UUID()
-  @State private var path: [ExerciseRoute] = []
-  @State private var routed: [String: Record<Exercise>] = [:]
 
   private struct SearchKey: Hashable {
     var query: ExerciseQuery
@@ -30,22 +24,24 @@ struct ExercisePicker: View {
     var language: AppLanguage
     var catalog: Bool
     var revision: Int
+    var local: Bool
   }
   private var searchKey: SearchKey {
     .init(
       query: query, online: model.isOnline, account: model.accountKey, language: model.language,
-      catalog: model.supportsExerciseCatalog, revision: model.exerciseCatalogRevision)
+      catalog: model.supportsExerciseCatalog, revision: model.exerciseCatalogRevision,
+      local: model.usesLocalExerciseLibrary)
   }
 
   var body: some View {
-    NavigationStack(path: $path) {
+    NavigationStack {
       List {
         Button {
           creating = true
         } label: {
           Label(model.text(.addExercise), systemImage: "plus")
         }.disabled(!model.isOnline)
-        if !model.isOnline {
+        if !model.isOnline, !model.usesLocalExerciseLibrary {
           Text(model.text(.offlineCatalog)).font(.footnote).foregroundStyle(.secondary)
         }
         if model.supportsExerciseCatalog, let taxonomy {
@@ -89,13 +85,6 @@ struct ExercisePicker: View {
         }
       }
       .navigationTitle(model.text(.exerciseLibrary))
-      .navigationDestination(for: ExerciseRoute.self) { route in
-        if let record = routed[route.id] ?? model.exerciseDetails[route.id] {
-          ExerciseDetailView(
-            record: record, selectionTitle: selectionTitle,
-            selected: mode == .select ? { choose($0) } : nil)
-        }
-      }
       .searchable(text: $query.text, prompt: model.text(.exerciseSearchPrompt))
       .modifier(ExerciseSearchScopes(enabled: model.supportsExerciseCatalog, source: $query.source))
       .toolbar {
@@ -105,11 +94,23 @@ struct ExercisePicker: View {
         let key = searchKey
         let token = UUID()
         generation = token
-        items = []
-        cursor = nil
         loadError = nil
         searching = false
-        if !model.isOnline {
+        if model.usesLocalExerciseLibrary {
+          var collected: [Record<Exercise>] = []
+          var next: String?
+          repeat {
+            let page = model.localExercisePage(key.query, cursor: next, limit: 200)
+            collected += page.items
+            next = page.cursor
+          } while next != nil
+          items = collected
+          cursor = nil
+          return
+        }
+        items = model.localExercisePage(key.query, cursor: nil).items
+        cursor = nil
+        guard model.isOnline else {
           if query.source != "mine" { query.source = "mine" }
           return
         }
@@ -146,35 +147,15 @@ struct ExercisePicker: View {
     dismiss()
   }
 
-  private func open(_ record: Record<Exercise>) {
-    routed[record.id] = record
-    // Assign rather than append so a row tap that also hits the info button
-    // still leaves a single detail on the stack.
-    path = [ExerciseRoute(id: record.id)]
-  }
-
-  /// List turns a plain `Button` into a row-wide control, so the info button uses
-  /// `.borderless` and the row uses a custom style. One tap then sets one route.
   private func row(_ record: Record<Exercise>) -> some View {
-    HStack(spacing: 8) {
-      Button {
-        if mode == .select { choose(record) } else { open(record) }
-      } label: {
-        ExerciseRow(record: record, taxonomy: taxonomy, showsDisclosure: mode == .browse)
-      }
-      .buttonStyle(ExerciseRowButtonStyle())
-      .accessibilityIdentifier("exercise-row-\(record.id)")
-      Button {
-        open(record)
-      } label: {
-        Image(systemName: "info.circle")
-          .padding(.vertical, 8)
-          .contentShape(.rect)
-      }
-      .buttonStyle(.borderless)
-      .accessibilityLabel(model.text(.exerciseDetails))
-      .accessibilityIdentifier("exercise-info-\(record.id)")
+    NavigationLink {
+      ExerciseDetailView(
+        record: model.preferredExercise(record), selectionTitle: selectionTitle,
+        selected: mode == .select ? { choose($0) } : nil)
+    } label: {
+      ExerciseRow(record: record, taxonomy: taxonomy)
     }
+    .accessibilityIdentifier("exercise-row-\(record.id)")
   }
 
   private func filter(
@@ -197,7 +178,8 @@ struct ExercisePicker: View {
   private func loadPage(
     key: SearchKey, token: UUID, cursor requestedCursor: String?, replacing: Bool = false
   ) async {
-    guard !searching, key == searchKey, generation == token, model.isOnline else { return }
+    guard !searching, key == searchKey, generation == token else { return }
+    guard model.isOnline || model.usesLocalExerciseLibrary else { return }
     searching = true
     defer { if generation == token { searching = false } }
     do {
@@ -238,7 +220,6 @@ struct ExerciseRow: View {
   @Environment(AppModel.self) private var model
   var record: Record<Exercise>
   var taxonomy: ExerciseTaxonomy?
-  var showsDisclosure = false
   private var exercise: Exercise { record.data.localized(model.language) }
   var body: some View {
     HStack {
@@ -259,9 +240,6 @@ struct ExerciseRow: View {
         )
         .background(.green.opacity(0.1), in: .capsule).foregroundStyle(.secondary)
       }
-      if showsDisclosure {
-        Image(systemName: "chevron.right").font(.footnote).foregroundStyle(.secondary)
-      }
     }.contentShape(.rect)
   }
 }
@@ -273,6 +251,7 @@ struct ExerciseDetailView: View {
   var selected: ((Record<Exercise>) -> Void)?
   @State private var taxonomy: ExerciseTaxonomy?
   @State private var adopting = false
+  @State private var loadingDetail = false
   @AppStorage("muscleMapGender") private var gender = ""
   @State private var loadError: String?
   private var exercise: Exercise { record.data.localized(model.language) }
@@ -316,7 +295,9 @@ struct ExerciseDetailView: View {
         }
         VStack(alignment: .leading, spacing: 8) {
           Text(model.text(.exerciseSteps)).font(.headline)
-          if instructionLines.isEmpty {
+          if loadingDetail, instructionLines.isEmpty {
+            ProgressView()
+          } else if instructionLines.isEmpty {
             Text(model.text(.noInstructions)).foregroundStyle(.secondary)
           } else {
             ForEach(Array(instructionLines.enumerated()), id: \.offset) { index, line in
@@ -385,10 +366,13 @@ struct ExerciseDetailView: View {
       }
     }
     .task(id: model.language) {
-      if let cached = model.exerciseDetails[record.id] { record = cached }
-      if let refreshed = try? await model.exercise(id: record.id), !Task.isCancelled {
+      record = model.preferredExercise(record)
+      let needsFetch = !model.exerciseIsDetailed(record)
+      loadingDetail = needsFetch
+      if needsFetch, let refreshed = try? await model.exercise(id: record.id), !Task.isCancelled {
         record = refreshed
       }
+      if !Task.isCancelled { loadingDetail = false }
       taxonomy = try? await model.exerciseTaxonomy()
     }
   }
@@ -452,15 +436,6 @@ struct ExerciseDetailView: View {
       Text(model.text(title)).font(.headline)
       Text(text)
     }
-  }
-}
-
-private struct ExerciseRowButtonStyle: ButtonStyle {
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .contentShape(.rect)
-      .opacity(configuration.isPressed ? 0.55 : 1)
   }
 }
 
