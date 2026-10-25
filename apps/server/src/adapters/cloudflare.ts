@@ -238,6 +238,28 @@ export class D1Repository implements Repository {
       .all<{ barcode: string }>();
     return rows.results.map((row) => row.barcode);
   }
+  async exportDocuments(ownerId: string): Promise<Entity[]> {
+    const items: Entity[] = [];
+    let kind = '';
+    let id = '';
+    for (;;) {
+      const page = await this.db
+        .prepare(
+          `SELECT * FROM documents
+           WHERE owner_id=? AND (kind > ? OR (kind=? AND id > ?))
+           ORDER BY kind, id LIMIT 200`,
+        )
+        .bind(ownerId, kind, kind, id)
+        .all<Row>();
+      if (page.results.length === 0) break;
+      for (const row of page.results) items.push(entity(row));
+      const last = page.results[page.results.length - 1];
+      if (!last || page.results.length < 200) break;
+      kind = last.kind;
+      id = last.id;
+    }
+    return items;
+  }
   async commit(input: Commit): Promise<unknown> {
     const replay = await this.replay(input.actor.ownerId, input.operationId, input.requestHash);
     if (replay) return replay.response;

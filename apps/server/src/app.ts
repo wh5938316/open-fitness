@@ -7,13 +7,10 @@ import {
   OAuthResourceServer,
   insufficientScope,
 } from '@cloudflare/workers-oauth-provider';
-import { D1Repository, KVCache, R2ObjectStore } from './adapters/cloudflare';
-import { D1ExerciseCatalog } from './adapters/d1-exercise-catalog';
+import { KVCache } from './adapters/cloudflare';
 import { MUSCLEMAP_FILES } from './domain/exercise-catalog';
 import { createFoodCatalog } from './adapters/cached-food-catalog';
 import { D1FoodCatalogStore } from './adapters/d1-food-catalog';
-import { D1HealthSyncStore } from './adapters/cloudflare-health';
-import { registerHealthOperations } from './domain/health';
 import {
   AuthService,
   FULL_SCOPE,
@@ -43,18 +40,16 @@ import {
 import { sha256 } from './crypto';
 import { requireBarcode } from './domain/barcode';
 import { foodSchema } from './domain/schemas';
+import { createOwnerServices } from './services';
+import { handleSync } from './sync/route';
 
 function createServices(env: Env, actor: Actor, origin: string) {
-  const service = new FitnessService(
-    new D1Repository(env.DB),
-    actor,
-    createFoodCatalog(env),
-    new D1ExerciseCatalog(env.DB),
-  );
-  const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
-  media.register();
-  registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
-  return { service, media };
+  return createOwnerServices(env, actor, origin, {
+    async publish(entities) {
+      const stub = env.FITNESS_SYNC.get(env.FITNESS_SYNC.idFromName(actor.ownerId));
+      await stub.publish(actor.ownerId, entities);
+    },
+  });
 }
 export function openApi(service: FitnessService, origin: string): object {
   const paths: Record<string, any> = {};
@@ -190,7 +185,11 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       throw new AppError(413, 'REQUEST_TOO_LARGE');
     },
   });
-  app.use('*', (c, next) => (c.req.path.startsWith('/uploads/') ? next() : jsonLimit(c, next)));
+  app.use('*', (c, next) =>
+    c.req.path.startsWith('/uploads/') || c.req.path === '/api/v1/sync'
+      ? next()
+      : jsonLimit(c, next),
+  );
   const resource = new OAuthResourceServer<Env, AuthProps>({
     resourceMetadata: { resource: auth.origin, authorization_servers: [auth.origin] },
     requiredScopes: [FULL_SCOPE],
@@ -570,6 +569,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     }
     return response;
   };
+  app.get('/api/v1/sync', (c) => handleSync(c.req.raw, env, auth));
   app.all('/mcp', (c) => protectedHandler(c.req.raw, c.executionCtx as ExecutionContext));
   app.all('/api/v1/*', (c) => protectedHandler(c.req.raw, c.executionCtx as ExecutionContext));
   app.onError(async (error, c) => {

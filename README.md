@@ -13,7 +13,10 @@ flowchart LR
   Bots[Existing AI assistants] -->|Streamable HTTP MCP| Worker[Hono / Cloudflare Worker]
   Native[Native iOS 26 application] -->|REST / OAuth| Worker
   Watch[Native watchOS 26 companion] -->|WatchConnectivity| Native
-  Worker --> D1[(D1: business records and revisions)]
+  Local[TinyBase local store] -->|WebSocket| SyncDO[Sync Durable Object]
+  Worker -->|publish committed rows| SyncDO
+  SyncDO --> D1[(D1: business records and revisions)]
+  Worker --> D1
   Worker --> R2[(Private R2: processed images)]
   Worker --> KV[(KV: OAuth state and product cache)]
   Worker --> OFF[Open Food Facts]
@@ -35,6 +38,8 @@ Both transports use the same validated application operations. The service uses 
 | Authentication adapter   | Clerk sign-in, local sessions, OAuth, verified agent identities       |
 
 D1 is the business source of truth. KV also persists the official OAuth provider's client registrations, grants, and tokens; it is not restricted to caching. R2 stores files, while D1 stores asset IDs and metadata. Versioned entities are typed JSON documents indexed by owner, kind, and ID. Revisions are append-only database snapshots, not a whole-account synchronization blob.
+
+Local clients can keep a [TinyBase](https://tinybase.org/) `MergeableStore` and synchronize it through `GET /api/v1/sync` (WebSocket). TinyBase's Durable Object synchronizer merges the replica. OpenFitness does not implement that protocol. After a merge, pending edits to foods, exercises, plans, and recipes are applied with the same versioned save and delete operations as REST and MCP. Meals, workouts, and media are replicated for offline reading; local edits to those rows are rejected so nutrition snapshots and workout history stay under their existing operations. A failed publish is repaired from D1 the next time a client connects. The native iPhone app still uses its on-device command journal and REST.
 
 Postgres, alternate object stores, Vercel, and self-hosted runtimes can implement these interfaces later. Only Cloudflare adapters and the Cloudflare runtime entry point are included today; changing providers is not yet a configuration-only switch.
 
@@ -115,7 +120,7 @@ The complete English OpenAPI document is served at `/openapi.json`. MCP tools ar
 | Native health delivery    | `enroll_health_device`, `select_health_writer`, `claim_health_exports`, `acknowledge_health_export`, `get_health_sync_status` | `/api/v1/health/devices`, `/api/v1/health/writer`, `/api/v1/health/exports/claim`, `/api/v1/health/status` |
 | Consented health cache    | `get_health_snapshot`, `upload_health_snapshot`                                                                               | `/api/v1/health/snapshot`                                                                                  |
 
-Save operations use POST for both creation and explicit versioned updates; include `id` and `expectedVersion` to update. Meals and sets have dedicated PUT correction endpoints. List endpoints accept `query`, `limit` (1–100), and `cursor`. Store and replay the cursor as an opaque value. HTTP results use `{ "data": ... }`; business failures use `{ "error": { "code": "...", "message": "...", "details": ... } }`. MCP tool results expose the same envelope as structured content and text.
+Save operations use POST for both creation and explicit versioned updates. Include `id` and `expectedVersion` to update. Include `id` without `expectedVersion` to create a record with that id when it does not already exist. Catalogue exercise ids remain reserved. Meals and sets have dedicated PUT correction endpoints. List endpoints accept `query`, `limit` (1–100), and `cursor`. Store and replay the cursor as an opaque value. HTTP results use `{ "data": ... }`; business failures use `{ "error": { "code": "...", "message": "...", "details": ... } }`. MCP tool results expose the same envelope as structured content and text.
 
 REST accepts the agent's OAuth bearer token. A signed-in owner's browser may also use its same-origin session. Cookie-authenticated writes require the configured Origin. Additional browser MCP origins can be explicitly configured in `ALLOWED_ORIGINS`; requests without an Origin header, such as server-side MCP clients, remain supported.
 

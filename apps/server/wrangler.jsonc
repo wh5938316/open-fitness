@@ -24,6 +24,10 @@
     { "binding": "OAUTH_KV", "id": "00000000000000000000000000000001" },
     { "binding": "CACHE", "id": "00000000000000000000000000000002" },
   ],
+  "durable_objects": {
+    "bindings": [{ "name": "FITNESS_SYNC", "class_name": "FitnessSyncDurableObject" }],
+  },
+  "migrations": [{ "tag": "v1-fitness-sync", "new_sqlite_classes": ["FitnessSyncDurableObject"] }],
   "triggers": { "crons": ["17 * * * *"] },
   "observability": { "enabled": true },
 }

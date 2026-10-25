@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { canonical, sha256 } from '../crypto';
 import { AppError, assert, conflict, notFound } from '../errors';
 import { t } from '../i18n';
+import type { SyncPublisher } from '../sync/contract';
 import type {
   Actor,
   Commit,
@@ -96,6 +97,7 @@ export class FitnessService {
     public actor: Actor,
     private catalog: FoodCatalog,
     private exerciseCatalog: ExerciseCatalog = emptyExerciseCatalog,
+    private publisher?: SyncPublisher,
   ) {
     this.registerOperations();
   }
@@ -134,13 +136,15 @@ export class FitnessService {
     try {
       const result = await operation.run(args);
       if (!isPrepared(result)) return result;
-      return await this.repository.commit({
+      const response = await this.repository.commit({
         actor: this.actor,
         operation: operation.name,
         operationId: String(args.operationId),
         requestHash,
         ...result,
       });
+      await this.publishMutations(result.mutations);
+      return response;
     } catch (error) {
       if (attempt < 2 && error instanceof AppError && error.code === 'FOOD_BARCODE_EXISTS')
         return this.finish(operation, args, requestHash, attempt + 1);
@@ -175,6 +179,14 @@ export class FitnessService {
     input: { id?: string; expectedVersion?: number },
   ): Promise<Entity<T>> {
     if (input.id) {
+      const existing = await this.repository.getAny<T>(this.actor.ownerId, kind, input.id);
+      if (!existing) {
+        assert(input.expectedVersion === undefined, 'UNEXPECTED_VERSION');
+        if (kind === 'exercise' && isCatalogExerciseId(input.id))
+          throw new AppError(422, 'CATALOG_ID_RESERVED', 'invalidInput');
+        const now = new Date().toISOString();
+        return { id: input.id, kind, version: 1, data, createdAt: now, updatedAt: now };
+      }
       assert(input.expectedVersion !== undefined, 'EXPECTED_VERSION_REQUIRED');
       const old = await this.require<T>(kind, input.id);
       if (old.version !== input.expectedVersion) throw conflict();
@@ -183,6 +195,19 @@ export class FitnessService {
     assert(input.expectedVersion === undefined, 'UNEXPECTED_VERSION');
     const now = new Date().toISOString();
     return { id: crypto.randomUUID(), kind, version: 1, data, createdAt: now, updatedAt: now };
+  }
+  private async publishMutations(mutations: Mutation[]): Promise<void> {
+    if (!this.publisher || mutations.length === 0) return;
+    try {
+      await this.publisher.publish(mutations.map((item) => item.entity));
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          event: 'sync_publish_failed',
+          code: error instanceof AppError ? error.code : 'INTERNAL_ERROR',
+        }),
+      );
+    }
   }
   prepared(doc: Entity<any>, expectedVersion?: number, extra: Partial<Prepared> = {}): Prepared {
     const assetIds = new Set<string>();
@@ -521,6 +546,7 @@ export class FitnessService {
           imageProcessing: 'provided_by_agent',
           foodCatalog: 'cached_open_food_facts',
           exerciseCatalog: 'shared_catalog',
+          localSync: 'tinybase',
         },
       }),
     });
@@ -730,20 +756,28 @@ export class FitnessService {
             }
             for (const assetId of args.data.mediaAssetIds) await this.readyAsset(assetId);
             if (args.id) {
-              const current = await this.require<Exercise>('exercise', args.id);
-              if (current.version !== args.expectedVersion) throw conflict();
-              if (current.data.source?.kind === 'catalog' || data.source) {
-                data = {
-                  ...data,
-                  source: { ...current.data.source, ...data.source, kind: 'user' },
-                };
+              const current = await this.repository.get<Exercise>(
+                this.actor.ownerId,
+                'exercise',
+                args.id,
+              );
+              if (current) {
+                if (current.version !== args.expectedVersion) throw conflict();
+                if (current.data.source?.kind === 'catalog' || data.source) {
+                  data = {
+                    ...data,
+                    source: { ...current.data.source, ...data.source, kind: 'user' },
+                  };
+                }
               }
             }
           }
           if (kind === 'food' && args.id) {
-            const current = await this.require<Food>('food', args.id);
-            if (current.version !== args.expectedVersion) throw conflict();
-            data = applyFoodEdit(current.data, args.data);
+            const current = await this.repository.get<Food>(this.actor.ownerId, 'food', args.id);
+            if (current) {
+              if (current.version !== args.expectedVersion) throw conflict();
+              data = applyFoodEdit(current.data, args.data);
+            }
           }
           const doc = await this.save(kind, data, args);
           return this.prepared(doc, args.expectedVersion);
@@ -984,7 +1018,9 @@ export class FitnessService {
         const resolved = await this.resolveIngredients(args.data.ingredients, true);
         const ingredients = resolved.ingredients;
         const nutrients = sumNutrients(ingredients.map((item) => item.nutrients));
-        const previous = args.id ? await this.require<Recipe>('recipe', args.id) : null;
+        const previous = args.id
+          ? await this.repository.get<Recipe>(this.actor.ownerId, 'recipe', args.id)
+          : null;
         const data: Recipe = {
           ...args.data,
           nutritionVersion: (previous?.data.nutritionVersion ?? 0) + 1,

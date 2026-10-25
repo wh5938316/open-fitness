@@ -1,9 +1,12 @@
+import type { FitnessSyncDurableObject } from './sync/object';
+
 export interface Env {
   DB: D1Database;
   MEDIA: R2Bucket;
   OAUTH_KV: KVNamespace;
   CACHE: KVNamespace;
   ASSETS: Fetcher;
+  FITNESS_SYNC: DurableObjectNamespace<FitnessSyncDurableObject>;
   PUBLIC_BASE_URL?: string;
   DEFAULT_TIME_ZONE?: string;
   OFF_USER_AGENT?: string;
@@ -157,6 +160,7 @@ export interface Repository {
     barcode: string,
   ): Promise<Entity<T> | null>;
   listFoodBarcodes(ownerId: string): Promise<string[]>;
+  exportDocuments(ownerId: string): Promise<Entity[]>;
   commit(input: Commit): Promise<unknown>;
   healthExports(ownerId: string, limit: number, cursor?: string): Promise<unknown>;
 }
