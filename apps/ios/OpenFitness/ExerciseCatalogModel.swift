@@ -57,7 +57,8 @@ extension AppModel {
     foods = library.foods
     exerciseLibrary = library.exercises
     exerciseDetails = Dictionary(
-      library.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, second in
+      library.exercises.map { ($0.id, $0) },
+      uniquingKeysWith: { first, second in
         first.version >= second.version ? first : second
       })
     exerciseSyncCursor = library.exercisesCursor
