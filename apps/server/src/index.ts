@@ -2,6 +2,8 @@ import { createApp, scheduled } from './app';
 import type { Env } from './types';
 import { AppError } from './errors';
 
+export { FitnessSyncDurableObject } from './sync/object';
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
