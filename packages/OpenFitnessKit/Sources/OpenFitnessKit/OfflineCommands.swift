@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PreparedRequest: Codable, Sendable {
+public struct PreparedRequest: Codable, Sendable, Equatable {
   public var method: String
   public var path: String
   public var body: JSONValue

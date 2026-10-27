@@ -397,6 +397,12 @@ public struct MealRecipe: Codable, Sendable {
   public var version: Int
   public var servings: Double
   public var snapshot: Recipe
+  public init(id: String, version: Int, servings: Double, snapshot: Recipe) {
+    self.id = id
+    self.version = version
+    self.servings = servings
+    self.snapshot = snapshot
+  }
 }
 public struct Meal: Codable, Sendable {
   public var occurredAt: String
@@ -405,6 +411,17 @@ public struct Meal: Codable, Sendable {
   public var nutrients: Nutrients
   public var recipe: MealRecipe?
   public var imageAssetId: String?
+  public init(
+    occurredAt: String, notes: String = "", ingredients: [Ingredient], nutrients: Nutrients,
+    recipe: MealRecipe? = nil, imageAssetId: String? = nil
+  ) {
+    self.occurredAt = occurredAt
+    self.notes = notes
+    self.ingredients = ingredients
+    self.nutrients = nutrients
+    self.recipe = recipe
+    self.imageAssetId = imageAssetId
+  }
 }
 public struct DailyNutrition: Codable, Sendable {
   public var day: String
@@ -427,6 +444,7 @@ public struct AgentContext: Codable, Sendable {
   public struct Capabilities: Codable, Sendable {
     public var healthSyncProtocol: Int?
     public var exerciseCatalog: String?
+    public var syncFeed: Int?
   }
 }
 public struct HealthDeviceCredential: Codable, Sendable {
@@ -486,6 +504,18 @@ public struct HealthSnapshot: Codable, Sendable {
 }
 extension Date {
   public var iso8601: String { ISO8601DateFormatter().string(from: self) }
+  /// UTC timestamp with milliseconds, matching `Date.prototype.toISOString`.
+  public var iso8601Milliseconds: String {
+    let millis = Int64((timeIntervalSince1970 * 1000).rounded(.toNearestOrAwayFromZero))
+    let seconds = millis / 1000
+    let fraction = Int(millis % 1000)
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    let base = formatter.string(from: Date(timeIntervalSince1970: Double(seconds)))
+    guard base.hasSuffix("Z") else { return base }
+    return String(base.dropLast()) + String(format: ".%03dZ", fraction)
+  }
   public static func parseISO(_ value: String) -> Date? {
     let f = ISO8601DateFormatter()
     f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
