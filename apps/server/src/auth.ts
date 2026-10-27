@@ -221,7 +221,12 @@ export class AuthService implements IdentityProvider {
     if (!row || row.expires_at <= Date.now() || row.issued_epoch !== row.session_epoch) return null;
     if (row.status !== 'active') return null;
     const owner = ownerRecord(row);
-    return { owner, tokenHash, actor: this.ownerActor(owner, request) };
+    return {
+      owner,
+      tokenHash,
+      actor: this.ownerActor(owner, request),
+      expiresAt: row.expires_at,
+    };
   }
   ownerActor(owner: Owner, request: Request): Actor {
     return {

@@ -20,6 +20,7 @@ import {
   foodNutrition,
   portionIngredients,
   scaleNutrients,
+  summarizeDay,
   sumNutrients,
 } from './nutrition';
 import {
@@ -116,13 +117,16 @@ export class FitnessService {
         parsed.error.issues.map((issue) => ({ path: issue.path, code: issue.code })),
       );
     const args = parsed.data as Record<string, unknown>;
-    const requestHash = await sha256(canonical({ name, args, actor: this.actor.id }));
+    // The owner scope is the operations primary key. The hash no longer includes
+    // the actor, so a replay after a new OAuth grant still matches. Rows written
+    // before this change stored the actor-specific hash and remain replayable.
+    const requestHash = await sha256(canonical({ name, args }));
     if (!operation.readOnly) {
-      const replay = await this.repository.replay(
-        this.actor.ownerId,
-        String(args.operationId),
+      const legacyHash = await sha256(canonical({ name, args, actor: this.actor.id }));
+      const replay = await this.repository.replay(this.actor.ownerId, String(args.operationId), [
         requestHash,
-      );
+        legacyHash,
+      ]);
       if (replay) return replay.response;
     }
     return this.finish(operation, args, requestHash);
@@ -136,15 +140,16 @@ export class FitnessService {
     try {
       const result = await operation.run(args);
       if (!isPrepared(result)) return result;
-      const response = await this.repository.commit({
+      const committed = await this.repository.commitDetailed({
         actor: this.actor,
         operation: operation.name,
         operationId: String(args.operationId),
         requestHash,
         ...result,
       });
-      await this.publishMutations(result.mutations);
-      return response;
+      if (!committed.replayed)
+        await this.notifyCommitted(result.mutations.map((item) => item.entity));
+      return committed.response;
     } catch (error) {
       if (attempt < 2 && error instanceof AppError && error.code === 'FOOD_BARCODE_EXISTS')
         return this.finish(operation, args, requestHash, attempt + 1);
@@ -196,10 +201,10 @@ export class FitnessService {
     const now = new Date().toISOString();
     return { id: crypto.randomUUID(), kind, version: 1, data, createdAt: now, updatedAt: now };
   }
-  private async publishMutations(mutations: Mutation[]): Promise<void> {
-    if (!this.publisher || mutations.length === 0) return;
+  async notifyCommitted(entities: readonly Entity<unknown>[]): Promise<void> {
+    if (!this.publisher) return;
     try {
-      await this.publisher.publish(mutations.map((item) => item.entity));
+      await this.publisher.publish(entities);
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -547,6 +552,7 @@ export class FitnessService {
           foodCatalog: 'cached_open_food_facts',
           exerciseCatalog: 'shared_catalog',
           localSync: 'tinybase',
+          syncFeed: 1,
         },
       }),
     });
@@ -1053,6 +1059,7 @@ export class FitnessService {
         'Record an actual meal from ingredient quantities and save an immutable nutrition snapshot. An ingredient catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({
         operationId,
+        id: z.uuid().optional(),
         occurredAt: isoDateTime,
         ingredients: ingredientsSchema,
         notes,
@@ -1074,7 +1081,7 @@ export class FitnessService {
             notes: args.notes,
             imageAssetId: args.imageAssetId,
           },
-          {},
+          { id: args.id },
         );
         return this.adopt(this.mealPrepared(doc), resolved.adopted);
       },
@@ -1085,6 +1092,7 @@ export class FitnessService {
         'Log a saved recipe by servings or cooked grams without reanalyzing it. Overrides replace absolute ingredient amounts after scaling; additions apply only to this meal. An addition catalogBarcode adopts that product into foods in the same transaction.',
       schema: z.object({
         operationId,
+        id: z.uuid().optional(),
         recipeId: id,
         recipeVersion: z.number().int().positive().optional(),
         servings: positive.optional(),
@@ -1131,7 +1139,7 @@ export class FitnessService {
             recipe: { id: recipe.id, version: recipe.version, servings, snapshot: recipe.data },
             imageAssetId: args.imageAssetId,
           },
-          {},
+          { id: args.id },
         );
         return this.adopt(this.mealPrepared(doc), resolved.adopted);
       },
@@ -1210,11 +1218,12 @@ export class FitnessService {
           meals.push(...page.items);
           cursor = page.cursor ?? undefined;
         } while (cursor);
+        const summary = summarizeDay(meals, args.day, this.actor.timeZone);
         return {
-          day: args.day,
-          timeZone: this.actor.timeZone,
-          mealCount: meals.length,
-          nutrients: sumNutrients(meals.map((item) => item.data.nutrients)),
+          day: summary.day,
+          timeZone: summary.timeZone,
+          mealCount: summary.mealCount,
+          nutrients: summary.nutrients,
         };
       },
     });

@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config';
 import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin';
 
 export default defineConfig({
+  server: {
+    fs: {
+      allow: ['../..'],
+    },
+  },
   plugins: [
     cloudflareTest(async () => ({
       wrangler: { configPath: './wrangler.jsonc' },

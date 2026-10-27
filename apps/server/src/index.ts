@@ -2,6 +2,7 @@ import { createApp, scheduled } from './app';
 import type { Env } from './types';
 import { AppError } from './errors';
 
+export { FitnessEventsDurableObject } from './sync/events';
 export { FitnessSyncDurableObject } from './sync/object';
 
 export default {

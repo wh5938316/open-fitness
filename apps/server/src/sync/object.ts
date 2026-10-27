@@ -9,6 +9,7 @@ import { createOwnerServices } from '../services';
 import type { Actor, Entity, EntityKind, Env } from '../types';
 import { applyPendingRow, type SyncRow } from './apply';
 import { isDocumentKind } from './contract';
+import { notifyOwner } from './notify';
 
 const FRAGMENT_BYTES = 32 * 1024;
 const stores = new WeakMap<FitnessSyncDurableObject, MergeableStore>();
@@ -221,6 +222,7 @@ export class FitnessSyncDurableObject extends WsServerDurableObject<Env> {
     this.fitness = createOwnerServices(this.env, actor, auth.origin, {
       publish: async (entities) => {
         for (const entity of entities) this.writeCanonical(entity);
+        await notifyOwner(this.env, ownerId);
       },
     }).service;
     return this.fitness;
