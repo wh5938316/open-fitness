@@ -51,6 +51,10 @@ extension AppModel {
   }
 
   func loadDeviceLibrary() {
+    if localStore != nil {
+      loadFromStore()
+      return
+    }
     guard let url = try? deviceLibraryURL(),
       let library = DiskStore.read(DeviceLibrary.self, at: url)
     else { return }
@@ -69,6 +73,18 @@ extension AppModel {
   }
 
   func persistDeviceLibrary() {
+    if let localStore {
+      let fetchedAt = Date().iso8601Milliseconds
+      for exercise in exerciseLibrary where exercise.isCatalogOnly {
+        if let data = try? JSONEncoder().encode(exercise.data) {
+          try? localStore.saveCatalog(
+            id: exercise.id, data: data, locale: language.rawValue, fetchedAt: fetchedAt)
+        }
+      }
+      try? localStore.setMeta("catalog_cursor", exerciseSyncCursor)
+      try? localStore.setMeta("catalog_complete", exerciseLibraryComplete ? "1" : "0")
+      return
+    }
     guard let url = try? deviceLibraryURL() else { return }
     try? DiskStore.write(
       DeviceLibrary(
@@ -87,6 +103,7 @@ extension AppModel {
   }
 
   func rememberFood(_ record: Record<Food>) {
+    if localStore != nil { return }
     if let index = foods.firstIndex(where: { $0.id == record.id }) {
       guard foods[index].version < record.version else { return }
       foods[index] = record
@@ -97,6 +114,7 @@ extension AppModel {
   }
 
   func rememberFoods(_ hits: [FoodSearchHit]) {
+    if localStore != nil { return }
     var changed = false
     for hit in hits {
       guard let savedId = hit.savedId else { continue }

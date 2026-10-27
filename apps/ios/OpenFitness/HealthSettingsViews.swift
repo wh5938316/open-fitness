@@ -109,7 +109,7 @@ struct SettingsView: View {
         Text(model.text(.watchHelp)).font(.subheadline).foregroundStyle(.secondary)
         Button(model.text(.requestSync)) { model.sendCompanion() }
       }
-      if !model.journal.commands.isEmpty {
+      if !model.journal.commands.isEmpty || model.pendingSyncCount > 0 {
         Section(model.text(.pendingChanges)) {
           ForEach(model.journal.commands) { command in
             VStack(alignment: .leading, spacing: 4) {
@@ -125,6 +125,9 @@ struct SettingsView: View {
                   .font(.caption).foregroundStyle(.secondary)
               }
             }
+          }
+          if model.pendingSyncCount > 0 {
+            NavigationLink(model.text(.conflictTitle)) { ConflictReviewView() }
           }
           Button(model.text(.clearError)) { Task { await model.retryPending() } }
         }
@@ -144,6 +147,10 @@ struct SettingsView: View {
         model.text(.disconnect), isPresented: $confirmsDisconnect, titleVisibility: .visible
       ) {
         Button(model.text(.disconnect), role: .destructive) { Task { await model.disconnect() } }
+      } message: {
+        if model.pendingSyncCount > 0 {
+          Text(String(format: model.text(.signOutPendingWarning), model.pendingSyncCount))
+        }
       }
   }
 }

@@ -25,13 +25,13 @@ struct RootView: View {
             NavigationStack { SettingsView() }
           }
         }.tabBarMinimizeBehavior(.onScrollDown)
+          .safeAreaInset(edge: .top) { SyncStatusBanner().padding(.horizontal) }
           .onChange(of: tab) { _, value in
             if value == 0
               && model.selectedDay.calendarDay(timeZone: model.timeZone)
                 != Date().calendarDay(timeZone: model.timeZone)
             {
               model.selectedDay = Date()
-              Task { await model.refresh() }
             }
           }
       } else if model.hasStoredCredentials && !model.sessionNeedsInteractiveSignIn {
@@ -52,7 +52,12 @@ struct RootView: View {
     .overlay(alignment: .top) {
       if model.isBusy {
         ProgressView().padding(12).glassEffect().padding(.top, 6).allowsHitTesting(false)
+          .accessibilityIdentifier("busy-overlay")
       }
+      Text("\(model.debugNetworkCount)")
+        .accessibilityIdentifier("debug-network-requests")
+        .frame(width: 1, height: 1)
+        .opacity(0.01)
     }
   }
 }

@@ -1,6 +1,24 @@
 import XCTest
 
 @MainActor final class OpenFitnessUITests: XCTestCase {
+  func testSwitchingDaysReadsLocalStoreWithoutNetwork() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing-local-store"]
+    app.launch()
+    app.tabBars.buttons["Food"].tap()
+    let counter = app.staticTexts["debug-network-requests"]
+    XCTAssertTrue(counter.waitForExistence(timeout: 5))
+    let before = counter.label
+    XCTAssertTrue(app.staticTexts["Offline. Showing the copy on this iPhone."].waitForExistence(timeout: 5))
+    app.buttons["previous-day"].tap()
+    XCTAssertTrue(app.buttons["meal-row-meal-yesterday"].waitForExistence(timeout: 1))
+    XCTAssertEqual(app.staticTexts["day-total-kcal"].label, "200")
+    app.buttons["previous-day"].tap()
+    XCTAssertTrue(app.buttons["meal-row-meal-before"].waitForExistence(timeout: 1))
+    XCTAssertEqual(app.staticTexts["day-total-kcal"].label, "300")
+    XCTAssertFalse(app.otherElements["busy-overlay"].exists)
+    XCTAssertEqual(counter.label, before)
+  }
   func testTrainingAndRecipeNavigation() throws {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing"]

@@ -47,10 +47,26 @@ final class AppModel {
   var healthSummary: HealthSnapshot?
   var healthEnabled = false
   var sharesHealth = false
-  var selectedDay = Date()
+  var selectedDay = Date() {
+    didSet {
+      guard oldValue != selectedDay, !isPreview else { return }
+      reloadDay()
+    }
+  }
   var restUntil: Date?
+  var todayNutrition: DailyNutrition?
+  var syncStatus: SyncStatus = .idle(lastSyncedAt: nil)
+  var dayUnavailable = false
+  var downloadingHistory = false
+  var pendingKcalText: String?
+  var conflictIds: Set<String> = []
+  var accountNotice: String?
+  var debugNetworkCount = 0
   var isPreview = false
-  @ObservationIgnored private var client: APIClient?
+  @ObservationIgnored var client: APIClient?
+  @ObservationIgnored var localStore: LocalStore?
+  @ObservationIgnored var syncEngine: SyncEngine?
+  @ObservationIgnored var recordingTransport: RecordingTransport?
   @ObservationIgnored private let vault = KeychainVault()
   @ObservationIgnored private let authentication = NativeAuthentication()
   @ObservationIgnored private let health = HealthBridge()
@@ -58,8 +74,8 @@ final class AppModel {
   @ObservationIgnored private var cacheURL: URL?
   @ObservationIgnored private let monitor = NWPathMonitor()
   @ObservationIgnored private var companion: PhoneCompanion?
-  @ObservationIgnored private var historyCursor: String?
-  @ObservationIgnored private var refreshRequested = false
+  @ObservationIgnored var historyCursor: String?
+  @ObservationIgnored var refreshRequested = false
   @ObservationIgnored var exerciseCacheAccountKey = ""
   @ObservationIgnored var exerciseDetails: [String: Record<Exercise>] = [:]
   @ObservationIgnored var exerciseLibrary: [Record<Exercise>] = []
@@ -123,6 +139,10 @@ final class AppModel {
     }
     monitor.start(queue: DispatchQueue(label: "org.openfitness.network"))
     #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("-ui-testing-local-store") {
+        configureLocalStoreFixture()
+        return
+      }
       if ProcessInfo.processInfo.arguments.contains("-ui-testing") { return }
     #endif
     restoreStoredSession()
@@ -130,6 +150,7 @@ final class AppModel {
   func boot() async {
     companion = PhoneCompanion(model: self)
     #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("-ui-testing-local-store") { return }
       if ProcessInfo.processInfo.arguments.contains("-ui-testing") {
         loadPreview()
         return
@@ -260,12 +281,23 @@ final class AppModel {
       workout = cache.workout
       nutrition = cache.nutrition
     }
+    try openLocalStore(for: value)
     loadDeviceLibrary()
   }
   private func activateAccount(_ value: AgentContext) async throws {
     let api = try api()
+    let nextKey = OAuthSecurity.accountKey(
+      origin: try ServerConfiguration(serverAddress).origin, ownerId: value.ownerId)
+    if !exerciseCacheAccountKey.isEmpty, exerciseCacheAccountKey != nextKey {
+      accountNotice = text(.differentAccount)
+      await syncEngine?.stop()
+      localStore?.close()
+      localStore = nil
+      syncEngine = nil
+    }
     try installCachedAccount(value)
     try await api.enableMutationRecovery(accountKey: accountKey)
+    await ensureEngine()
   }
   func api() throws -> APIClient {
     guard let client else { throw APIError("AUTHENTICATION_REQUIRED", status: 401) }
@@ -281,104 +313,31 @@ final class AppModel {
       }
     }
   }
-  func refresh() async {
-    guard isConnected, !isPreview else { return }
-    if isRefreshing {
-      refreshRequested = true
+  func refresh() async { await syncNow() }
+  func loadMoreHistory() async throws {
+    guard localStore != nil else { return }
+    let page = localStore?.workouts(limit: 30, offset: workouts.count).compactMap {
+      $0.record(Workout.self)
+    } ?? []
+    guard !page.isEmpty else {
+      historyCursor = nil
       return
     }
-    isRefreshing = true
-    defer {
-      isRefreshing = false
-      if refreshRequested {
-        refreshRequested = false
-        Task { await refresh() }
-      }
-    }
-    do {
-      let api = try api()
-      try await api.recoverPendingMutations()
-      async let p = allRecords(TrainingPlan.self, path: "/api/v1/training-plans", api: api)
-      async let r = allRecords(Recipe.self, path: "/api/v1/recipes", api: api)
-      async let savedFoods = allRecords(Food.self, path: "/api/v1/foods", api: api)
-      async let w = api.request(RecordPage<Workout>.self, path: "/api/v1/workouts?limit=30")
-      async let m = mealsForSelectedDay(api)
-      async let n = api.request(
-        DailyNutrition.self,
-        path: "/api/v1/nutrition/daily/\(selectedDay.calendarDay(timeZone: timeZone))")
-      plans = try await p
-      recipes = try await r
-      let history = try await w
-      workouts = history.items
-      historyCursor = history.cursor
-      let remoteActive = workouts.first { $0.data.state == "active" }
-      if remoteActive != nil || !journal.commands.contains(where: { $0.kind == .startWorkout }) {
-        workout = remoteActive
-      }
-      meals = try await m
-      nutrition = try await n
-      if let saved = try? await savedFoods { foods = saved }
-      if context?.capabilities.healthSyncProtocol != nil {
-        healthStatus = try? await api.request(HealthSyncStatus.self, path: "/api/v1/health/status")
-      }
-      try persistCache()
-      persistDeviceLibrary()
-      syncLibraries()
-      sendCompanion()
-      await drain()
-      if healthEnabled { await synchronizeHealth() }
-    } catch {
-      if let e = error as? APIError, e.status == 401 {
-        errorMessage = copy.text(.authRequired)
-      } else if let e = error as? APIError, e.status == 409 {
-        errorMessage = copy.text(.recordChanged)
-      }
-    }
-  }
-  private func mealsForSelectedDay(_ api: APIClient) async throws -> [Record<Meal>] {
-    var items: [Record<Meal>] = []
-    var cursor: String?
-    let day = selectedDay.calendarDay(timeZone: timeZone)
-    repeat {
-      let page = try await api.request(
-        RecordPage<Meal>.self,
-        path: "/api/v1/meals?limit=100" + (cursor.map { "&cursor=\($0.pathSegment)" } ?? ""))
-      items += page.items.filter {
-        Date.parseISO($0.data.occurredAt)?.calendarDay(timeZone: timeZone) == day
-      }
-      cursor = page.cursor
-    } while cursor != nil
-    return items.sorted { $0.data.occurredAt > $1.data.occurredAt }
-  }
-  private func allRecords<T: Codable & Sendable>(_ type: T.Type, path: String, api: APIClient)
-    async throws -> [Record<T>]
-  {
-    var items: [Record<T>] = []
-    var cursor: String?
-    repeat {
-      let page = try await api.request(
-        RecordPage<T>.self,
-        path: path + "?limit=100" + (cursor.map { "&cursor=\($0.pathSegment)" } ?? ""))
-      items += page.items
-      cursor = page.cursor
-    } while cursor != nil
-    return items
-  }
-  func loadMoreHistory() async throws {
-    guard let cursor = historyCursor else { return }
-    let encoded = cursor.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
-    let page = try await api().request(
-      RecordPage<Workout>.self, path: "/api/v1/workouts?limit=30&cursor=\(encoded)")
-    workouts += page.items
-    historyCursor = page.cursor
-    persistDeviceLibrary()
+    workouts += page
+    historyCursor = page.count == 30 ? String(workouts.count) : nil
   }
   var canLoadMoreHistory: Bool { historyCursor != nil }
   func setLanguage(_ value: AppLanguage) async {
     language = value
     UserDefaults.standard.set(value.rawValue, forKey: "appLanguage")
     await client?.setLanguage(value.rawValue)
+    if localStore != nil {
+      try? localStore?.clearCatalog()
+      exerciseLibraryComplete = false
+      exerciseSyncCursor = nil
+    }
     sendCompanion()
+    syncLibraries()
   }
   func start(_ plan: Record<TrainingPlan>, source: String = "ios") throws {
     guard activeWorkout == nil else { return }
@@ -459,6 +418,12 @@ final class AppModel {
       journal = previous
       throw error
     }
+    if command.kind == .startWorkout, let workout,
+      let encoded = try? JSONEncoder().encode(workout),
+      let text = String(data: encoded, encoding: .utf8)
+    {
+      try? localStore?.setMeta("pending_local_workout", text)
+    }
     try persistCache()
     sendCompanion()
     Task { await drain() }
@@ -477,6 +442,7 @@ final class AppModel {
   private func acknowledge(_ command: OfflineCommand, workoutId: String) throws {
     let previous = journal
     journal.acknowledge(command, workoutId: workoutId)
+    if command.kind == .startWorkout { try? localStore?.setMeta("pending_local_workout", nil) }
     do { try persistJournal() } catch {
       journal = previous
       throw error
@@ -570,37 +536,52 @@ final class AppModel {
     await refresh()
   }
   func saveExercise(_ value: Exercise) async throws -> Record<Exercise> {
-    let owner = accountKey
-    let result = try await api().mutation(
-      Record<Exercise>.self, path: "/api/v1/exercises", fields: ["data": try .from(value)])
-    guard owner == accountKey else { throw APIError("ACCOUNT_MISMATCH") }
-    cacheExercise(result)
+    if isPreview {
+      let record = Record(id: UUID().uuidString, kind: "exercise", data: value)
+      cacheExercise(record)
+      return record
+    }
+    let record = Record(
+      id: UUID().uuidString.lowercased(), kind: "exercise", data: value)
+    try await enqueueDocument(
+      name: "save_exercise", method: "POST", path: "/api/v1/exercises",
+      fields: ["data": try .from(value)], kind: "exercise", record: record)
+    cacheExercise(record)
     exerciseCatalogRevision += 1
-    return result
+    return record
   }
   func savePlan(_ value: TrainingPlan) async throws {
     if isPreview {
       plans.append(.init(id: UUID().uuidString, kind: "plan", data: value))
       return
     }
-    _ = try await api().mutation(
-      Record<TrainingPlan>.self, path: "/api/v1/training-plans", fields: ["data": try .from(value)])
+    let record = Record(id: UUID().uuidString.lowercased(), kind: "plan", data: value)
+    try await enqueueDocument(
+      name: "save_training_plan", method: "POST", path: "/api/v1/training-plans",
+      fields: ["data": try .from(value)], kind: "plan", record: record)
     for entry in value.exercises where exerciseDetails[entry.exerciseId]?.isCatalogOnly == true {
       exerciseDetails[entry.exerciseId] = nil
     }
     exerciseCatalogRevision += 1
-    await refresh()
   }
   func saveRecipe(_ value: Recipe, existing: Record<Recipe>? = nil) async throws -> Record<Recipe> {
+    if isPreview {
+      let record = existing ?? Record(id: UUID().uuidString, kind: "recipe", data: value)
+      if existing == nil { recipes.append(record) }
+      return record
+    }
+    var record = existing ?? Record(id: UUID().uuidString.lowercased(), kind: "recipe", data: value)
+    record.data = value
+    if existing != nil { record.version += 1 }
     var fields: [String: JSONValue] = ["data": try .from(value)]
     if let existing {
       fields["id"] = .string(existing.id)
       fields["expectedVersion"] = .number(Double(existing.version))
     }
-    let result = try await api().mutation(
-      Record<Recipe>.self, path: "/api/v1/recipes", fields: fields)
-    await refresh()
-    return result
+    try await enqueueDocument(
+      name: "save_recipe", method: "POST", path: "/api/v1/recipes", fields: fields, kind: "recipe",
+      record: record, baseVersion: existing?.version)
+    return record
   }
   func logRecipe(
     _ value: Record<Recipe>, servings: Double, overrides: [String: Double] = [:],
@@ -610,44 +591,73 @@ final class AppModel {
     let changes = overrides.sorted { $0.key < $1.key }.map {
       JSONValue.object(["ingredientId": .string($0.key), "quantity": .number($0.value)])
     }
-    _ = try await api().mutation(
-      Record<Meal>.self, path: "/api/v1/meals/from-recipe",
+    let id = UUID().uuidString.lowercased()
+    let stamp = occurredAt.iso8601Milliseconds
+    let meal = Meal(
+      occurredAt: stamp, notes: notes, ingredients: additions, nutrients: .init())
+    let record = Record(id: id, kind: "meal", data: meal, createdAt: stamp, updatedAt: stamp)
+    try await enqueueDocument(
+      name: "log_meal_from_recipe", method: "POST", path: "/api/v1/meals/from-recipe",
       fields: [
-        "recipeId": .string(value.id), "recipeVersion": .number(Double(value.version)),
-        "servings": .number(servings), "overrides": .array(changes),
-        "additions": try .from(additions), "occurredAt": .string(occurredAt.iso8601),
-        "notes": .string(notes),
-      ])
-    await refresh()
+        "id": .string(id), "recipeId": .string(value.id),
+        "recipeVersion": .number(Double(value.version)), "servings": .number(servings),
+        "overrides": .array(changes), "additions": try .from(additions),
+        "occurredAt": .string(stamp), "notes": .string(notes),
+      ], kind: "meal", record: record)
   }
   func logIngredients(_ value: [Ingredient], notes: String, occurredAt: Date) async throws {
-    _ = try await api().mutation(
-      Record<Meal>.self, path: "/api/v1/meals",
+    if isPreview { return }
+    let id = UUID().uuidString.lowercased()
+    let stamp = occurredAt.iso8601Milliseconds
+    let nutrients = NutritionMath.sumNutrients(
+      value.compactMap { NutritionMath.optionalFoodNutrition(food: $0.food, amount: $0.quantity, unit: $0.unit) }
+    )
+    let known = value.allSatisfy {
+      NutritionMath.optionalFoodNutrition(food: $0.food, amount: $0.quantity, unit: $0.unit) != nil
+    }
+    let meal = Meal(
+      occurredAt: stamp, notes: notes, ingredients: value,
+      nutrients: known ? nutrients : Nutrients(
+        energyKcal: nil, proteinG: nil, carbohydrateG: nil, fatG: nil, fiberG: nil))
+    let record = Record(id: id, kind: "meal", data: meal, createdAt: stamp, updatedAt: stamp)
+    try await enqueueDocument(
+      name: "log_meal", method: "POST", path: "/api/v1/meals",
       fields: [
-        "ingredients": try .from(value), "occurredAt": .string(occurredAt.iso8601),
+        "id": .string(id), "ingredients": try .from(value), "occurredAt": .string(stamp),
         "notes": .string(notes),
-      ])
-    await refresh()
+      ], kind: "meal", record: record)
   }
   func reviseMeal(
     _ value: Record<Meal>, quantities: [String: Double], notes: String, occurredAt: Date
   ) async throws {
+    if isPreview { return }
     let changes = quantities.sorted { $0.key < $1.key }.map {
       JSONValue.object(["ingredientId": .string($0.key), "quantity": .number($0.value)])
     }
-    _ = try await api().mutation(
-      Record<Meal>.self, method: "PUT", path: "/api/v1/meals/\(value.id.pathSegment)",
+    let stamp = occurredAt.iso8601Milliseconds
+    var meal = value.data
+    meal.occurredAt = stamp
+    meal.notes = notes
+    var record = value
+    record.data = meal
+    record.version += 1
+    try await enqueueDocument(
+      name: "revise_meal", method: "PUT", path: "/api/v1/meals/\(value.id.pathSegment)",
       fields: [
-        "expectedVersion": .number(Double(value.version)), "overrides": .array(changes),
-        "notes": .string(notes), "occurredAt": .string(occurredAt.iso8601),
-      ])
-    await refresh()
+        "id": .string(value.id), "expectedVersion": .number(Double(value.version)),
+        "overrides": .array(changes), "notes": .string(notes), "occurredAt": .string(stamp),
+      ], kind: "meal", record: record, baseVersion: value.version)
   }
   func deleteMeal(_ value: Record<Meal>) async throws {
-    _ = try await api().mutation(
-      Record<Meal>.self, method: "DELETE", path: "/api/v1/meals/\(value.id.pathSegment)",
-      fields: ["expectedVersion": .number(Double(value.version))])
-    await refresh()
+    if isPreview { return }
+    var record = value
+    record.deleted = true
+    record.version += 1
+    try await enqueueDocument(
+      name: "delete_meal", method: "DELETE", path: "/api/v1/meals/\(value.id.pathSegment)",
+      fields: [
+        "id": .string(value.id), "expectedVersion": .number(Double(value.version)),
+      ], kind: "meal", record: record, baseVersion: value.version)
   }
   func searchFoods(_ query: String) async throws -> FoodSearchResults {
     let digits = query.filter(\.isNumber)
@@ -794,9 +804,12 @@ final class AppModel {
       ])
     healthSummary = summary
   }
+  var pendingSyncCount: Int { (localStore?.pendingCount() ?? 0) + journal.commands.count }
   func disconnect() async {
-    if let url = try? recentExercisesURL() { try? FileManager.default.removeItem(at: url) }
-    if let url = try? deviceLibraryURL() { try? FileManager.default.removeItem(at: url) }
+    let clientId = try? await client?.credentials()?.clientId
+    let origin = (try? ServerConfiguration(serverAddress).origin) ?? ""
+    await syncEngine?.stop()
+    destroyLocalFiles(clientId: clientId, origin: origin)
     recentExerciseHistory = .init()
     await client?.disconnect()
     client = nil
@@ -836,8 +849,8 @@ final class AppModel {
   private func snapshot() -> CompanionSnapshot {
     .init(
       accountKey: accountKey, connected: isConnected, language: language.rawValue,
-      timeZone: timeZone, plans: plans, recipes: recipes, workout: workout, nutrition: nutrition,
-      receipts: journal.receipts)
+      timeZone: timeZone, plans: plans, recipes: recipes, workout: workout,
+      nutrition: todayNutrition ?? nutrition, receipts: journal.receipts)
   }
   func sendCompanion() { companion?.send(snapshot()) }
   #if DEBUG
@@ -888,6 +901,7 @@ final class AppModel {
       nutrition = .init(
         day: Date().calendarDay(timeZone: timeZone), timeZone: timeZone, mealCount: 2,
         nutrients: .init(energyKcal: 1240, proteinG: 82, carbohydrateG: 135, fatG: 42, fiberG: 16))
+      todayNutrition = nutrition
     }
   #endif
 }
