@@ -5,7 +5,7 @@ import {
 } from '@cloudflare/workers-oauth-provider';
 import { z } from 'zod';
 import { ClerkIdentityVerifier } from './adapters/clerk';
-import { randomToken, sha256 } from './crypto';
+import { base64url, fromBase64url, randomToken, sha256 } from './crypto';
 import { AppError } from './errors';
 import { resolveLocale } from './i18n';
 import type {
@@ -63,6 +63,19 @@ export function safeReturn(value: string | null | undefined): string {
   )
     return '/admin';
   return value;
+}
+// The Account Portal can decode its redirect parameters once more than it encodes them.
+// Base64url has nothing to decode, so a return path with its own query survives.
+export function encodeReturn(returnTo: string): string {
+  return base64url(new TextEncoder().encode(safeReturn(returnTo)));
+}
+export function decodeReturn(value: string | null | undefined): string {
+  if (!value) return '/admin';
+  try {
+    return safeReturn(new TextDecoder('utf-8', { fatal: true }).decode(fromBase64url(value)));
+  } catch {
+    return '/admin';
+  }
 }
 export function requireOrigin(request: Request, origin: string): void {
   if (request.headers.get('Origin') !== origin)

@@ -4,14 +4,21 @@ Clerk is the identity provider for new sign-ins. OpenFitness still issues its ow
 `__Host-of_session` cookie after a one-time token exchange. Clerk session JWTs are
 not accepted as API or MCP bearer tokens.
 
-`/sign-in` redirects to Clerk's hosted Account Portal. It does not embed Clerk's
-sign-in component. A development Frontend API such as
-`https://example.clerk.accounts.dev` uses `https://example.accounts.dev/sign-in`.
-A production Frontend API `https://clerk.example.com` uses
-`https://accounts.example.com/sign-in`. The link always includes `redirect_url`
-pointing at `/auth/clerk/complete` on `PUBLIC_BASE_URL`. That page loads Clerk.js
-only to call `session.getToken()` and exchange it for the local cookie. The
-Account Portal itself stays in English.
+`/sign-in` sends the browser to Clerk's hosted Account Portal. It does not embed
+Clerk's sign-in component. The page loads Clerk.js on `PUBLIC_BASE_URL` and calls
+`redirectToSignIn()` with `/auth/clerk/complete?next=<base64url return path>` as the
+sign-in and sign-up redirect. The Account Portal can decode redirect parameters one
+extra time, which would cut an `/authorize?...` return path at its first `&`.
+Base64url survives that. The complete page calls `session.getToken()` and exchanges
+it for the local cookie. If Clerk already has a session on this origin, `/sign-in` exchanges it
+without opening the Account Portal. The Account Portal itself stays in English.
+
+Do not link to the Account Portal sign-in page directly from the server. A
+development instance accepts `redirect_url` only for localhost or for the origin
+its dev browser was created on. A plain link from `*.workers.dev` loses the
+redirect: the user signs in and lands on Clerk's "cannot redirect to your
+application" page. Running Clerk.js on this origin first creates that dev browser
+and passes it to the Account Portal as `__clerk_db_jwt`.
 
 Use a Clerk **development** instance for local and `workers.dev` work. A production
 Clerk instance needs a `clerk.<your-domain>` CNAME, and `*.workers.dev` cannot host

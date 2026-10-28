@@ -18,6 +18,8 @@ import {
   clerkPublishableKey,
   contentSecurityPolicy,
   cookies,
+  decodeReturn,
+  encodeReturn,
   requireOrigin,
   safeReturn,
 } from './auth';
@@ -33,6 +35,7 @@ import {
   accountPage,
   adminPage,
   clerkCompletePage,
+  clerkSignInPage,
   clerkSignOutPage,
   consentPage,
   loginPage,
@@ -221,7 +224,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
       'Content-Security-Policy',
       contentSecurityPolicy(
         env,
-        ['/auth/clerk/complete', '/auth/clerk/sign-out'].includes(c.req.path),
+        ['/sign-in', '/auth/clerk/complete', '/auth/clerk/sign-out'].includes(c.req.path),
       ),
     );
     const length = Number(c.req.header('Content-Length') || 0);
@@ -277,19 +280,19 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
   app.get('/sign-in', async (c) => {
     const returnTo = safeReturn(c.req.query('returnTo'));
     if (await auth.session(c.req.raw)) return c.redirect(returnTo);
+    const key = clerkPublishableKey(env);
+    if (!key) return c.html(loginPage(await locale(c.req.raw), returnTo));
+    // Clerk.js must run on this origin before the Account Portal opens. A development
+    // instance only honors redirect_url for the origin its dev browser was created on.
     const complete = new URL('/auth/clerk/complete', auth.origin);
-    complete.searchParams.set('returnTo', returnTo);
-    const portal = clerkPublishableKey(env)
-      ? clerkAccountPortalUrl(env.CLERK_FRONTEND_API, 'sign-in', complete.href)
-      : null;
-    if (!portal) return c.html(loginPage(await locale(c.req.raw), returnTo));
-    return c.redirect(portal);
+    complete.searchParams.set('next', encodeReturn(returnTo));
+    return c.html(clerkSignInPage(await locale(c.req.raw), returnTo, key, complete.href));
   });
   app.get('/auth/clerk/complete', async (c) => {
     const key = clerkPublishableKey(env);
     if (!key) return c.redirect('/sign-in');
     return c.html(
-      clerkCompletePage(await locale(c.req.raw), safeReturn(c.req.query('returnTo')), key),
+      clerkCompletePage(await locale(c.req.raw), decodeReturn(c.req.query('next')), key),
     );
   });
   app.get('/auth/clerk/sign-out', async (c) => {

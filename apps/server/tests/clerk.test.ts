@@ -3,7 +3,12 @@ import { env } from 'cloudflare:workers';
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
 import { createApp } from '../src/app';
 import { base64url, randomToken, sha256 } from '../src/crypto';
-import { clerkAccountPortalOrigin, clerkAccountPortalUrl } from '../src/auth';
+import {
+  clerkAccountPortalOrigin,
+  clerkAccountPortalUrl,
+  decodeReturn,
+  encodeReturn,
+} from '../src/auth';
 import {
   generateClerkTestKeys,
   signClerkTestToken,
@@ -290,7 +295,7 @@ describe('Clerk session exchange', () => {
     expect(remote.status).toBe(404);
   });
 
-  it('redirects sign-in to the Clerk Account Portal', () => {
+  it('starts Clerk sign-in on this origin before opening the Account Portal', async () => {
     expect(clerkAccountPortalOrigin('https://example.clerk.accounts.dev')).toBe(
       'https://example.accounts.dev',
     );
@@ -299,25 +304,49 @@ describe('Clerk session exchange', () => {
     );
     expect(clerkAccountPortalOrigin('https://not-clerk.example')).toBeNull();
     const runtime = clerkEnv();
-    return request('/sign-in?returnTo=https://evil.example', runtime).then(async (signIn) => {
-      expect(signIn.status).toBe(302);
-      const location = new URL(signIn.headers.get('Location') ?? '');
-      expect(location.origin).toBe('https://accounts.example.test');
-      expect(location.pathname).toBe('/sign-in');
-      const back = new URL(location.searchParams.get('redirect_url') ?? '');
-      expect(back.origin).toBe(origin);
-      expect(back.pathname).toBe('/auth/clerk/complete');
-      expect(back.searchParams.get('returnTo')).toBe('/admin');
-      expect(signIn.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
-      expect(
-        clerkAccountPortalUrl('https://example.clerk.accounts.dev', 'user', origin + '/account'),
-      ).toBe(
-        'https://example.accounts.dev/user?redirect_url=' + encodeURIComponent(origin + '/account'),
-      );
-    });
+    // A development instance drops redirect_url unless Clerk.js first ran on this origin.
+    const signIn = await request('/sign-in?returnTo=https://evil.example', runtime);
+    expect(signIn.status).toBe(200);
+    const html = await signIn.text();
+    expect(html).toContain('data-mode="clerk-sign-in"');
+    expect(html).toContain('data-return-to="/admin"');
+    expect(html).toContain('data-clerk-key="pk_test_example"');
+    expect(signIn.headers.get('Content-Security-Policy')).toContain(
+      "script-src 'self' https://clerk.example.test",
+    );
+    const back = new URL(html.match(/data-clerk-redirect="([^"]+)"/)![1]!.replaceAll('&amp;', '&'));
+    expect(back.origin).toBe(origin);
+    expect(back.pathname).toBe('/auth/clerk/complete');
+    expect(decodeReturn(back.searchParams.get('next'))).toBe('/admin');
+
+    const returnTo = '/authorize?client_id=app&state=s&scope=fitness%3Afull+offline_access';
+    const authorize = await request('/sign-in?returnTo=' + encodeURIComponent(returnTo), runtime);
+    const next = new URL(
+      (await authorize.text()).match(/data-clerk-redirect="([^"]+)"/)![1]!.replaceAll('&amp;', '&'),
+    ).searchParams.get('next')!;
+    expect(next).toMatch(/^[A-Za-z0-9_-]+$/);
+    // The Account Portal decodes its redirect once too often; the base64url value is unchanged.
+    expect(decodeURIComponent(next)).toBe(next);
+    const complete = await request('/auth/clerk/complete?next=' + next, runtime);
+    expect(await complete.text()).toContain(
+      'data-return-to="/authorize?client_id=app&amp;state=s&amp;scope=fitness%3Afull+offline_access"',
+    );
+    for (const value of [
+      null,
+      '',
+      '%%%',
+      encodeReturn('https://evil.example'),
+      'Ly9ldmlsLmV4YW1wbGU',
+    ])
+      expect(decodeReturn(value)).toBe('/admin');
+    expect(
+      clerkAccountPortalUrl('https://example.clerk.accounts.dev', 'user', origin + '/account'),
+    ).toBe(
+      'https://example.accounts.dev/user?redirect_url=' + encodeURIComponent(origin + '/account'),
+    );
   });
 
-  it('relaxes Clerk CSP only while exchanging or ending a Clerk session', async () => {
+  it('relaxes Clerk CSP only while starting, exchanging, or ending a Clerk session', async () => {
     const plain = await request('/sign-in', withEnv({}));
     expect(plain.headers.get('Content-Security-Policy')).toContain("script-src 'self'");
     expect(plain.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
@@ -330,7 +359,7 @@ describe('Clerk session exchange', () => {
       const admin = await request('/admin', runtime);
       expect(admin.headers.get('Content-Security-Policy')).not.toContain('clerk.example.test');
       expect(admin.headers.get('Content-Security-Policy')).not.toContain('protect.clerk.com');
-      const complete = await request('/auth/clerk/complete?returnTo=/admin', runtime);
+      const complete = await request('/auth/clerk/complete', runtime);
       const policy = complete.headers.get('Content-Security-Policy');
       expect(policy).toContain(
         "script-src 'self' https://clerk.example.test https://challenges.cloudflare.com https://*.protect.clerk.com",
