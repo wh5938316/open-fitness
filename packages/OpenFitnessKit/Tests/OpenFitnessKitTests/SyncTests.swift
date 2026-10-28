@@ -1,6 +1,8 @@
 import Foundation
 import Testing
 
+@testable import OpenFitnessKit
+
 @Suite(.serialized) struct LocalStoreTests {
   @Test func versionGuardTombstoneAndCursorRollback() throws {
     let store = try TestDirectory().store()

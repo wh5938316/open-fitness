@@ -101,6 +101,22 @@ public struct StoredDocument: Sendable, Equatable {
   public var source: String
   public var seq: Int?
 
+  public init(
+    kind: String, id: String, version: Int, deleted: Bool, createdAt: String, updatedAt: String,
+    data: Data, occurredAt: String?, source: String, seq: Int?
+  ) {
+    self.kind = kind
+    self.id = id
+    self.version = version
+    self.deleted = deleted
+    self.createdAt = createdAt
+    self.updatedAt = updatedAt
+    self.data = data
+    self.occurredAt = occurredAt
+    self.source = source
+    self.seq = seq
+  }
+
   public func record<Value: Decodable>(_ type: Value.Type = Value.self) -> Record<Value>? {
     guard let value = try? JSONDecoder().decode(Value.self, from: data) else { return nil }
     var record = Record(

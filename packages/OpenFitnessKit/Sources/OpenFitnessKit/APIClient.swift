@@ -183,6 +183,7 @@ public actor APIClient {
   private var inFlightWrites = Set<String>()
   /// Document writes are queued in the local outbox instead of `writes-*.json`.
   public var usesLocalOutbox = false
+  public func setUsesLocalOutbox(_ enabled: Bool) { usesLocalOutbox = enabled }
   public init(
     server: ServerConfiguration, vault: any CredentialVault,
     transport: any HTTPTransport = URLSessionTransport()

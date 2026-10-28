@@ -20,7 +20,7 @@ extension AppModel {
       if let syncEngine { await syncEngine.start() }
       return
     }
-    await client.usesLocalOutbox = true
+    await client.setUsesLocalOutbox(true)
     let engine = SyncEngine(store: localStore, api: client, ownerId: ownerId)
     syncEngine = engine
     let changes = await engine.changes
@@ -399,15 +399,9 @@ struct StoreIndexEntry: Codable, Sendable {
 final class RecordingTransport: HTTPTransport, @unchecked Sendable {
   private let lock = NSLock()
   private var count = 0
-  var requests: Int {
-    lock.lock()
-    defer { lock.unlock() }
-    return count
-  }
+  var requests: Int { lock.withLock { count } }
   func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-    lock.lock()
-    count += 1
-    lock.unlock()
+    lock.withLock { count += 1 }
     throw URLError(.notConnectedToInternet)
   }
 }
