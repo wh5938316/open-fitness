@@ -95,7 +95,9 @@ public actor SyncEngine {
           resets += 1
           if resets > 2 { throw APIError("SYNC_RESET", status: 409) }
           try store.prepareReset()
-          changeContinuation.yield(["meal", "food", "recipe", "plan", "exercise", "workout", "asset"])
+          changeContinuation.yield([
+            "meal", "food", "recipe", "plan", "exercise", "workout", "asset",
+          ])
           cursor = nil
           continue
         }
@@ -136,7 +138,9 @@ public actor SyncEngine {
     }
     var delay = retryNanoseconds
     while !stopped {
-      let entries = store.outbox().filter { $0.state == "pending" }.sorted { $0.localSeq < $1.localSeq }
+      let entries = store.outbox().filter { $0.state == "pending" }.sorted {
+        $0.localSeq < $1.localSeq
+      }
       guard let entry = entries.first(where: { canSend($0, all: store.outbox()) }) else { return }
       do {
         let payload = try await api.request(
@@ -150,7 +154,9 @@ public actor SyncEngine {
         halt(.needsSignIn)
         return
       } catch let error as APIError where error.status == 403 {
-        setStatus(.failed(code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
+        setStatus(
+          .failed(
+            code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
         return
       } catch let error as APIError where error.status == 409 && error.code == "VERSION_CONFLICT" {
         try? store.updateOutbox(
@@ -158,7 +164,9 @@ public actor SyncEngine {
           errorMessage: error.message)
         await pull()
         return
-      } catch let error as APIError where error.status == 409 && error.code == "IDEMPOTENCY_CONFLICT" {
+      } catch let error as APIError
+        where error.status == 409 && error.code == "IDEMPOTENCY_CONFLICT"
+      {
         try? store.updateOutbox(
           operationId: entry.operationId, state: "unknown", errorCode: error.code,
           errorMessage: error.message)
@@ -178,8 +186,12 @@ public actor SyncEngine {
           errorMessage: error.message)
         return
       } catch let error as APIError where error.status == 429 || error.status >= 500 {
-        try? store.updateOutbox(operationId: entry.operationId, attempts: entry.attempts + 1, errorCode: error.code, errorMessage: error.message)
-        setStatus(.failed(code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
+        try? store.updateOutbox(
+          operationId: entry.operationId, attempts: entry.attempts + 1, errorCode: error.code,
+          errorMessage: error.message)
+        setStatus(
+          .failed(
+            code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
         return
       } catch {
         try? store.updateOutbox(
@@ -305,7 +317,9 @@ public actor SyncEngine {
       return
     }
     if let error = error as? APIError, error.status == 429 || error.status >= 500 {
-      setStatus(.failed(code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
+      setStatus(
+        .failed(
+          code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
       return
     }
     if error is URLError {
@@ -313,7 +327,9 @@ public actor SyncEngine {
       return
     }
     if let error = error as? APIError {
-      setStatus(.failed(code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
+      setStatus(
+        .failed(
+          code: error.code, message: error.message, lastSyncedAt: store.meta("last_synced_at")))
       return
     }
     setStatus(.offline(lastSyncedAt: store.meta("last_synced_at")))

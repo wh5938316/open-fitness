@@ -19,7 +19,8 @@ import Testing
       seq: 4, id: "", kind: "", version: 1, createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z", data: .object([:]))
     #expect(throws: SQLiteError.self) {
-      try store.apply(items: [change(seq: 4, id: "b", version: 1), bad], cursor: "c4", account: account)
+      try store.apply(
+        items: [change(seq: 4, id: "b", version: 1), bad], cursor: "c4", account: account)
     }
     #expect(store.meta("cursor") == before)
     #expect(store.document(kind: "food", id: "b") == nil)
@@ -28,7 +29,8 @@ import Testing
   @Test func deleteLegacyKeepsResponseAndOutboxRows() throws {
     let store = try TestDirectory().store()
     let account = SyncAccount(ownerId: "owner", timeZone: "UTC", locale: "en")
-    _ = try store.apply(items: [change(seq: 1, id: "feed", version: 1)], cursor: "c", account: account)
+    _ = try store.apply(
+      items: [change(seq: 1, id: "feed", version: 1)], cursor: "c", account: account)
     _ = try store.importDocument(stored("legacy"), source: "legacy")
     _ = try store.importDocument(stored("kept", id: "kept"), source: "legacy")
     _ = try store.upsertResponse(stored("response", id: "response"))
@@ -100,7 +102,8 @@ import Testing
     await broken.setStatus(503)
     let brokenEngine = try await makeEngine(store: store, transport: broken, owner: "owner-503")
     await brokenEngine.pull()
-    if case .failed = await brokenEngine.status {} else {
+    if case .failed = await brokenEngine.status {
+    } else {
       Issue.record("A server error should surface without clearing data")
     }
     #expect(store.document(kind: "food", id: "kept") != nil)
@@ -159,7 +162,8 @@ import Testing
     #expect(unknownStore.outbox().first?.state == "unknown")
     _ = try unknownStore.importDocument(stored("landed", id: "food-z"), source: "feed")
     await unknownTransport.setStatus(409, code: "IDEMPOTENCY_CONFLICT")
-    try unknownStore.updateOutbox(operationId: "create", state: "pending", attempts: 0, clearError: true)
+    try unknownStore.updateOutbox(
+      operationId: "create", state: "pending", attempts: 0, clearError: true)
     await unknownEngine.pull()
     await unknownEngine.drainOutbox()
     #expect(unknownStore.outbox().isEmpty)
@@ -190,7 +194,8 @@ import Testing
     for item in fixture.cases {
       let meals = item.meals.map { meal in
         Record(
-          id: meal.id, kind: "meal", data: Meal(
+          id: meal.id, kind: "meal",
+          data: Meal(
             occurredAt: meal.occurredAt, ingredients: [], nutrients: meal.nutrients),
           createdAt: meal.createdAt, updatedAt: meal.createdAt)
       }
@@ -209,7 +214,8 @@ import Testing
         }
         continue
       }
-      let summary = try NutritionMath.summarize(meals: decoded, day: item.day, timeZone: item.timeZone)
+      let summary = try NutritionMath.summarize(
+        meals: decoded, day: item.day, timeZone: item.timeZone)
       let bounds = try NutritionMath.dayBounds(day: item.day, timeZone: item.timeZone)
       #expect(bounds.from == item.expect.from)
       #expect(bounds.to == item.expect.to)
@@ -220,7 +226,8 @@ import Testing
 
   @Test func conversionAndMissingDensity() throws {
     var food = Food(
-      name: "Milk", nutrients: Nutrients(energyKcal: 200), basis: FoodBasis(quantity: 100, unit: "g"))
+      name: "Milk", nutrients: Nutrients(energyKcal: 200),
+      basis: FoodBasis(quantity: 100, unit: "g"))
     #expect(try NutritionMath.foodNutrition(food: food, amount: 50, unit: "g").energyKcal == 100)
     #expect(NutritionMath.optionalFoodNutrition(food: food, amount: 10, unit: "ml") == nil)
     food.densityGPerMl = 1
@@ -256,7 +263,8 @@ import Testing
     let pending = Record(
       id: "local-workout", kind: "workout", version: 0, data: Workout(name: "Offline"))
     let snapshot = CompanionSnapshot(
-      accountKey: key, connected: true, plans: [
+      accountKey: key, connected: true,
+      plans: [
         Record(id: "plan-1", kind: "plan", data: TrainingPlan(name: "Day A", exercises: []))
       ], workout: pending)
     try DiskStore.write(snapshot, to: folder.appendingPathComponent("cache-\(key).json"))
@@ -273,7 +281,9 @@ import Testing
     #expect(store.document(kind: "plan", id: "plan-1") != nil)
     #expect(store.meta("pending_local_workout")?.contains("local-workout") == true)
     #expect(store.outbox().contains { $0.operationId == "op-legacy" })
-    #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("writes-\(key).json").path))
+    #expect(
+      !FileManager.default.fileExists(
+        atPath: folder.appendingPathComponent("writes-\(key).json").path))
     try LegacyImport.importAccount(store: store, directory: folder, accountKey: key)
     #expect(store.outbox().filter { $0.operationId == "op-legacy" }.count == 1)
   }
@@ -373,7 +383,9 @@ private final class MemoryVault: CredentialVault, @unchecked Sendable {
   private var value: OAuthCredentials?
   init(_ value: OAuthCredentials?) { self.value = value }
   func read(for origin: String) -> OAuthCredentials? { lock.withLock { value } }
-  func write(_ value: OAuthCredentials?, for origin: String) { lock.withLock { self.value = value } }
+  func write(_ value: OAuthCredentials?, for origin: String) {
+    lock.withLock { self.value = value }
+  }
 }
 
 private actor FeedTransport: HTTPTransport {
@@ -411,7 +423,8 @@ private actor FeedTransport: HTTPTransport {
     }
     return (
       payload,
-      HTTPURLResponse(url: url, statusCode: status == 0 ? 200 : status, httpVersion: nil, headerFields: nil)!
+      HTTPURLResponse(
+        url: url, statusCode: status == 0 ? 200 : status, httpVersion: nil, headerFields: nil)!
     )
   }
 }

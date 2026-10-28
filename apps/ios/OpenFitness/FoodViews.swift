@@ -33,15 +33,24 @@ struct FoodView: View {
     @Bindable var model = model
     Screen {
       HStack {
-        Button { model.shiftDay(-1) } label: { Image(systemName: "chevron.left") }
-          .accessibilityIdentifier("previous-day")
+        Button {
+          model.shiftDay(-1)
+        } label: {
+          Image(systemName: "chevron.left")
+        }
+        .accessibilityIdentifier("previous-day")
         DatePicker(model.text(.today), selection: $model.selectedDay, displayedComponents: .date)
           .datePickerStyle(.compact)
-        Button { model.shiftDay(1) } label: { Image(systemName: "chevron.right") }
-          .accessibilityIdentifier("next-day")
+        Button {
+          model.shiftDay(1)
+        } label: {
+          Image(systemName: "chevron.right")
+        }
+        .accessibilityIdentifier("next-day")
       }
       if model.dayUnavailable {
-        EmptyCard(title: model.text(.dayUnavailable), detail: "", icon: "calendar.badge.exclamationmark")
+        EmptyCard(
+          title: model.text(.dayUnavailable), detail: "", icon: "calendar.badge.exclamationmark")
       } else if model.downloadingHistory && model.meals.isEmpty {
         EmptyCard(title: model.text(.downloadingHistory), detail: "", icon: "arrow.down.circle")
       } else if let nutrition = model.nutrition {

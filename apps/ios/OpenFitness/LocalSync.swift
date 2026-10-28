@@ -89,7 +89,9 @@ extension AppModel {
     foods = overlay(decoded(localStore.documents(kind: "food")), kind: "food")
     plans = overlay(decoded(localStore.documents(kind: "plan")), kind: "plan")
     recipes = overlay(decoded(localStore.documents(kind: "recipe")), kind: "recipe")
-    let workoutPage = localStore.workouts(limit: 30, offset: 0).compactMap { $0.record(Workout.self) }
+    let workoutPage = localStore.workouts(limit: 30, offset: 0).compactMap {
+      $0.record(Workout.self)
+    }
     workouts = workoutPage
     historyCursor = workoutPage.count == 30 ? "30" : nil
     mergeExercises()
@@ -122,7 +124,9 @@ extension AppModel {
           && !pendingDeletes.contains($0.id)
       }
       let pendingIds = Set(pending.map(\.id))
-      meals = confirmed.filter { !pendingIds.contains($0.id) && !pendingDeletes.contains($0.id) } + pending
+      meals =
+        confirmed.filter { !pendingIds.contains($0.id) && !pendingDeletes.contains($0.id) }
+        + pending
       nutrition = try NutritionMath.summarize(meals: confirmed, day: day, timeZone: timeZone)
       dayUnavailable = false
       downloadingHistory =
@@ -174,8 +178,12 @@ extension AppModel {
 
   func applyRemoteChanges(_ kinds: Set<String>) {
     guard localStore != nil else { return }
-    if kinds.contains("food") { foods = overlay(decoded(localStore!.documents(kind: "food")), kind: "food") }
-    if kinds.contains("plan") { plans = overlay(decoded(localStore!.documents(kind: "plan")), kind: "plan") }
+    if kinds.contains("food") {
+      foods = overlay(decoded(localStore!.documents(kind: "food")), kind: "food")
+    }
+    if kinds.contains("plan") {
+      plans = overlay(decoded(localStore!.documents(kind: "plan")), kind: "plan")
+    }
     if kinds.contains("recipe") {
       recipes = overlay(decoded(localStore!.documents(kind: "recipe")), kind: "recipe")
     }
@@ -201,7 +209,8 @@ extension AppModel {
 
   func destroyLocalFiles(clientId: String?, origin: String) {
     let folder = try? DiskStore.directory()
-    let keys = storeIndex(folder).keys.filter { storeIndex(folder)[$0]?.origin == origin }
+    let keys =
+      storeIndex(folder).keys.filter { storeIndex(folder)[$0]?.origin == origin }
       + [accountKey]
     for key in Set(keys) where !key.isEmpty {
       localStore?.destroy()
@@ -211,11 +220,15 @@ extension AppModel {
         "recent-exercises-\(key).json", "health-versions-\(key).json", "store-\(key).sqlite",
       ]
       for name in names {
-        if let folder { try? FileManager.default.removeItem(at: folder.appendingPathComponent(name)) }
+        if let folder {
+          try? FileManager.default.removeItem(at: folder.appendingPathComponent(name))
+        }
       }
       if let folder {
         let prefix = "exercise-taxonomy-\(key)"
-        if let files = try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
+        if let files = try? FileManager.default.contentsOfDirectory(
+          at: folder, includingPropertiesForKeys: nil)
+        {
           for file in files where file.lastPathComponent.hasPrefix(prefix) {
             try? FileManager.default.removeItem(at: file)
           }
@@ -256,7 +269,8 @@ extension AppModel {
   private func mergeExercises() {
     guard let localStore else { return }
     let owned = localStore.documents(kind: "exercise").compactMap { $0.record(Exercise.self) }
-    let catalog = localStore.catalog(locale: language.rawValue).compactMap { row -> Record<Exercise>? in
+    let catalog = localStore.catalog(locale: language.rawValue).compactMap {
+      row -> Record<Exercise>? in
       guard let data = try? JSONDecoder().decode(Exercise.self, from: row.data) else { return nil }
       return Record(id: row.id, kind: "exercise", version: 0, data: data)
     }
@@ -271,8 +285,9 @@ extension AppModel {
     rows.compactMap { $0.record(Value.self) }
   }
 
-  private func overlay<Value: Decodable>(_ records: [Record<Value>], kind: String) -> [Record<Value>]
-  {
+  private func overlay<Value: Decodable>(_ records: [Record<Value>], kind: String) -> [Record<
+    Value
+  >] {
     var result = records
     for entry in localStore?.outbox() ?? [] where entry.targetKind == kind {
       if entry.name.hasPrefix("delete_") {
@@ -282,8 +297,11 @@ extension AppModel {
       guard let data = entry.optimistic,
         let record = try? JSONDecoder().decode(Record<Value>.self, from: data)
       else { continue }
-      if let index = result.firstIndex(where: { $0.id == record.id }) { result[index] = record }
-      else { result.insert(record, at: 0) }
+      if let index = result.firstIndex(where: { $0.id == record.id }) {
+        result[index] = record
+      } else {
+        result.insert(record, at: 0)
+      }
     }
     return result
   }
@@ -306,7 +324,8 @@ extension AppModel {
 
   private func storeIndex(_ directory: URL?) -> [String: StoreIndexEntry] {
     guard let directory else { return [:] }
-    return DiskStore.read([String: StoreIndexEntry].self, at: directory.appendingPathComponent("stores-index.json"))
+    return DiskStore.read(
+      [String: StoreIndexEntry].self, at: directory.appendingPathComponent("stores-index.json"))
       ?? [:]
   }
 
@@ -328,7 +347,9 @@ extension AppModel {
       let transport = RecordingTransport()
       recordingTransport = transport
       if let server = try? ServerConfiguration(serverAddress) {
-        client = APIClient(server: server, vault: KeychainVault(service: "org.openfitness.uitest"), transport: transport)
+        client = APIClient(
+          server: server, vault: KeychainVault(service: "org.openfitness.uitest"),
+          transport: transport)
       }
       let folder = FileManager.default.temporaryDirectory.appendingPathComponent(
         "openfitness-uitest-\(UUID().uuidString)", isDirectory: true)
@@ -336,7 +357,9 @@ extension AppModel {
       guard let store = try? LocalStore(url: folder.appendingPathComponent("store-fixture.sqlite"))
       else { return }
       localStore = store
-      let offsets = [(0, "meal-today", 100.0), (-1, "meal-yesterday", 200.0), (-2, "meal-before", 300.0)]
+      let offsets = [
+        (0, "meal-today", 100.0), (-1, "meal-yesterday", 200.0), (-2, "meal-before", 300.0),
+      ]
       for (offset, id, kcal) in offsets {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

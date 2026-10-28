@@ -16,7 +16,9 @@ struct TodayView: View {
               Label(model.text(.calories), systemImage: "flame").font(.subheadline).foregroundStyle(
                 .secondary)
               HStack(alignment: .firstTextBaseline) {
-                Text(model.copy.number((model.todayNutrition ?? model.nutrition)?.nutrients.energyKcal)).font(
+                Text(
+                  model.copy.number((model.todayNutrition ?? model.nutrition)?.nutrients.energyKcal)
+                ).font(
                   .system(size: 54, weight: .semibold, design: .rounded)
                 ).monospacedDigit()
                 Text(model.text(.kcal)).foregroundStyle(.secondary)

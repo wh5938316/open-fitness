@@ -9,7 +9,8 @@ import XCTest
     let counter = app.staticTexts["debug-network-requests"]
     XCTAssertTrue(counter.waitForExistence(timeout: 5))
     let before = counter.label
-    XCTAssertTrue(app.staticTexts["Offline. Showing the copy on this iPhone."].waitForExistence(timeout: 5))
+    XCTAssertTrue(
+      app.staticTexts["Offline. Showing the copy on this iPhone."].waitForExistence(timeout: 5))
     app.buttons["previous-day"].tap()
     XCTAssertTrue(app.buttons["meal-row-meal-yesterday"].waitForExistence(timeout: 1))
     XCTAssertEqual(app.staticTexts["day-total-kcal"].label, "200")

@@ -1,6 +1,5 @@
 import Foundation
 import SQLite3
-import Synchronization
 
 public struct SQLiteError: Error, Sendable, Equatable {
   public var code: Int32
@@ -11,37 +10,48 @@ public struct SQLiteError: Error, Sendable, Equatable {
   }
 }
 
-/// One SQLite connection. Callers serialize access with the connection lock;
-/// the pointer never leaves this type.
+/// One SQLite connection. The pointer stays inside this type. `NSRecursiveLock`
+/// guards it: `OpaquePointer` is not `Sendable`, so it cannot live in
+/// `Mutex`, whose `withLock` closure takes an `inout sending` value and
+/// rejects that pointer under Swift 6.4 region isolation. Callers still see
+/// an `@unchecked Sendable` connection because every use takes the lock.
 final class SQLiteConnection: @unchecked Sendable {
-  private let mutex = Mutex<OpaquePointer?>(nil)
+  private let lock = NSRecursiveLock()
+  private var handle: OpaquePointer?
   let path: String
 
   init(path: String) throws {
     self.path = path
-    var handle: OpaquePointer?
+    var opened: OpaquePointer?
     var flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX
     #if os(iOS) || os(watchOS) || os(macOS)
       flags |= SQLITE_OPEN_FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION
     #endif
-    let status = sqlite3_open_v2(path, &handle, flags, nil)
-    guard status == SQLITE_OK, let handle else {
-      let message = handle.flatMap { String(cString: sqlite3_errmsg($0)) } ?? "unable to open"
-      if let handle { sqlite3_close(handle) }
+    let status = sqlite3_open_v2(path, &opened, flags, nil)
+    guard status == SQLITE_OK, let opened else {
+      let message = opened.flatMap { String(cString: sqlite3_errmsg($0)) } ?? "unable to open"
+      if let opened { sqlite3_close(opened) }
       throw SQLiteError(code: status, message: message)
     }
-    mutex.withLock { $0 = handle }
-    try execute("PRAGMA journal_mode=WAL")
-    try execute("PRAGMA synchronous=NORMAL")
-    try execute("PRAGMA foreign_keys=ON")
-    try execute("PRAGMA busy_timeout=5000")
+    handle = opened
+    do {
+      try execute("PRAGMA journal_mode=WAL")
+      try execute("PRAGMA synchronous=NORMAL")
+      try execute("PRAGMA foreign_keys=ON")
+      try execute("PRAGMA busy_timeout=5000")
+    } catch {
+      sqlite3_close_v2(opened)
+      handle = nil
+      throw error
+    }
   }
 
   func close() {
-    mutex.withLock { handle in
-      if let handle { sqlite3_close_v2(handle) }
-      handle = nil
-    }
+    lock.lock()
+    let current = handle
+    handle = nil
+    lock.unlock()
+    if let current { sqlite3_close_v2(current) }
   }
 
   func execute(_ sql: String) throws {
@@ -57,6 +67,8 @@ final class SQLiteConnection: @unchecked Sendable {
   }
 
   func transaction<T>(_ body: () throws -> T) throws -> T {
+    lock.lock()
+    defer { lock.unlock() }
     try execute("BEGIN IMMEDIATE")
     do {
       let value = try body()
@@ -104,10 +116,12 @@ final class SQLiteConnection: @unchecked Sendable {
   }
 
   private func withHandle<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
-    try mutex.withLock { handle in
-      guard let handle else { throw SQLiteError(code: SQLITE_MISUSE, message: "connection closed") }
-      return try body(handle)
+    lock.lock()
+    defer { lock.unlock() }
+    guard let handle else {
+      throw SQLiteError(code: SQLITE_MISUSE, message: "connection closed")
     }
+    return try body(handle)
   }
 
   private func prepare(_ db: OpaquePointer, _ sql: String) throws -> OpaquePointer {
@@ -175,9 +189,9 @@ struct SQLiteRow: Sendable {
       case SQLITE_FLOAT:
         values.append(.double(sqlite3_column_double(statement, index)))
       case SQLITE_BLOB:
-        let count = Int(sqlite3_column_bytes(statement, index))
-        if let pointer = sqlite3_column_blob(statement, index), count > 0 {
-          values.append(.blob(Data(bytes: pointer, count: count)))
+        let bytes = Int(sqlite3_column_bytes(statement, index))
+        if let pointer = sqlite3_column_blob(statement, index), bytes > 0 {
+          values.append(.blob(Data(bytes: pointer, count: bytes)))
         } else {
           values.append(.blob(Data()))
         }

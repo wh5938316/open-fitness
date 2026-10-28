@@ -1,4 +1,5 @@
 import Foundation
+import SQLite3
 
 public final class LocalStore: @unchecked Sendable {
   private let writer: SQLiteConnection
@@ -351,9 +352,11 @@ public final class LocalStore: @unchecked Sendable {
     -> Bool
   {
     let data = try JSONEncoder().encode(item.data)
-    let occurred = item.kind == "meal" ? item.data.string("occurredAt") : item.data.string("startedAt")
+    let occurred =
+      item.kind == "meal" ? item.data.string("occurredAt") : item.data.string("startedAt")
     let current = try connection.query(
-      "SELECT version FROM documents WHERE kind=? AND id=?", bindings: [.text(item.kind), .text(item.id)]
+      "SELECT version FROM documents WHERE kind=? AND id=?",
+      bindings: [.text(item.kind), .text(item.id)]
     ).first?.int(0)
     if let current, item.version < current { return false }
     try connection.run(
@@ -395,7 +398,8 @@ public final class LocalStore: @unchecked Sendable {
     StoredDocument(
       kind: row.text(0), id: row.text(1), version: row.int(2), deleted: row.int(3) != 0,
       createdAt: row.text(4), updatedAt: row.text(5), data: row.blob(6),
-      occurredAt: row.optionalText(7), source: row.text(8), seq: row.values.count > 9 && row.int(9) != 0 ? row.int(9) : nil)
+      occurredAt: row.optionalText(7), source: row.text(8),
+      seq: row.values.count > 9 && row.int(9) != 0 ? row.int(9) : nil)
   }
 
   private static func entry(_ row: SQLiteRow, dependsOn: [String]) -> OutboxEntry {

@@ -316,9 +316,10 @@ final class AppModel {
   func refresh() async { await syncNow() }
   func loadMoreHistory() async throws {
     guard localStore != nil else { return }
-    let page = localStore?.workouts(limit: 30, offset: workouts.count).compactMap {
-      $0.record(Workout.self)
-    } ?? []
+    let page =
+      localStore?.workouts(limit: 30, offset: workouts.count).compactMap {
+        $0.record(Workout.self)
+      } ?? []
     guard !page.isEmpty else {
       historyCursor = nil
       return
@@ -610,15 +611,19 @@ final class AppModel {
     let id = UUID().uuidString.lowercased()
     let stamp = occurredAt.iso8601Milliseconds
     let nutrients = NutritionMath.sumNutrients(
-      value.compactMap { NutritionMath.optionalFoodNutrition(food: $0.food, amount: $0.quantity, unit: $0.unit) }
+      value.compactMap {
+        NutritionMath.optionalFoodNutrition(food: $0.food, amount: $0.quantity, unit: $0.unit)
+      }
     )
     let known = value.allSatisfy {
       NutritionMath.optionalFoodNutrition(food: $0.food, amount: $0.quantity, unit: $0.unit) != nil
     }
     let meal = Meal(
       occurredAt: stamp, notes: notes, ingredients: value,
-      nutrients: known ? nutrients : Nutrients(
-        energyKcal: nil, proteinG: nil, carbohydrateG: nil, fatG: nil, fiberG: nil))
+      nutrients: known
+        ? nutrients
+        : Nutrients(
+          energyKcal: nil, proteinG: nil, carbohydrateG: nil, fatG: nil, fiberG: nil))
     let record = Record(id: id, kind: "meal", data: meal, createdAt: stamp, updatedAt: stamp)
     try await enqueueDocument(
       name: "log_meal", method: "POST", path: "/api/v1/meals",

@@ -62,7 +62,9 @@ public enum LegacyImport {
   }
 
   public static func removeImportedFiles(directory: URL, accountKey: String) {
-    let names = ["library-\(accountKey).json", "cache-\(accountKey).json", "writes-\(accountKey).json"]
+    let names = [
+      "library-\(accountKey).json", "cache-\(accountKey).json", "writes-\(accountKey).json",
+    ]
     for name in names {
       try? FileManager.default.removeItem(at: directory.appendingPathComponent(name))
     }

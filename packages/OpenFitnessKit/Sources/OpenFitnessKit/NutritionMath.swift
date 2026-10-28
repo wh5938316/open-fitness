@@ -64,8 +64,7 @@ public enum NutritionMath {
     return result
   }
 
-  public static func optionalFoodNutrition(food: Food, amount: Double, unit: String) -> Nutrients?
-  {
+  public static func optionalFoodNutrition(food: Food, amount: Double, unit: String) -> Nutrients? {
     do { return try foodNutrition(food: food, amount: amount, unit: unit) } catch let error
       as APIError where error.code == "MISSING_CONVERSION"
     {
@@ -76,8 +75,7 @@ public enum NutritionMath {
   }
 
   /// Fixed-point local midnight, matching the server's `dayBounds` loop.
-  public static func dayBounds(day: String, timeZone: String) throws -> (from: String, to: String)
-  {
+  public static func dayBounds(day: String, timeZone: String) throws -> (from: String, to: String) {
     guard day.range(of: #"^\d{4}-\d{2}-\d{2}$"#, options: .regularExpression) != nil else {
       throw APIError("INVALID_DATE", status: 422)
     }
@@ -128,7 +126,8 @@ public enum NutritionMath {
   ) throws -> DailyNutrition {
     let bounds = try dayBounds(day: day, timeZone: timeZone)
     let included = meals.filter { meal in
-      meal.deleted != true && meal.data.occurredAt >= bounds.from && meal.data.occurredAt < bounds.to
+      meal.deleted != true && meal.data.occurredAt >= bounds.from
+        && meal.data.occurredAt < bounds.to
     }.sorted { left, right in
       if left.createdAt != right.createdAt { return left.createdAt > right.createdAt }
       return left.id > right.id

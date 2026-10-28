@@ -68,12 +68,16 @@ public enum OutboxBuilder {
     ]
     let meal = Meal(
       occurredAt: occurredAt, notes: notes, ingredients: ingredients,
-      nutrients: nutrients ?? Nutrients(
-        energyKcal: nil, proteinG: nil, carbohydrateG: nil, fatG: nil, fiberG: nil))
-    let record = Record(id: id, kind: "meal", version: 1, data: meal, createdAt: occurredAt, updatedAt: occurredAt)
+      nutrients: nutrients
+        ?? Nutrients(
+          energyKcal: nil, proteinG: nil, carbohydrateG: nil, fatG: nil, fiberG: nil))
+    let record = Record(
+      id: id, kind: "meal", version: 1, data: meal, createdAt: occurredAt, updatedAt: occurredAt)
     return OutboxDraft(
       operationId: operationId, name: "log_meal",
-      request: request(name: "log_meal", method: "POST", path: "/api/v1/meals", fields: fields, operationId: operationId),
+      request: request(
+        name: "log_meal", method: "POST", path: "/api/v1/meals", fields: fields,
+        operationId: operationId),
       targetKind: "meal", targetId: id, baseVersion: nil, optimistic: try encode(record),
       dependsOn: dependsOn)
   }

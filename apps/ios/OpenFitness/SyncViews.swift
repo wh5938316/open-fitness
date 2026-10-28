@@ -37,12 +37,18 @@ struct SyncStatusBanner: View {
 struct ConflictReviewView: View {
   @Environment(AppModel.self) private var model
   var body: some View {
-    let entries = model.localStore?.outbox().filter { $0.state == "conflict" || $0.state == "failed" || $0.state == "unknown" } ?? []
+    let entries =
+      model.localStore?.outbox().filter {
+        $0.state == "conflict" || $0.state == "failed" || $0.state == "unknown"
+      } ?? []
     List(entries) { entry in
       VStack(alignment: .leading, spacing: 8) {
         Text(entry.name).font(.headline)
-        Text(entry.state == "unknown" ? model.text(.outcomeUnknown) : entry.errorMessage ?? model.text(.conflictTitle))
-          .font(.subheadline).foregroundStyle(.secondary)
+        Text(
+          entry.state == "unknown"
+            ? model.text(.outcomeUnknown) : entry.errorMessage ?? model.text(.conflictTitle)
+        )
+        .font(.subheadline).foregroundStyle(.secondary)
         HStack {
           Button(model.text(.conflictRetryOnLatest)) {
             Task {
