@@ -84,11 +84,13 @@ struct MetricValue: View {
   var value: String
   var unit: String
   var icon: String
+  var identifier: String?
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Label(title, systemImage: icon).font(.caption).foregroundStyle(.secondary)
       HStack(alignment: .firstTextBaseline, spacing: 4) {
         Text(value).font(.system(.title, design: .rounded).weight(.semibold)).monospacedDigit()
+          .accessibilityIdentifier(identifier ?? "")
         Text(unit).font(.caption).foregroundStyle(.secondary)
       }
     }.frame(maxWidth: .infinity, alignment: .leading)

@@ -1,3 +1,4 @@
+import type { FitnessEventsDurableObject } from './sync/events';
 import type { FitnessSyncDurableObject } from './sync/object';
 
 export interface Env {
@@ -7,6 +8,7 @@ export interface Env {
   CACHE: KVNamespace;
   ASSETS: Fetcher;
   FITNESS_SYNC: DurableObjectNamespace<FitnessSyncDurableObject>;
+  FITNESS_EVENTS: DurableObjectNamespace<FitnessEventsDurableObject>;
   PUBLIC_BASE_URL?: string;
   DEFAULT_TIME_ZONE?: string;
   OFF_USER_AGENT?: string;
@@ -61,6 +63,8 @@ export interface OwnerSession {
   owner: Owner;
   tokenHash: string;
   actor: Actor;
+  /** Absolute session expiry in milliseconds since the epoch. */
+  expiresAt: number;
 }
 export interface IdentityProvider {
   owner(id?: string): Promise<Owner>;
@@ -82,6 +86,15 @@ export interface Entity<T = Record<string, unknown>> {
 export interface Page<T> {
   items: T[];
   cursor: string | null;
+}
+export interface ChangeItem<T = Record<string, unknown>> extends Entity<T> {
+  seq: number;
+  deleted: boolean;
+}
+export interface ChangePage<T = Record<string, unknown>> {
+  items: ChangeItem<T>[];
+  lastSeq: number;
+  hasMore: boolean;
 }
 export interface ListOptions {
   limit?: number;
@@ -153,8 +166,16 @@ export interface Repository {
   replay(
     ownerId: string,
     operationId: string,
-    requestHash: string,
+    requestHash: string | readonly string[],
   ): Promise<{ response: unknown } | null>;
+  /**
+   * Latest version of each document changed after `afterSeq`, tombstones included.
+   * `seq` is assigned inside the same commit as the document write. D1 serializes
+   * writers, so seq order is commit order and a reader never observes a gap from an
+   * in-flight transaction. A future Postgres adapter needs a commit-ordered log
+   * assigned in that same transaction, not a wall-clock timestamp.
+   */
+  changes(ownerId: string, afterSeq: number, limit: number, maxBytes: number): Promise<ChangePage>;
   findFoodByBarcode<T = Record<string, unknown>>(
     ownerId: string,
     barcode: string,
@@ -162,6 +183,7 @@ export interface Repository {
   listFoodBarcodes(ownerId: string): Promise<string[]>;
   exportDocuments(ownerId: string): Promise<Entity[]>;
   commit(input: Commit): Promise<unknown>;
+  commitDetailed(input: Commit): Promise<{ response: unknown; replayed: boolean }>;
   healthExports(ownerId: string, limit: number, cursor?: string): Promise<unknown>;
 }
 export interface ObjectStore {

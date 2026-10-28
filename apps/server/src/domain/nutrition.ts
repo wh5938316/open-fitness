@@ -85,6 +85,36 @@ export function portionIngredients(
     return { ...item, quantity, unit, nutrients: foodNutrition(item.food, quantity, unit) };
   });
 }
+export interface DayMeal {
+  id: string;
+  createdAt: string;
+  deleted?: boolean;
+  data: { occurredAt: string; nutrients: Nutrients };
+}
+
+/** Totals for one local calendar day. Meal order matches the repository list: createdAt DESC, id DESC. */
+export function summarizeDay(meals: readonly DayMeal[], day: string, timeZone: string) {
+  const bounds = dayBounds(day, timeZone);
+  const included = meals
+    .filter(
+      (meal) =>
+        !meal.deleted && meal.data.occurredAt >= bounds.from && meal.data.occurredAt < bounds.to,
+    )
+    .sort((left, right) => {
+      if (left.createdAt !== right.createdAt) return left.createdAt < right.createdAt ? 1 : -1;
+      if (left.id !== right.id) return left.id < right.id ? 1 : -1;
+      return 0;
+    });
+  return {
+    day,
+    timeZone,
+    from: bounds.from,
+    to: bounds.to,
+    mealCount: included.length,
+    nutrients: sumNutrients(included.map((meal) => meal.data.nutrients)),
+  };
+}
+
 export function dayBounds(day: string, timeZone: string): { from: string; to: string } {
   assert(/^\d{4}-\d{2}-\d{2}$/.test(day), 'INVALID_DATE');
   const nominal = new Date(day + 'T00:00:00Z');

@@ -610,6 +610,47 @@ try {
     descriptionColumn.results.some((column) => column.name === 'description'),
     'catalog_exercise_i18n.description was not added',
   );
+  const changesMigration = migrations.find((migration) => migration.name.startsWith('0010'));
+  assert(changesMigration, 'expected migration 0010');
+  await db.batch(changesMigration.queries.map((query) => db.prepare(query)));
+  const triggerNames = await db
+    .prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' AND name IN ('documents_insert_change','documents_update_change')",
+    )
+    .all();
+  assert(triggerNames.results.length === 2, 'document change triggers were not created');
+  const documentCount = await db.prepare('SELECT COUNT(*) AS n FROM documents').first();
+  const changeCount = await db.prepare('SELECT COUNT(*) AS n FROM document_changes').first();
+  assert(
+    documentCount?.n > 0 && documentCount.n === changeCount?.n,
+    'document change backfill does not cover every document',
+  );
+  const beforeSeq = await db
+    .prepare('SELECT seq FROM document_changes WHERE owner_id=? AND kind=? AND id=?')
+    .bind('owner', 'meal', 'meal-1')
+    .first();
+  await db
+    .prepare(
+      'UPDATE documents SET version=version+1,data=?,updated_at=? WHERE owner_id=? AND kind=? AND id=?',
+    )
+    .bind(mealData, '2026-10-27T00:00:00.000Z', 'owner', 'meal', 'meal-1')
+    .run();
+  const afterSeq = await db
+    .prepare('SELECT seq FROM document_changes WHERE owner_id=? AND kind=? AND id=?')
+    .bind('owner', 'meal', 'meal-1')
+    .first();
+  assert(
+    typeof beforeSeq?.seq === 'number' &&
+      typeof afterSeq?.seq === 'number' &&
+      afterSeq.seq > beforeSeq.seq,
+    'updating a document did not assign a larger seq',
+  );
+  const mealChangeRows = await db
+    .prepare('SELECT COUNT(*) AS n FROM document_changes WHERE owner_id=? AND kind=? AND id=?')
+    .bind('owner', 'meal', 'meal-1')
+    .first();
+  assert(mealChangeRows?.n === 1, 'an update left more than one change row');
+  console.log('migration 0010 backfilled document changes and advances seq on update');
   console.log('migration 0005 preserved owner data and per-owner recovery');
   console.log('migration 0006 removed local WebAuthn tables');
   console.log('migration 0007 backfilled the earliest food barcode per owner');

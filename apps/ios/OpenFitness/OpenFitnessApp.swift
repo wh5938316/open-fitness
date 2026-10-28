@@ -14,14 +14,15 @@ struct OpenFitnessApp: App {
         .tint(.green)
         .task { await model.boot() }
         .onChange(of: scenePhase) { _, phase in
-          if phase == .active { Task { await model.refresh() } }
+          if phase == .active { Task { await model.foregroundSync() } }
           if phase == .background {
+            Task { await model.backgroundSync() }
             let request = BGAppRefreshTaskRequest(identifier: "org.openfitness.refresh")
             request.earliestBeginDate = Date().addingTimeInterval(900)
             try? BGTaskScheduler.shared.submit(request)
           }
         }
     }
-    .backgroundTask(.appRefresh("org.openfitness.refresh")) { await model.refresh() }
+    .backgroundTask(.appRefresh("org.openfitness.refresh")) { await model.syncNow() }
   }
 }

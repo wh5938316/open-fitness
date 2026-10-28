@@ -155,6 +155,14 @@ public struct OAuthTokenResponse: Decodable, Sendable {
     case scope
   }
 }
+private struct OAuthTokenFailure: Decodable {
+  var error: String
+  var errorDescription: String?
+  enum CodingKeys: String, CodingKey {
+    case error
+    case errorDescription = "error_description"
+  }
+}
 private struct APIEnvelope<T: Decodable>: Decodable { var data: T }
 private struct ErrorEnvelope: Decodable {
   struct Failure: Decodable {
@@ -173,6 +181,9 @@ public actor APIClient {
   private var pendingWrites: [String: PreparedRequest] = [:]
   private var pendingWritesURL: URL?
   private var inFlightWrites = Set<String>()
+  /// Document writes are queued in the local outbox instead of `writes-*.json`.
+  public var usesLocalOutbox = false
+  public func setUsesLocalOutbox(_ enabled: Bool) { usesLocalOutbox = enabled }
   public init(
     server: ServerConfiguration, vault: any CredentialVault,
     transport: any HTTPTransport = URLSessionTransport()
@@ -297,12 +308,17 @@ public actor APIClient {
     }
     let task = Task<OAuthCredentials, Error> {
       let discovery = try await self.discovery()
-      let value = try await self.publicRequest(
-        OAuthTokenResponse.self, url: URL(string: discovery.tokenEndpoint)!,
-        form: [
-          "grant_type": "refresh_token", "client_id": current.clientId, "refresh_token": refresh,
-          "resource": self.server.origin,
-        ])
+      let value: OAuthTokenResponse
+      do {
+        value = try await self.publicRequest(
+          OAuthTokenResponse.self, url: URL(string: discovery.tokenEndpoint)!,
+          form: [
+            "grant_type": "refresh_token", "client_id": current.clientId, "refresh_token": refresh,
+            "resource": self.server.origin,
+          ])
+      } catch let error as APIError where error.status == 400 && error.code == "invalid_grant" {
+        throw APIError("AUTHENTICATION_REQUIRED", status: 401, message: error.message)
+      }
       var next = current
       next.accessToken = value.accessToken
       next.refreshToken = value.refreshToken ?? refresh
@@ -326,12 +342,16 @@ public actor APIClient {
     _ type: T.Type, method: String = "POST", path: String, fields: [String: JSONValue],
     operationId: String? = nil
   ) async throws -> T {
+    let documentPath = [
+      "/api/v1/meals", "/api/v1/recipes", "/api/v1/foods", "/api/v1/exercises",
+      "/api/v1/training-plans",
+    ].contains { path == $0 || path.hasPrefix($0 + "/") }
     let recoverable =
-      operationId == nil
-      && [
-        "/api/v1/meals", "/api/v1/recipes", "/api/v1/foods", "/api/v1/exercises",
-        "/api/v1/training-plans", "/api/v1/workouts", "/api/v1/preferences",
-      ].contains { path == $0 || path.hasPrefix($0 + "/") }
+      operationId == nil && !(usesLocalOutbox && documentPath)
+      && (documentPath
+        || [
+          "/api/v1/workouts", "/api/v1/preferences",
+        ].contains { path == $0 || path.hasPrefix($0 + "/") })
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
     let fingerprint = SHA256.hash(
@@ -370,6 +390,12 @@ public actor APIClient {
       }
       throw error
     }
+  }
+  public func webSocketRequest(path: String) async throws -> URLRequest {
+    var request = URLRequest(url: try server.endpoint(path))
+    request.setValue("Bearer \(try await accessToken())", forHTTPHeaderField: "Authorization")
+    request.setValue(language, forHTTPHeaderField: "Accept-Language")
+    return request
   }
   public func imageData(assetId: String) async throws -> Data {
     try await authorizedData(path: "/api/v1/media/\(assetId.pathSegment)/content")
@@ -423,6 +449,13 @@ public actor APIClient {
   }
   private static func check(_ data: Data, _ response: HTTPURLResponse) throws {
     guard (200..<300).contains(response.statusCode) else {
+      if let oauth = try? JSONDecoder().decode(OAuthTokenFailure.self, from: data),
+        oauth.error == "invalid_grant"
+      {
+        throw APIError(
+          "invalid_grant", status: response.statusCode,
+          message: oauth.errorDescription ?? "The refresh token is no longer valid.")
+      }
       if let e = try? JSONDecoder().decode(ErrorEnvelope.self, from: data) {
         throw APIError(e.error.code, status: response.statusCode, message: e.error.message)
       }

@@ -41,13 +41,18 @@ import { sha256 } from './crypto';
 import { requireBarcode } from './domain/barcode';
 import { foodSchema } from './domain/schemas';
 import { createOwnerServices } from './services';
-import { handleSync } from './sync/route';
+import { notifyOwner } from './sync/notify';
+import { handleSync, handleSyncEvents } from './sync/route';
 
 function createServices(env: Env, actor: Actor, origin: string) {
   return createOwnerServices(env, actor, origin, {
     async publish(entities) {
-      const stub = env.FITNESS_SYNC.get(env.FITNESS_SYNC.idFromName(actor.ownerId));
-      await stub.publish(actor.ownerId, entities);
+      const tasks: Promise<unknown>[] = [notifyOwner(env, actor.ownerId)];
+      if (entities.length > 0) {
+        const stub = env.FITNESS_SYNC.get(env.FITNESS_SYNC.idFromName(actor.ownerId));
+        tasks.push(stub.publish(actor.ownerId, entities));
+      }
+      await Promise.allSettled(tasks);
     },
   });
 }
@@ -186,7 +191,9 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     },
   });
   app.use('*', (c, next) =>
-    c.req.path.startsWith('/uploads/') || c.req.path === '/api/v1/sync'
+    c.req.path.startsWith('/uploads/') ||
+    c.req.path === '/api/v1/sync' ||
+    c.req.path === '/api/v1/sync/events'
       ? next()
       : jsonLimit(c, next),
   );
@@ -373,10 +380,12 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     if (form.locale !== 'en' && form.locale !== 'zh-CN') throw new AppError(422, 'INVALID_LOCALE');
     c.header('Set-Cookie', auth.cookie('of_locale', form.locale, 31536000));
     const session = await auth.session(c.req.raw);
-    if (session)
+    if (session) {
       await env.DB.prepare('UPDATE owners SET locale=? WHERE id=?')
         .bind(form.locale, session.owner.id)
         .run();
+      await notifyOwner(env, session.owner.id);
+    }
     return c.redirect(safeReturn(String(form.returnTo ?? '/admin')), 303);
   });
   app.post('/auth/logout', async (c) => {
@@ -430,6 +439,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     await env.DB.prepare('UPDATE owners SET time_zone=? WHERE id=?')
       .bind(timeZone, session.owner.id)
       .run();
+    await notifyOwner(env, session.owner.id);
     return c.redirect('/account', 303);
   });
   app.post('/account/sessions/revoke', async (c) => {
@@ -570,6 +580,7 @@ export function createApp(env: Env): Hono<{ Bindings: Env }> {
     return response;
   };
   app.get('/api/v1/sync', (c) => handleSync(c.req.raw, env, auth));
+  app.get('/api/v1/sync/events', (c) => handleSyncEvents(c.req.raw, env, auth));
   app.all('/mcp', (c) => protectedHandler(c.req.raw, c.executionCtx as ExecutionContext));
   app.all('/api/v1/*', (c) => protectedHandler(c.req.raw, c.executionCtx as ExecutionContext));
   app.onError(async (error, c) => {

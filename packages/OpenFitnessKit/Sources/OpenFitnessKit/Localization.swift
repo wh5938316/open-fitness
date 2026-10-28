@@ -217,6 +217,21 @@ public enum CopyKey: String, CaseIterable, Sendable {
   case muscleMapUnavailable
   case primaryShort
   case secondaryShort
+  case syncOffline
+  case syncPendingCount
+  case syncFailed
+  case lastSynced
+  case signInAgain
+  case differentAccount
+  case downloadingHistory
+  case dayUnavailable
+  case conflictTitle
+  case conflictRetryOnLatest
+  case conflictDiscard
+  case deletedElsewhere
+  case outcomeUnknown
+  case signOutPendingWarning
+  case pendingKcal
 }
 public enum AppLanguage: String, Codable, CaseIterable, Sendable {
   case english = "en"
@@ -234,10 +249,22 @@ public struct Localizer: Sendable {
   public var language: AppLanguage
   public init(_ language: AppLanguage = .english) { self.language = language }
   var bundle: Bundle {
-    let code = language == .simplifiedChinese ? "zh-hans" : "en"
-    let actual = Bundle.module.localizations.first { $0.lowercased() == code } ?? code
-    return Bundle(url: Bundle.module.bundleURL.appendingPathComponent(actual + ".lproj"))
-      ?? Bundle.module
+    Self.localizationBundle(code: language == .simplifiedChinese ? "zh-hans" : "en")
+  }
+  /// SPM macOS bundles keep `.lproj` under `Contents/Resources`. iOS bundles keep them at the root.
+  /// `url(forResource:)` searches the resource directory on both.
+  static func localizationBundle(code: String) -> Bundle {
+    let actual = Bundle.module.localizations.first { $0.lowercased() == code.lowercased() } ?? code
+    let candidates = [
+      Bundle.module.url(forResource: actual, withExtension: "lproj"),
+      Bundle.module.resourceURL?.appendingPathComponent(actual + ".lproj"),
+      Bundle.module.bundleURL.appendingPathComponent("Contents/Resources/\(actual).lproj"),
+      Bundle.module.bundleURL.appendingPathComponent(actual + ".lproj"),
+    ]
+    for case let url? in candidates {
+      if let localized = Bundle(url: url) { return localized }
+    }
+    return Bundle.module
   }
   public func hasTranslation(_ key: CopyKey) -> Bool {
     bundle.localizedString(forKey: key.rawValue, value: "__missing__", table: nil) != "__missing__"
@@ -245,9 +272,8 @@ public struct Localizer: Sendable {
   public func text(_ key: CopyKey) -> String {
     let translated = bundle.localizedString(forKey: key.rawValue, value: "__missing__", table: nil)
     if translated != "__missing__" { return translated }
-    let english =
-      Bundle(url: Bundle.module.bundleURL.appendingPathComponent("en.lproj")) ?? Bundle.module
-    return english.localizedString(forKey: key.rawValue, value: key.rawValue, table: nil)
+    return Self.localizationBundle(code: "en").localizedString(
+      forKey: key.rawValue, value: key.rawValue, table: nil)
   }
   public func number(_ value: Double?, digits: Int = 0) -> String {
     guard let value else { return "—" }

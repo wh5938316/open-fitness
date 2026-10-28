@@ -4,6 +4,7 @@ import { AppError, assert, notFound } from './errors';
 import type { Env, ObjectStore } from './types';
 import { id, operationId } from './domain/schemas';
 import { FitnessService } from './domain/service';
+import { notifyOwner } from './sync/notify';
 
 export interface Asset {
   status: 'pending' | 'ready';
@@ -369,7 +370,7 @@ export class MediaService {
       { ...asset.data, ...image, status: 'ready', bytes: body.byteLength, sha256: digest },
       { id: asset.id, expectedVersion: asset.version },
     );
-    return this.service.repository.commit({
+    const committed = await this.service.repository.commitDetailed({
       actor,
       operation: 'upload_media',
       operationId: 'upload-' + asset.id,
@@ -377,6 +378,8 @@ export class MediaService {
       response: updated,
       mutations: [{ entity: updated, expectedVersion: asset.version }],
     });
+    if (!committed.replayed) await this.service.notifyCommitted([updated]);
+    return committed.response;
   }
   async content(assetId: string, request: Request): Promise<Response> {
     const asset = await this.service.require<Asset>('asset', assetId);
@@ -408,6 +411,7 @@ export async function cleanupMedia(env: Env): Promise<void> {
     )
       .bind(new Date().toISOString(), candidate.owner_id, candidate.id)
       .first();
+    if (result) await notifyOwner(env, candidate.owner_id);
     const original = JSON.parse(candidate.data) as Asset;
     if (
       result ||

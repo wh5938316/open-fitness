@@ -381,7 +381,7 @@ describe('food catalog adoption', () => {
     expect(recipe.data.ingredients[0]?.foodId).toBe(recipe.data.ingredients[1]?.foodId);
 
     const failing = new D1Repository(env.DB);
-    failing.commit = async () => {
+    failing.commitDetailed = async () => {
       throw new Error('forced commit failure');
     };
     const failedCode = `9${digits(12)}`;

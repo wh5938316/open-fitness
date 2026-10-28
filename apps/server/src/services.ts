@@ -6,6 +6,7 @@ import { registerHealthOperations } from './domain/health';
 import { FitnessService } from './domain/service';
 import { MediaService } from './media';
 import type { SyncPublisher } from './sync/contract';
+import { registerFeedOperations } from './sync/feed';
 import type { Actor, Env } from './types';
 
 export function createOwnerServices(
@@ -24,5 +25,6 @@ export function createOwnerServices(
   const media = new MediaService(service, env, new R2ObjectStore(env.MEDIA), origin);
   media.register();
   registerHealthOperations(service, new D1HealthSyncStore(env.DB), new KVCache(env.CACHE));
+  registerFeedOperations(service);
   return { service, media };
 }

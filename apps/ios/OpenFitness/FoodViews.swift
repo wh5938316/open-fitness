@@ -32,18 +32,38 @@ struct FoodView: View {
   var body: some View {
     @Bindable var model = model
     Screen {
-      DatePicker(model.text(.today), selection: $model.selectedDay, displayedComponents: .date)
-        .datePickerStyle(.compact).onChange(of: model.selectedDay) {
-          Task { await model.refresh() }
+      HStack {
+        Button {
+          model.shiftDay(-1)
+        } label: {
+          Image(systemName: "chevron.left")
         }
-      if let nutrition = model.nutrition {
+        .accessibilityIdentifier("previous-day")
+        DatePicker(model.text(.today), selection: $model.selectedDay, displayedComponents: .date)
+          .datePickerStyle(.compact)
+        Button {
+          model.shiftDay(1)
+        } label: {
+          Image(systemName: "chevron.right")
+        }
+        .accessibilityIdentifier("next-day")
+      }
+      if model.dayUnavailable {
+        EmptyCard(
+          title: model.text(.dayUnavailable), detail: "", icon: "calendar.badge.exclamationmark")
+      } else if model.downloadingHistory && model.meals.isEmpty {
+        EmptyCard(title: model.text(.downloadingHistory), detail: "", icon: "arrow.down.circle")
+      } else if let nutrition = model.nutrition {
         Surface {
           VStack(alignment: .leading, spacing: 18) {
             MetricValue(
               title: model.text(.calories),
               value: model.copy.number(nutrition.nutrients.energyKcal), unit: model.text(.kcal),
-              icon: "flame")
+              icon: "flame", identifier: "day-total-kcal")
             NutritionGrid(nutrients: nutrition.nutrients)
+            if let pending = model.pendingKcalText {
+              Text(pending).font(.caption).foregroundStyle(.secondary)
+            }
           }
         }
       }
@@ -53,6 +73,9 @@ struct FoodView: View {
           MealEditor(meal: meal)
         } label: {
           Surface {
+            if model.conflictIds.contains(meal.id) {
+              Text(model.text(.conflictTitle)).font(.caption).foregroundStyle(.orange)
+            }
             HStack {
               VStack(alignment: .leading, spacing: 5) {
                 Text(
@@ -69,9 +92,9 @@ struct FoodView: View {
                 .font(.subheadline).foregroundStyle(.secondary)
             }
           }
-        }.buttonStyle(.plain)
+        }.buttonStyle(.plain).accessibilityIdentifier("meal-row-\(meal.id)")
       }
-      if model.meals.isEmpty {
+      if model.meals.isEmpty && !model.downloadingHistory && !model.dayUnavailable {
         EmptyCard(title: model.text(.noMeals), detail: model.text(.noMealsHelp), icon: "sun.max")
       }
       Button {

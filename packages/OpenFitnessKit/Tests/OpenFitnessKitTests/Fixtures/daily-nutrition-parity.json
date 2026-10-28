@@ -1,0 +1,306 @@
+{
+  "cases": [
+    {
+      "name": "new-york-spring-forward-bounds-and-null-nutrient",
+      "day": "2026-03-08",
+      "timeZone": "America/New_York",
+      "meals": [
+        {
+          "id": "m-inside",
+          "createdAt": "2026-03-08T18:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-03-08T15:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 100,
+            "proteinG": 10,
+            "carbohydrateG": 20,
+            "fatG": 5,
+            "fiberG": null
+          }
+        },
+        {
+          "id": "m-before",
+          "createdAt": "2026-03-08T17:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-03-08T04:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 999,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        },
+        {
+          "id": "m-from",
+          "createdAt": "2026-03-08T16:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-03-08T05:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 1,
+            "proteinG": 1,
+            "carbohydrateG": 1,
+            "fatG": 1,
+            "fiberG": 1
+          }
+        },
+        {
+          "id": "m-to",
+          "createdAt": "2026-03-08T15:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-03-09T04:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 50,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        },
+        {
+          "id": "m-deleted",
+          "createdAt": "2026-03-08T19:00:00.000Z",
+          "deleted": true,
+          "occurredAt": "2026-03-08T12:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 7,
+            "proteinG": 7,
+            "carbohydrateG": 7,
+            "fatG": 7,
+            "fiberG": 7
+          }
+        }
+      ],
+      "expect": {
+        "from": "2026-03-08T05:00:00.000Z",
+        "to": "2026-03-09T04:00:00.000Z",
+        "mealCount": 2,
+        "nutrients": {
+          "energyKcal": 101,
+          "proteinG": 11,
+          "carbohydrateG": 21,
+          "fatG": 6,
+          "fiberG": null
+        }
+      }
+    },
+    {
+      "name": "new-york-fall-back",
+      "day": "2026-11-01",
+      "timeZone": "America/New_York",
+      "meals": [
+        {
+          "id": "fall-inside",
+          "createdAt": "2026-11-01T12:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-11-01T16:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 40,
+            "proteinG": 2,
+            "carbohydrateG": 3,
+            "fatG": 4,
+            "fiberG": 5
+          }
+        },
+        {
+          "id": "fall-to",
+          "createdAt": "2026-11-01T13:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-11-02T05:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 9,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        }
+      ],
+      "expect": {
+        "from": "2026-11-01T04:00:00.000Z",
+        "to": "2026-11-02T05:00:00.000Z",
+        "mealCount": 1,
+        "nutrients": {
+          "energyKcal": 40,
+          "proteinG": 2,
+          "carbohydrateG": 3,
+          "fatG": 4,
+          "fiberG": 5
+        }
+      }
+    },
+    {
+      "name": "shanghai-normal-day",
+      "day": "2026-06-15",
+      "timeZone": "Asia/Shanghai",
+      "meals": [
+        {
+          "id": "sh-noon",
+          "createdAt": "2026-06-15T05:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-06-15T04:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 250,
+            "proteinG": 20,
+            "carbohydrateG": 30,
+            "fatG": 8,
+            "fiberG": 4
+          }
+        },
+        {
+          "id": "sh-from",
+          "createdAt": "2026-06-15T04:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-06-14T16:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 10,
+            "proteinG": 1,
+            "carbohydrateG": 1,
+            "fatG": 1,
+            "fiberG": 1
+          }
+        },
+        {
+          "id": "sh-to",
+          "createdAt": "2026-06-15T06:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-06-15T16:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 80,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        }
+      ],
+      "expect": {
+        "from": "2026-06-14T16:00:00.000Z",
+        "to": "2026-06-15T16:00:00.000Z",
+        "mealCount": 2,
+        "nutrients": {
+          "energyKcal": 260,
+          "proteinG": 21,
+          "carbohydrateG": 31,
+          "fatG": 9,
+          "fiberG": 5
+        }
+      }
+    },
+    {
+      "name": "apia-skipped-midnight",
+      "day": "2011-12-30",
+      "timeZone": "Pacific/Apia",
+      "meals": [],
+      "expect": { "error": "UNRESOLVABLE_LOCAL_DATE" }
+    },
+    {
+      "name": "zero-meals",
+      "day": "2026-01-01",
+      "timeZone": "UTC",
+      "meals": [],
+      "expect": {
+        "from": "2026-01-01T00:00:00.000Z",
+        "to": "2026-01-02T00:00:00.000Z",
+        "mealCount": 0,
+        "nutrients": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "carbohydrateG": 0,
+          "fatG": 0,
+          "fiberG": 0
+        }
+      }
+    },
+    {
+      "name": "deleted-meal-only",
+      "day": "2026-01-02",
+      "timeZone": "UTC",
+      "meals": [
+        {
+          "id": "gone",
+          "createdAt": "2026-01-02T08:00:00.000Z",
+          "deleted": true,
+          "occurredAt": "2026-01-02T08:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 400,
+            "proteinG": 1,
+            "carbohydrateG": 1,
+            "fatG": 1,
+            "fiberG": 1
+          }
+        }
+      ],
+      "expect": {
+        "from": "2026-01-02T00:00:00.000Z",
+        "to": "2026-01-03T00:00:00.000Z",
+        "mealCount": 0,
+        "nutrients": {
+          "energyKcal": 0,
+          "proteinG": 0,
+          "carbohydrateG": 0,
+          "fatG": 0,
+          "fiberG": 0
+        }
+      }
+    },
+    {
+      "name": "float-order-sensitive-sum",
+      "day": "2026-04-01",
+      "timeZone": "UTC",
+      "meals": [
+        {
+          "id": "a",
+          "createdAt": "2026-04-01T01:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-04-01T01:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 10000000000000000,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        },
+        {
+          "id": "b",
+          "createdAt": "2026-04-01T02:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-04-01T02:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 1.000000014,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        },
+        {
+          "id": "c",
+          "createdAt": "2026-04-01T03:00:00.000Z",
+          "deleted": false,
+          "occurredAt": "2026-04-01T03:00:00.000Z",
+          "nutrients": {
+            "energyKcal": 1.000000015,
+            "proteinG": 0,
+            "carbohydrateG": 0,
+            "fatG": 0,
+            "fiberG": 0
+          }
+        }
+      ],
+      "expect": {
+        "from": "2026-04-01T00:00:00.000Z",
+        "to": "2026-04-02T00:00:00.000Z",
+        "mealCount": 3,
+        "nutrients": {
+          "energyKcal": 10000000000000002,
+          "proteinG": 0,
+          "carbohydrateG": 0,
+          "fatG": 0,
+          "fiberG": 0
+        }
+      }
+    }
+  ]
+}

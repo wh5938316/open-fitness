@@ -3,6 +3,7 @@ import { containsLike } from '../domain/search';
 import { healthStatements } from './cloudflare-health';
 import type {
   CacheStore,
+  ChangePage,
   Commit,
   Entity,
   EntityKind,
@@ -204,16 +205,58 @@ export class D1Repository implements Repository {
   async replay(
     ownerId: string,
     operationId: string,
-    requestHash: string,
+    requestHash: string | readonly string[],
   ): Promise<{ response: unknown } | null> {
+    const accepted = typeof requestHash === 'string' ? [requestHash] : requestHash;
     const row = await this.db
       .prepare('SELECT request_hash,response FROM operations WHERE owner_id=? AND operation_id=?')
       .bind(ownerId, operationId)
       .first<{ request_hash: string; response: string }>();
     if (!row) return null;
-    if (row.request_hash !== requestHash)
+    if (!accepted.includes(row.request_hash))
       throw new AppError(409, 'IDEMPOTENCY_CONFLICT', 'idempotencyConflict');
     return { response: JSON.parse(row.response) };
+  }
+  async changes(
+    ownerId: string,
+    afterSeq: number,
+    limit: number,
+    maxBytes: number,
+  ): Promise<ChangePage> {
+    const capped = Math.min(Math.max(Math.trunc(limit), 1), 500);
+    const budget = Math.max(Math.trunc(maxBytes), 1);
+    const result = await this.db
+      .prepare(
+        `SELECT c.seq, d.id, d.kind, d.version, d.data, d.deleted, d.created_at, d.updated_at
+         FROM document_changes c
+         JOIN documents d ON d.owner_id = c.owner_id AND d.kind = c.kind AND d.id = c.id
+         WHERE c.owner_id = ? AND c.seq > ?
+         ORDER BY c.seq
+         LIMIT ?`,
+      )
+      .bind(ownerId, afterSeq, capped + 1)
+      .all<Row & { seq: number }>();
+    const rows = result.results;
+    const extra = rows.length > capped;
+    const page = extra ? rows.slice(0, capped) : rows;
+    const items: ChangePage['items'] = [];
+    let bytes = 0;
+    let stoppedForBytes = false;
+    const encoder = new TextEncoder();
+    for (const row of page) {
+      const size = encoder.encode(row.data).byteLength;
+      if (items.length > 0 && bytes + size > budget) {
+        stoppedForBytes = true;
+        break;
+      }
+      bytes += size;
+      items.push({ ...entity(row), seq: row.seq, deleted: row.deleted === 1 });
+    }
+    return {
+      items,
+      lastSeq: items.at(-1)?.seq ?? afterSeq,
+      hasMore: extra || stoppedForBytes,
+    };
   }
   async findFoodByBarcode<T>(ownerId: string, barcode: string): Promise<Entity<T> | null> {
     const row = await this.db
@@ -261,8 +304,11 @@ export class D1Repository implements Repository {
     return items;
   }
   async commit(input: Commit): Promise<unknown> {
+    return (await this.commitDetailed(input)).response;
+  }
+  async commitDetailed(input: Commit): Promise<{ response: unknown; replayed: boolean }> {
     const replay = await this.replay(input.actor.ownerId, input.operationId, input.requestHash);
-    if (replay) return replay.response;
+    if (replay) return { response: replay.response, replayed: true };
     const now = new Date().toISOString();
     const statements = [
       this.db
@@ -411,7 +457,7 @@ export class D1Repository implements Repository {
         input.operationId,
         input.requestHash,
       );
-      if (completed) return completed.response;
+      if (completed) return { response: completed.response, replayed: true };
       const text = String(error);
       if (text.includes('HEALTH_EXPORT_CONFLICT'))
         throw new AppError(409, 'HEALTH_EXPORT_CONFLICT', 'healthLeaseExpired');
@@ -422,7 +468,7 @@ export class D1Repository implements Repository {
       if (text.includes('VERSION_CONFLICT') || text.includes('UNIQUE constraint')) throw conflict();
       throw error;
     }
-    return input.response;
+    return { response: input.response, replayed: false };
   }
   async healthExports(ownerId: string, limit: number, cursor?: string): Promise<unknown> {
     let pivot: { date: string; id: string } | undefined;

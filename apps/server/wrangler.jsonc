@@ -25,9 +25,15 @@
     { "binding": "CACHE", "id": "00000000000000000000000000000002" },
   ],
   "durable_objects": {
-    "bindings": [{ "name": "FITNESS_SYNC", "class_name": "FitnessSyncDurableObject" }],
+    "bindings": [
+      { "name": "FITNESS_SYNC", "class_name": "FitnessSyncDurableObject" },
+      { "name": "FITNESS_EVENTS", "class_name": "FitnessEventsDurableObject" },
+    ],
   },
-  "migrations": [{ "tag": "v1-fitness-sync", "new_sqlite_classes": ["FitnessSyncDurableObject"] }],
+  "migrations": [
+    { "tag": "v1-fitness-sync", "new_sqlite_classes": ["FitnessSyncDurableObject"] },
+    { "tag": "v2-fitness-events", "new_sqlite_classes": ["FitnessEventsDurableObject"] },
+  ],
   "triggers": { "crons": ["17 * * * *"] },
   "observability": { "enabled": true },
 }
