@@ -337,6 +337,7 @@ extension AppModel {
     func configureLocalStoreFixture() {
       isConnected = true
       isPreview = false
+      language = .english
       serverAddress = "http://127.0.0.1:9"
       context = try? JSONDecoder().decode(
         AgentContext.self,
