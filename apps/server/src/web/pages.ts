@@ -12,7 +12,15 @@ export function escapeHtml(value: unknown): string {
 }
 export function page(
   locale: Locale,
-  mode: 'setup' | 'login' | 'admin' | 'consent' | 'clerk-complete' | 'clerk-sign-out' | 'account',
+  mode:
+    | 'setup'
+    | 'login'
+    | 'admin'
+    | 'consent'
+    | 'clerk-sign-in'
+    | 'clerk-complete'
+    | 'clerk-sign-out'
+    | 'account',
   content: string,
   returnTo = '/admin',
   attributes = '',
@@ -28,6 +36,20 @@ export function loginPage(locale: Locale, returnTo: string): string {
     'login',
     `<h1>${t(locale, 'clerkSignIn')}</h1><p>${t(locale, 'clerkUnavailable')}</p>`,
     returnTo,
+  );
+}
+export function clerkSignInPage(
+  locale: Locale,
+  returnTo: string,
+  clerkPublishableKey: string,
+  clerkRedirect: string,
+): string {
+  return page(
+    locale,
+    'clerk-sign-in',
+    `<h1>${t(locale, 'clerkSignIn')}</h1>`,
+    returnTo,
+    `data-clerk-key="${escapeHtml(clerkPublishableKey)}" data-clerk-redirect="${escapeHtml(clerkRedirect)}"`,
   );
 }
 export function clerkCompletePage(

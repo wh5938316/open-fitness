@@ -12,7 +12,8 @@ void startClerk().catch(() => {
 async function startClerk(): Promise<void> {
   const key = root.dataset.clerkKey;
   const mode = root.dataset.mode;
-  if (!key || (mode !== 'clerk-complete' && mode !== 'clerk-sign-out')) return;
+  if (!key || (mode !== 'clerk-sign-in' && mode !== 'clerk-complete' && mode !== 'clerk-sign-out'))
+    return;
   const { Clerk } = await import('@clerk/clerk-js');
   const clerk = new Clerk(key);
   await clerk.load();
@@ -20,6 +21,16 @@ async function startClerk(): Promise<void> {
     await clerk.signOut();
     navigating = true;
     location.replace('/sign-in');
+    return;
+  }
+  const returnTo = root.dataset.returnTo || '/admin';
+  if (mode === 'clerk-sign-in' && !clerk.session) {
+    const complete = root.dataset.clerkRedirect!;
+    navigating = true;
+    await clerk.redirectToSignIn({
+      signInForceRedirectUrl: complete,
+      signUpForceRedirectUrl: complete,
+    });
     return;
   }
   const token = await clerk.session?.getToken();
@@ -32,7 +43,7 @@ async function startClerk(): Promise<void> {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-    body: JSON.stringify({ returnTo: root.dataset.returnTo || '/admin' }),
+    body: JSON.stringify({ returnTo }),
   });
   const result = (await response.json()) as {
     data?: { returnTo?: string };
