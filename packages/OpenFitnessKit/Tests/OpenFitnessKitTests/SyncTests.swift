@@ -92,7 +92,7 @@ import Testing
 
   @Test func authAndServerFailuresKeepLocalRows() async throws {
     let store = try TestDirectory().store()
-    _ = try store.importDocument(stored("kept"), source: "response")
+    _ = try store.importDocument(stored("kept", id: "kept"), source: "response")
     let denied = FeedTransport()
     await denied.setStatus(401)
     let deniedEngine = try await makeEngine(store: store, transport: denied)
@@ -156,14 +156,15 @@ import Testing
 
     let unknownStore = try TestDirectory().store("unknown")
     let unknownTransport = FeedTransport()
-    await unknownTransport.setStatus(409, code: "IDEMPOTENCY_CONFLICT")
+    await unknownTransport.setAccountOwner("owner-unknown")
+    await unknownTransport.setWriteStatus(409, code: "IDEMPOTENCY_CONFLICT")
     let unknownEngine = try await makeEngine(
       store: unknownStore, transport: unknownTransport, owner: "owner-unknown")
-    _ = try unknownStore.enqueue(draft("create", id: "food-z", name: "save_food"))
+    _ = try unknownStore.enqueue(
+      draft("create", id: "food-z", name: "save_food", baseVersion: nil))
     await unknownEngine.drainOutbox()
     #expect(unknownStore.outbox().first?.state == "unknown")
     _ = try unknownStore.importDocument(stored("landed", id: "food-z"), source: "feed")
-    await unknownTransport.setStatus(409, code: "IDEMPOTENCY_CONFLICT")
     try unknownStore.updateOutbox(
       operationId: "create", state: "pending", attempts: 0, clearError: true)
     await unknownEngine.pull()
@@ -352,13 +353,15 @@ private func page(
 
 private struct APIBox<T: Encodable>: Encodable { var data: T }
 
-private func draft(_ operationId: String, id: String, name: String) -> OutboxDraft {
+private func draft(_ operationId: String, id: String, name: String, baseVersion: Int? = 1)
+  -> OutboxDraft
+{
   OutboxDraft(
     operationId: operationId, name: name,
     request: PreparedRequest(
       method: "POST", path: "/api/v1/foods",
       body: .object(["operationId": .string(operationId), "id": .string(id)])),
-    targetKind: "food", targetId: id, baseVersion: 1)
+    targetKind: "food", targetId: id, baseVersion: baseVersion)
 }
 
 private func recordJSON(id: String) -> Data {
@@ -394,6 +397,10 @@ private actor FeedTransport: HTTPTransport {
   var pages: [Data] = []
   var status = 200
   var code = "ERROR"
+  /// Mutation status. Pulls keep using `status` so a 409 write does not blank the change feed.
+  var writeStatus: Int?
+  var writeCode: String?
+  var accountOwner = "owner"
   var requests: [URLRequest] = []
   var failures = 0
   var successBody: Data?
@@ -402,12 +409,20 @@ private actor FeedTransport: HTTPTransport {
     self.status = status
     self.code = code
   }
+  func setWriteStatus(_ status: Int, code: String = "ERROR") {
+    writeStatus = status
+    writeCode = code
+  }
+  func setAccountOwner(_ owner: String) { accountOwner = owner }
   func setSuccessBody(_ data: Data) { successBody = data }
   func failNext(_ count: Int) { failures = count }
   func bodies() -> [Data] { requests.compactMap(\.httpBody) }
   func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
     requests.append(request)
     let url = request.url!
+    let isChangeFeed = url.path == "/api/v1/sync/changes"
+    let responseStatus = isChangeFeed ? status : (writeStatus ?? status)
+    let responseCode = isChangeFeed ? code : (writeCode ?? code)
     let payload: Data
     if url.path == "/.well-known/oauth-authorization-server" {
       payload = Data(
@@ -416,17 +431,18 @@ private actor FeedTransport: HTTPTransport {
     } else if failures > 0 {
       failures -= 1
       throw URLError(.timedOut)
-    } else if status >= 400 {
-      payload = Data(#"{"error":{"code":"\#(code)","message":"failed"}}"#.utf8)
-    } else if url.path == "/api/v1/sync/changes" {
-      payload = pages.isEmpty ? page() : pages.removeFirst()
+    } else if responseStatus >= 400 {
+      payload = Data(#"{"error":{"code":"\#(responseCode)","message":"failed"}}"#.utf8)
+    } else if isChangeFeed {
+      payload = pages.isEmpty ? page(accountOwner: accountOwner) : pages.removeFirst()
     } else {
       payload = successBody ?? recordJSON(id: "saved")
     }
     return (
       payload,
       HTTPURLResponse(
-        url: url, statusCode: status == 0 ? 200 : status, httpVersion: nil, headerFields: nil)!
+        url: url, statusCode: responseStatus == 0 ? 200 : responseStatus, httpVersion: nil,
+        headerFields: nil)!
     )
   }
 }
